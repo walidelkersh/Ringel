@@ -6,7 +6,6 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/status-statement%20only-orange" alt="status">
   <img src="https://img.shields.io/badge/Lean-4.30.0-blue" alt="Lean Version">
   <img src="https://img.shields.io/badge/Mathlib-v4.30.0-purple" alt="Mathlib Version">
 </p>
