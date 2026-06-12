@@ -58,11 +58,32 @@ lemma isTree_core {V : Type*} (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
   }
   exact ⟨h_conn, h_acyc⟩
 
-/-- A random tree embedding assigns a color and a random sign to each edge.
-We will formalize this probability space instead of uniformly random maps,
-as uniform maps fail the union bound for injectivity (birthday paradox). -/
-def TreeEdgeSigns (T : SimpleGraph V) (S : Set V) :=
+/-- A valid color assignment to the edges of the core tree. -/
+abbrev CoreColors (n : ℕ) {V : Type*} (T : SimpleGraph V) (S : Set V) :=
+  ((CaseACore T S).edgeSet) ↪ Fin n
+
+/-- A sign assignment to the edges of the core tree. -/
+def CoreSigns {V : Type*} (T : SimpleGraph V) (S : Set V) :=
   ((CaseACore T S).edgeSet) → Bool
+
+/-- MPS embedding generative step. For any tree, assigning distinct colors and picking
+orientations (signs) uniquely constructs a rainbow vertex map. -/
+lemma exists_embed_from_signs (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
+    (root : (Sᶜ : Set V)) (root_val : Fin (2 * n + 1))
+    (C : CoreColors n T S) (σ : CoreSigns T S) :
+    ∃ f : (Sᶜ : Set V) → Fin (2 * n + 1),
+      f root = root_val ∧
+      ∀ (u v : (Sᶜ : Set V)) (huv : (CaseACore T S).Adj u v),
+        ndColouring n hn s(f u, f v) = C ⟨s(u, v), huv⟩ := by
+  sorry
+
+/-- The vertex collision probability bound using the Littlewood-Offord / random walk logic. -/
+lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
+    (root : (Sᶜ : Set V)) (root_val : Fin (2 * n + 1))
+    (C : CoreColors n T S) :
+    -- There exists a sign assignment that avoids vertex collisions (injectivity)
+    ∃ σ : CoreSigns T S, Function.Injective (Classical.choose (exists_embed_from_signs n hn T hT S root root_val C σ)) := by
+  sorry
 
 /-- The actual MPS embedding logic relies on mapping edges to colors
 and picking random signs to avoid vertex collisions via random walk bounds. -/
@@ -72,7 +93,44 @@ lemma random_embed_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Ty
     (hS_size : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard) :
     ∃ f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1),
       Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
-  sorry
+  -- 1. Pick an arbitrary root in the core (since T is a tree, core is a tree, hence nonempty if n > 0)
+  have h_core_nonempty : Nonempty (Sᶜ : Set V) := sorry
+  obtain ⟨root⟩ := h_core_nonempty
+  -- 2. Pick any valid color assignment C (possible since |E(Core)| <= n)
+  have h_colors : Nonempty (CoreColors n T S) := sorry
+  obtain ⟨C⟩ := h_colors
+  -- 3. Use the collision bound to find a sign assignment that guarantees injectivity
+  obtain ⟨σ, h_inj⟩ := bound_vertex_collisions n hn T hT S root 0 C
+  -- 4. Extract the embedding from the chosen signs
+  have h_exists := exists_embed_from_signs n hn T hT S root 0 C σ
+  let f := Classical.choose h_exists
+  have hf_props : f root = 0 ∧ ∀ u v huv, ndColouring n hn s(f u, f v) = C ⟨s(u, v), huv⟩ := Classical.choose_spec h_exists
+  -- 5. Package as an Embedding using injectivity
+  let f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1) := ⟨f, h_inj⟩
+  use f_core
+  -- 6. Prove it's perfectly rainbow!
+  intro e1 h1 e2 h2 h_eq
+  obtain ⟨u, v, huv, rfl⟩ : ∃ u v, (CaseACore T S).Adj u v ∧ s(f_core u, f_core v) = e1 := by
+    induction' e1 using Sym2.ind with x y
+    have h1_adj : (SimpleGraph.map f_core (CaseACore T S)).Adj x y := h1
+    rcases h1_adj with ⟨_, u, v, huv, rfl, rfl⟩
+    exact ⟨u, v, huv, rfl⟩
+  obtain ⟨x, y, hxy, rfl⟩ : ∃ x y, (CaseACore T S).Adj x y ∧ s(f_core x, f_core y) = e2 := by
+    induction' e2 using Sym2.ind with w z
+    have h2_adj : (SimpleGraph.map f_core (CaseACore T S)).Adj w z := h2
+    rcases h2_adj with ⟨_, x, y, hxy, rfl, rfl⟩
+    exact ⟨x, y, hxy, rfl⟩
+  -- Now we use the property of f that it exactly matches C
+  have hc1 := hf_props.2 u v huv
+  have hc2 := hf_props.2 x y hxy
+  dsimp [f_core] at h_eq
+  rw [hc1, hc2] at h_eq
+  have h_edge_eq := C.injective h_eq
+  have h_uv_xy : s(u, v) = s(x, y) := Subtype.ext_iff.mp h_edge_eq
+  have h_cases := Sym2.eq.mp h_uv_xy
+  cases h_cases
+  · rfl
+  · exact Sym2.eq_swap
 
 /-- Step 1 (M1+M2 equivalent): Embed the core of the tree into `K_{2n+1}`. -/
 lemma embed_caseA_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
