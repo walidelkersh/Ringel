@@ -36,8 +36,10 @@ theorem ringel_conjecture {V : Type*} [Fintype V]
 - [x] Project scaffold
 - [x] Statement formalized & reviewed (`Ringel/Statement.lean`)
 - [ ] Statement contributed to [formal-conjectures](https://github.com/google-deepmind/formal-conjectures)
-- [ ] Blueprint (lemma DAG from the paper)
-- [ ] Supporting infrastructure (graph decomposition, absorption, randomized embedding)
+- [x] Blueprint architecture established (Spine, Primitives, Case A, B, C)
+- [x] Supporting infrastructure (`Ringel/Primitives.lean`)
+- [ ] Case A Core Embedding (`Ringel/CaseA.lean`): In Progress. Modeling MPS random edge-sign embedding (Littlewood-Offord probability).
+- [ ] Absorption phase (`Ringel/CaseA.lean`)
 - [ ] Full proof
 
 ---
