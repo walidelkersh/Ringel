@@ -142,6 +142,35 @@ lemma embed_caseA_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Typ
       Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
   exact random_embed_core δ hδ n hn T hT hcard S hS_leaves hS_size
 
+/-- The colors used by the core embedding. -/
+def UsedColors (n : ℕ) (hn : 0 < n) {V : Type*} (T : SimpleGraph V) (S : Set V)
+    (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1)) : Set (Fin n) :=
+  (ndColouring n hn) '' ((CaseACore T S).map f_core).edgeSet
+
+/-- The vertices used by the core embedding. -/
+def UsedVertices {V : Type*} (S : Set V) (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1)) : Set (Fin (2 * n + 1)) :=
+  Set.range f_core
+
+open Classical
+
+/-- Assembles the full vertex map from the core map and the leaves map. -/
+noncomputable def extend_map {V : Type*} (S : Set V) (n : ℕ)
+    (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1))
+    (f_leaves : S ↪ Fin (2 * n + 1)) : V → Fin (2 * n + 1) :=
+  fun v => if h : v ∈ S then f_leaves ⟨v, h⟩ else f_core ⟨v, h⟩
+
+/-- Hall's condition bounds for the absorption bipartite graph.
+For each leaf in S and available color, we match them if the resulting vertex is not in UsedVertices.
+MPS proves this matching exists because the core is relatively small. -/
+lemma exists_absorption_matching (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
+    (hT : T.IsTree) (S : Set V) (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1)) :
+    -- A perfect matching exists between S and (Fin n \ UsedColors) into (Fin (2n+1) \ UsedVertices)
+    ∃ f_leaves : S ↪ Fin (2 * n + 1),
+      (Disjoint (Set.range f_leaves) (UsedVertices S f_core)) ∧
+      Set.InjOn (ndColouring n hn) ((T.map (extend_map S n f_core f_leaves)).edgeSet) := by
+  sorry
+
 /-- Step 2 (Absorption): Extend the core embedding to include the leaves in `S`,
 yielding a full rainbow copy of `T`. -/
 lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
@@ -151,7 +180,39 @@ lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : 
     (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1))
     (h_core_inj : Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet) :
     HasRainbowCopy n T := by
-  sorry
+  -- The absorption lemma directly provides the matching
+  obtain ⟨f_leaves, h_disj, h_rainbow⟩ := exists_absorption_matching n hn T hT S hS_leaves f_core
+  -- Assemble the global vertex map
+  let f_full := extend_map S n f_core f_leaves
+  -- Prove f_full is injective globally across V
+  have h_inj : Function.Injective f_full := by
+    intro v w h_eq
+    dsimp [f_full, extend_map] at h_eq
+    by_cases hv : v ∈ S <;> by_cases hw : w ∈ S
+    · -- Both in leaves
+      rw [dif_pos hv, dif_pos hw] at h_eq
+      have := f_leaves.injective h_eq
+      exact Subtype.ext_iff.mp this
+    · -- v in leaves, w in core
+      rw [dif_pos hv, dif_neg hw] at h_eq
+      have hv_in : f_leaves ⟨v, hv⟩ ∈ Set.range f_leaves := Set.mem_range_self _
+      have hw_in : f_core ⟨w, hw⟩ ∈ UsedVertices S f_core := Set.mem_range_self _
+      rw [h_eq] at hv_in
+      have := Set.disjoint_left.mp h_disj hv_in
+      exact False.elim (this hw_in)
+    · -- v in core, w in leaves
+      rw [dif_neg hv, dif_pos hw] at h_eq
+      have hw_in : f_leaves ⟨w, hw⟩ ∈ Set.range f_leaves := Set.mem_range_self _
+      have hv_in : f_core ⟨v, hv⟩ ∈ UsedVertices S f_core := Set.mem_range_self _
+      rw [←h_eq] at hw_in
+      have := Set.disjoint_left.mp h_disj hw_in
+      exact False.elim (this hv_in)
+    · -- Both in core
+      rw [dif_neg hv, dif_neg hw] at h_eq
+      have := f_core.injective h_eq
+      exact Subtype.ext_iff.mp this
+  -- The full map is an injective rainbow copy!
+  exact ⟨⟨f_full, h_inj⟩, fun _ => h_rainbow⟩
 
 /-- **Case A rainbow copy (§4, §6, M1+M2).** For small `δ > 0` and large `n`, every Case A
 tree that is not Case C has a rainbow copy in the ND-coloured `K_{2n+1}`. -/
