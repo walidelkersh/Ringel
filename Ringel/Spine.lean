@@ -35,7 +35,7 @@ Each leaf reduces into the per-section lemmas (to live in `Ringel/SectionN.lean`
 * Cases A/B share the randomized near-embedding `nearembedagain` (§6).
 
 **Note (cyclic / Kotzig form).** `decomp_of_rainbow_copy` builds the decomposition out of the
-`2*n+1` cyclic shifts of a single rainbow copy. So what is actually proved for large `n` is the
+$2n+1$ cyclic shifts of a single rainbow copy. So what is actually proved for large $n$ is the
 *cyclic* decomposition (Kotzig's form), which is strictly stronger than plain Ringel; plain Ringel
 is the forgetful weakening. See the discussion after Theorem `main` in the paper.
 -/
@@ -44,8 +44,8 @@ open SimpleGraph
 
 namespace Ringel
 
-/-- **Cyclic-shift step (Kotzig).** A rainbow copy of `T` in the ND-colouring yields `2*n+1`
-pairwise edge-disjoint copies of `T` covering `K_{2n+1}` — taken as the cyclic shifts of the one
+/-- **Cyclic-shift step (Kotzig).** A rainbow copy of $T$ in the ND-colouring yields $2n+1$
+pairwise edge-disjoint copies of $T$ covering $K_{2n+1}$ — taken as the cyclic shifts of the one
 copy. Bridges the rainbow statement to the decomposition in `Statement.lean`. -/
 theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
     (T : SimpleGraph V) (hT : T.IsTree) (hn : T.edgeSet.ncard = n)
@@ -202,8 +202,8 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
 
 
 
-/-- **Theorem `Theorem_Ringel_proof`.** For sufficiently large `n`, the ND-coloured `K_{2n+1}`
-contains a rainbow copy of every `n`-edge tree. This is the heart of the MPS proof. -/
+/-- **Theorem `Theorem_Ringel_proof`.** For sufficiently large $n$, the ND-coloured $K_{2n+1}$
+contains a rainbow copy of every $n$-edge tree. This is the heart of the MPS proof. -/
 theorem rainbow_copy_exists :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
       T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by

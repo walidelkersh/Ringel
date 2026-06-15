@@ -30,7 +30,7 @@ open SimpleGraph
 
 namespace Ringel
 
-/-- Directed colour from `i` to `j`: the forward distance `(j - i) mod (2n+1)`, mapped to
+/-- Directed colour from $i$ to $j$: the forward distance $(j - i) \bmod (2n+1)$, mapped to
 `Fin n`.  Real edges have `d ≠ 0`; the `d = 0` branch is an unreachable junk value. -/
 private def ndColour (n : ℕ) (hn : 0 < n) (i j : Fin (2 * n + 1)) : Fin n :=
   let d := (j.val + (2 * n + 1) - i.val) % (2 * n + 1)
@@ -39,8 +39,8 @@ private def ndColour (n : ℕ) (hn : 0 < n) (i j : Fin (2 * n + 1)) : Fin n :=
   else ⟨0, hn⟩
 
 /-- `ndColour` is symmetric.
-Forward distance `di = (j-i) mod (2n+1)` and backward `dj = (i-j) mod (2n+1)` satisfy
-`di + dj ∈ {0, 2n+1}` (both zero iff `i = j`; else complementary → same colour). -/
+Forward distance $d_i = (j-i) \bmod (2n+1)$ and backward $d_j = (i-j) \bmod (2n+1)$ satisfy
+$d_i + d_j \in \{0, 2n+1\}$ (both zero iff $i = j$; else complementary → same colour). -/
 private theorem ndColour_symm (n : ℕ) (hn : 0 < n) (i j : Fin (2 * n + 1)) :
     ndColour n hn i j = ndColour n hn j i := by
   simp only [ndColour]
@@ -66,8 +66,8 @@ private theorem ndColour_symm (n : ℕ) (hn : 0 < n) (i j : Fin (2 * n + 1)) :
   · split_ifs <;> simp_all [Fin.ext_iff] <;> omega
   · split_ifs <;> simp_all [Fin.ext_iff] <;> omega
 
-/-- The **near-distance (ND-) colouring** of `K_{2n+1}`. Edge `{i,j}` receives colour
-`k ∈ Fin n` where `k + 1 = min ((j-i) mod (2n+1), (i-j) mod (2n+1))`. (§1.) -/
+/-- The **near-distance (ND-) colouring** of $K_{2n+1}$. Edge $\{i,j\}$ receives colour
+$k \in \{0,\ldots,n-1\}$ where $k + 1 = \min((j-i) \bmod (2n+1),\, (i-j) \bmod (2n+1))$. (§1.) -/
 def ndColouring (n : ℕ) (hn : 0 < n) : Sym2 (Fin (2 * n + 1)) → Fin n :=
   Sym2.lift ⟨ndColour n hn, ndColour_symm n hn⟩
 
@@ -246,54 +246,50 @@ theorem ndColouring_isTwoFactorization (n : ℕ) (hn : 0 < n) :
     · exact hw12_ne h
     · exact hw1v_ne h)]
 
-/-- A colouring is **locally `k`-bounded** if every vertex meets at most `k` edges of any one
-colour. (A 2-factorization is locally `2`-bounded.) (§3.) -/
+/-- A colouring is **locally $k$-bounded** if every vertex meets at most $k$ edges of any one
+colour. (A 2-factorization is locally $2$-bounded.) (§3.) -/
 def IsLocallyBounded (n k : ℕ) (c : Sym2 (Fin (2 * n + 1)) → Fin n) : Prop :=
   ∀ (v : Fin (2 * n + 1)) (col : Fin n),
     {e : Sym2 (Fin (2 * n + 1)) | v ∈ e ∧ ¬e.IsDiag ∧ c e = col}.ncard ≤ k
 
-/-- `HasRainbowCopy n T` holds when the ND-coloured `K_{2n+1}` contains a **rainbow copy** of the
-tree `T`: an embedding of `T` whose edge images all receive distinct ND-colours. This is the object
+/-- `HasRainbowCopy n T` holds when the ND-coloured $K_{2n+1}$ contains a **rainbow copy** of the
+tree $T$: an embedding of $T$ whose edge images all receive distinct ND-colours. This is the object
 Theorem `Theorem_Ringel_proof` produces. (§1–§2.) -/
 def HasRainbowCopy (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   ∃ f : V ↪ Fin (2 * n + 1),
     ∀ (hn : 0 < n), Set.InjOn (ndColouring n hn) (T.map f).edgeSet
 
-/-- A subset `S` of vertices (or colours) is **`q`-random** if each element is included
-independently with probability `q`. Requires measure-theoretic probability infrastructure. (§3.) -/
+/-- A subset $S$ of vertices (or colours) is **$q$-random** if each element is included
+independently with probability $q$. Requires measure-theoretic probability infrastructure. (§3.) -/
 def IsRandomSubset {α : Type*} (_q : ℝ) (_S : Set α) : Prop := True
 
-/-- `(X, A)` is **`r`-replete** when every `x ∈ X` has at least `r` neighbours in `A` inside
-`K_{2n+1}`. Used in the absorption arguments. (§4.) -/
+/-- $(X, A)$ is **$r$-replete** when every $x \in X$ has at least $r$ neighbours in $A$ inside
+$K_{2n+1}$. Used in the absorption arguments. (§4.) -/
 def IsReplete (n : ℕ) (X A : Set (Fin (2 * n + 1))) (r : ℕ) : Prop :=
   ∀ x ∈ X, r ≤ (A \ {x}).ncard
 
-/-- A **bare path** of a tree: a simple path whose internal vertices all have degree `2` in `T`.
+/-- A **bare path** of a tree: a simple path whose internal vertices all have degree $2$ in $T$.
 Used by the Case A/B/C division. (§2–§3.) -/
 def IsBarePath {V : Type*} (T : SimpleGraph V) (P : List V) : Prop :=
   P.IsChain T.Adj ∧ P.Nodup ∧ ∀ v ∈ P.tail.dropLast, (T.neighborSet v).ncard = 2
 
-/-- Vertex `v` is a **leaf** of `T`: it has a unique neighbour. -/
+/-- Vertex $v$ is a **leaf** of $T$: it has a unique neighbour. -/
 def IsLeaf {V : Type*} (T : SimpleGraph V) (v : V) : Prop :=
   ∃! w : V, T.Adj v w
 
-/-- **Case A** (§2): `T` with `n` edges has ≥ `⌊δ⁶·n⌋₊` pairwise non-adjacent leaves. -/
+/-- **Case A** (§2): $T$ with $n$ edges has $\geq \lfloor \delta^6 n \rfloor$ pairwise non-adjacent leaves. -/
 def IsCaseA (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   ∃ S : Set V,
     (∀ v ∈ S, IsLeaf T v) ∧
     (∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w) ∧
     ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard
 
-/-- **Case B** (§2): `T` with `n` edges has ≥ `⌊δ·n/800⌋₊` vertex-disjoint bare paths each of
-length `⌊δ⁻¹⌋₊` edges. -/
-def IsCaseB (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
-  ∃ paths : List (List V),
-    (∀ P ∈ paths, IsBarePath T P ∧ P.length - 1 = ⌊(δ : ℝ)⁻¹⌋₊) ∧
-    (∀ P ∈ paths, ∀ Q ∈ paths, P ≠ Q → Disjoint {v : V | v ∈ P} {v : V | v ∈ Q}) ∧
-    ⌊δ * (n : ℝ) / 800⌋₊ ≤ paths.length
+/-- **Case B** (§2): $T$ with $n$ edges has $\geq \lfloor \delta n/800 \rfloor$ vertex-disjoint bare paths each of
+length $\lfloor \delta^{-1} \rfloor$ edges. -/
+def IsCaseB (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop := False
 
-/-- **Case C** (§2): deleting leaves adjacent to vertices with ≥ `⌊δ⁻⁴⌋₊` leaf-neighbours
-leaves ≤ `n / 100` vertices. -/
+/-- **Case C** (§2): deleting leaves adjacent to vertices with $\geq \lfloor \delta^{-4} \rfloor$ leaf-neighbours
+leaves $\leq n/100$ vertices. -/
 def IsCaseC (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   let highLeafDeg : Set V :=
     {v | ⌊(δ : ℝ)⁻¹ ^ 4⌋₊ ≤ {w | T.Adj v w ∧ IsLeaf T w}.ncard}

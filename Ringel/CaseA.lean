@@ -1,13 +1,13 @@
-import Ringel.Statement
+import Mathlib
 import Ringel.Primitives
+import Ringel.ProbBounds
 import Mathlib.Data.Set.Card.Arithmetic
-
 namespace Ringel
 
 
 
-/-- The "core" of a Case A tree is the subgraph induced by removing the independent leaves `S`.
-Since `S` consists only of leaves, the core remains connected and acyclic, hence a tree. -/
+/-- The "core" of a Case A tree is the subgraph induced by removing the independent leaves $S$.
+Since $S$ consists only of leaves, the core remains connected and acyclic, hence a tree. -/
 def CaseACore {V : Type*} (T : SimpleGraph V) (S : Set V) : SimpleGraph (Sᶜ : Set V) :=
   T.induce (Sᶜ)
 
@@ -70,16 +70,15 @@ def CoreSigns {V : Type*} (T : SimpleGraph V) (S : Set V) :=
 orientations (signs) uniquely constructs a rainbow vertex map. -/
 lemma exists_embed_from_signs (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
     (root : (Sᶜ : Set V)) (root_val : Fin (2 * n + 1))
     (C : CoreColors n T S) (σ : CoreSigns T S) :
     ∃ f : (Sᶜ : Set V) → Fin (2 * n + 1),
       f root = root_val ∧
       ∀ (u v : (Sᶜ : Set V)) (huv : (CaseACore T S).Adj u v),
         ndColouring n hn s(f u, f v) = C ⟨s(u, v), huv⟩ := by
-  -- Since T is a tree, Core is a connected tree.
-  -- We construct f(u) = root_val + sum of (sign * color) along the unique path from root to u.
-  -- The existence of such a potential function on any tree is a standard graph theory result.
-  sorry
+  exact exists_embed_from_signs_prob n hn T hT S hS_leaves hS_indep root root_val C σ sorry
+
 
 /-- The vertex collision probability bound using the Littlewood-Offord / random walk logic.
 Since the tree paths sum independent random edge signs ±1, the probability that any two
@@ -88,16 +87,12 @@ By the union bound over all pairs in S^c, the total collision probability is < 1
 hence an injective sign assignment exists. -/
 lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
     (root : (Sᶜ : Set V)) (root_val : Fin (2 * n + 1))
     (C : CoreColors n T S) :
-    -- There exists a sign assignment that avoids vertex collisions (injectivity)
-    ∃ σ : CoreSigns T S, Function.Injective (Classical.choose (exists_embed_from_signs n hn T hT S hS_leaves root root_val C σ)) := by
-  -- For each edge e, σ e is chosen uniformly from {-1, 1}.
-  -- For u ≠ v, f(u) - f(v) is the sum of σ(e) * C(e) over the path between u and v.
-  -- By the Littlewood-Offord theorem, P(sum = 0 mod 2n+1) ≤ O(n^{-1/2}).
-  -- A union bound over all |Sᶜ|^2 pairs requires |Sᶜ|^2 * O(n^{-1/2}) < 1,
-  -- which holds since |Sᶜ| ≤ δ^6 n.
-  sorry
+    ∃ σ : CoreSigns T S, Function.Injective (Classical.choose (exists_embed_from_signs n hn T hT S hS_leaves hS_indep root root_val C σ)) := by
+  exact bound_vertex_collisions_prob n hn T hT S hS_leaves hS_indep root root_val C sorry sorry
+
 
 lemma core_nonempty {V : Type*} [Finite V] (S : Set V)
     (hS_size : S.ncard < Nat.card V) :
@@ -113,32 +108,92 @@ lemma core_nonempty {V : Type*} [Finite V] (S : Set V)
 
 lemma core_size_bound (n : ℕ) (hn : 0 < n) (hn_large : 1 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
     (hcard : T.edgeSet.ncard = n) :
     S.ncard < Nat.card V := by
-  sorry
+  have he : 0 < T.edgeSet.ncard := by linarith
+  have hne : T.edgeSet.Nonempty := by
+    rw [← Set.ncard_pos]
+    exact he
+  obtain ⟨e, he_mem⟩ := hne
+  induction' e using Sym2.ind with u v
+  have h_adj : T.Adj u v := he_mem
+  by_contra h_ge
+  push Not at h_ge
+  have h_univ : S = Set.univ := by
+    apply Set.ext
+    intro x
+    simp only [Set.mem_univ, iff_true]
+    by_contra hx
+    have h_neq_univ : S ≠ Set.univ := fun h => hx (h ▸ Set.mem_univ x)
+    have h_ssubset : S ⊂ Set.univ := Set.ssubset_univ_iff.mpr h_neq_univ
+    have h_lt : S.ncard < (Set.univ : Set V).ncard := Set.ncard_lt_ncard h_ssubset
+    rw [Set.ncard_univ] at h_lt
+    linarith
+  have hu : u ∈ S := by rw [h_univ]; exact Set.mem_univ u
+  have hv : v ∈ S := by rw [h_univ]; exact Set.mem_univ v
+  have h_neq : u ≠ v := h_adj.ne
+  exact hS_indep u hu v hv h_neq h_adj
 
 lemma core_colors_nonempty (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) (S : Set V)
+    (hT : T.IsTree)
+    (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
     (hcard : T.edgeSet.ncard = n) :
     Nonempty (CoreColors n T S) := by
-  sorry
+  have heq : Nat.card T.edgeSet = n := hcard
+  have h_equiv : Nonempty (T.edgeSet ≃ Fin n) := by
+    rw [← heq]
+    exact Finite.nonempty_equiv_fin T.edgeSet
+  obtain ⟨e_equiv⟩ := h_equiv
+  have h_inj : (CaseACore T S).edgeSet ↪ T.edgeSet := by
+    let f : (CaseACore T S).edgeSet → T.edgeSet := fun e =>
+      ⟨Sym2.map Subtype.val e.val, by
+        have he := e.property
+        induction' e' : e.val using Sym2.ind with u v
+        have hadj : (CaseACore T S).Adj u v := by
+          rw [e'] at he
+          exact he
+        exact hadj.1⟩
+    have h_inj_f : Function.Injective f := by
+      intro e1 e2 h_eq
+      obtain ⟨v1, h1⟩ := e1
+      obtain ⟨v2, h2⟩ := e2
+      simp only [Subtype.mk.injEq] at h_eq ⊢
+      induction' v1 using Sym2.ind with u1 w1
+      induction' v2 using Sym2.ind with u2 w2
+      simp only [Sym2.map_pair_eq] at h_eq
+      have h_sym2 := Sym2.eq.mp h_eq
+      cases h_sym2 with
+      | inl h =>
+        have h_u : u1 = u2 := Subtype.ext h.1
+        have h_w : w1 = w2 := Subtype.ext h.2
+        rw [h_u, h_w]
+      | inr h =>
+        have h_u : u1 = w2 := Subtype.ext h.1
+        have h_w : w1 = u2 := Subtype.ext h.2
+        rw [h_u, h_w, Sym2.eq_swap]
+    exact ⟨f, h_inj_f⟩
+  exact ⟨h_inj.trans e_equiv.toEmbedding⟩
 
 /-- The actual MPS embedding logic relies on mapping edges to colors
 and picking random signs to avoid vertex collisions via random walk bounds. -/
 lemma random_embed_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
     (hS_size : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard) :
     ∃ f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1),
       Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
   -- 1. Pick an arbitrary root in the core (since T is a tree, core is a tree, hence nonempty if n > 0)
-  have h_S_bound : S.ncard < Nat.card V := core_size_bound n hn hn_large T hT S hS_leaves hcard
+  have h_S_bound : S.ncard < Nat.card V := core_size_bound n hn hn_large T hT S hS_leaves hS_indep hcard
   obtain ⟨root⟩ := core_nonempty S h_S_bound
   -- 2. Pick any valid color assignment C (possible since |E(Core)| <= n)
-  obtain ⟨C⟩ := core_colors_nonempty n T S hcard
+  obtain ⟨C⟩ := core_colors_nonempty n T S hT hS_leaves hS_indep hcard
   -- 3. Use the collision bound to find a sign assignment that guarantees injectivity
-  obtain ⟨σ, h_inj⟩ := bound_vertex_collisions n hn T hT S hS_leaves root 0 C
+  obtain ⟨σ, h_inj⟩ := bound_vertex_collisions n hn T hT S hS_leaves hS_indep root 0 C
   -- 4. Extract the embedding from the chosen signs
-  have h_exists := exists_embed_from_signs n hn T hT S hS_leaves root 0 C σ
+  have h_exists := exists_embed_from_signs n hn T hT S hS_leaves hS_indep root 0 C σ
   let f := Classical.choose h_exists
   have hf_props : f root = 0 ∧ ∀ u v huv, ndColouring n hn s(f u, f v) = C ⟨s(u, v), huv⟩ := Classical.choose_spec h_exists
   -- 5. Package as an Embedding using injectivity
@@ -191,15 +246,17 @@ For each leaf in S and available color, we match them if the resulting vertex is
 MPS proves this matching exists because the core is relatively small. -/
 lemma exists_absorption_matching (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (S : Set V) (hS_leaves : ∀ v ∈ S, IsLeaf T v)
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
     (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1)) :
     -- A perfect matching exists between S and (Fin n \ UsedColors) into (Fin (2n+1) \ UsedVertices)
     ∃ f_leaves : S ↪ Fin (2 * n + 1),
       (Disjoint (Set.range f_leaves) (UsedVertices S f_core)) ∧
       Set.InjOn (ndColouring n hn) ((T.map (extend_map S n f_core f_leaves)).edgeSet) := by
-  sorry
+  have h := exists_absorption_matching_prob n hn T hT S hS_leaves hS_indep f_core sorry
+  exact h
 
-/-- Step 2 (Absorption): Extend the core embedding to include the leaves in `S`,
-yielding a full rainbow copy of `T`. -/
+/-- Step 2 (Absorption): Extend the core embedding to include the leaves in $S$,
+yielding a full rainbow copy of $T$. -/
 lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
@@ -208,7 +265,7 @@ lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : 
     (h_core_inj : Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet) :
     HasRainbowCopy n T := by
   -- The absorption lemma directly provides the matching
-  obtain ⟨f_leaves, h_disj, h_rainbow⟩ := exists_absorption_matching n hn T hT S hS_leaves f_core
+  obtain ⟨f_leaves, h_disj, h_rainbow⟩ := exists_absorption_matching n hn T hT S hS_leaves hS_indep f_core
   -- Assemble the global vertex map
   let f_full := extend_map S n f_core f_leaves
   -- Prove f_full is injective globally across V
@@ -241,8 +298,8 @@ lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : 
   -- The full map is an injective rainbow copy!
   exact ⟨⟨f_full, h_inj⟩, fun _ => h_rainbow⟩
 
-/-- **Case A rainbow copy (§4, §6, M1+M2).** For small `δ > 0` and large `n`, every Case A
-tree that is not Case C has a rainbow copy in the ND-coloured `K_{2n+1}`. -/
+/-- **Case A rainbow copy (§4, §6, M1+M2).** For small $\delta > 0$ and large $n$, every Case A
+tree that is not Case C has a rainbow copy in the ND-coloured $K_{2n+1}$. -/
 theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
@@ -251,7 +308,7 @@ theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large
     HasRainbowCopy n T := by
   have hn_pos : 0 < n := by linarith
   -- 1. Embed the core (T \ S)
-  obtain ⟨f_core, h_core_inj⟩ := random_embed_core δ hδ n hn hn_large T hT hcard S hS_leaves hS_size
+  obtain ⟨f_core, h_core_inj⟩ := random_embed_core δ hδ n hn hn_large T hT hcard S hS_leaves hS_indep hS_size
   -- 2. Extend the embedding to cover the leaves S
   exact extend_caseA_leaves δ hδ n hn T hT hcard S hS_leaves hS_indep f_core h_core_inj
 
