@@ -99,25 +99,36 @@ and is *not* what MPS proved. Only `ringel_conjecture_large` is the goal here.
 
 ## Architecture
 
+```mermaid
+graph TD
+    S["Statement.lean: two conjecture statements"] --> Sp["Spine.lean: Kotzig decomposition + assembly"]
+    Pr["Primitives.lean: ndColouring, 2-factorization"] --> TS["TreeStructure.lean: split lemma, forest counting"]
+    TS --> CD["CaseDivision.lean: tree_split → Case A / B / C"]
+    Pr --> CD
+    PB["ProbBounds.lean: counting measure, h_prob bridges"] --> CA["CaseA.lean: walk-sum embedding ⚠️"]
+    CD --> CA
+    CD --> CB["CaseB.lean: bare-path embedding ⚠️"]
+    CD --> CC["CaseC.lean: greedy core embedding ⚠️"]
+    Pr --> CA
+    Pr --> CC
+    CA --> Sp
+    CB --> Sp
+    CC --> Sp
+    Sp --> Pf["Proof.lean: final assembly"]
+
+    style S fill:#4a9eff,stroke:#333
+    style Pr fill:#2ecc71,stroke:#333
+    style TS fill:#2ecc71,stroke:#333
+    style CD fill:#2ecc71,stroke:#333
+    style PB fill:#2ecc71,stroke:#333
+    style CA fill:#e67e22,stroke:#333
+    style CB fill:#e67e22,stroke:#333
+    style CC fill:#e67e22,stroke:#333
+    style Sp fill:#2ecc71,stroke:#333
+    style Pf fill:#4a9eff,stroke:#333
 ```
-Statement.lean ─────────────────────────────────────────────────────────────────┐
-                                                                                │
-Primitives.lean ── ndColouring, 2-factorization, case predicates                │
-       │                                                                        │
-TreeStructure.lean ── split lemma, forest counting (sorry-free, 956 lines)      │
-       │                                                                        │
-CaseDivision.lean ── tree_split → Case A / B / C                               │
-       │                                                                        │
-       ├── CaseA.lean ── walk-sum embedding + 2 probability sorry               │
-       ├── CaseB.lean ── bare-path embedding (sorry)                            │
-       └── CaseC.lean ── greedy core embedding (done) + leaf extension (sorry)  │
-                │                                                               │
-ProbBounds.lean ── h_prob > 0 bridges                                           │
-                │                                                               │
-Spine.lean ── Kotzig decomposition (done) + rainbow_copy_exists                 │
-                │                                                               │
-Proof.lean ── final assembly ───────────────────────────────────────────────────┘
-```
+
+🟢 sorry-free &nbsp; 🟠 contains sorry &nbsp; 🔵 statement / assembly
 
 ---
 
