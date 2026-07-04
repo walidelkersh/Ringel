@@ -91,6 +91,21 @@ lemma ndColouring_addRight (n : ℕ) (hn : 0 < n) (u v i : Fin (2 * n + 1)) :
   dsimp only
   simp only [h_eq]
 
+/-- If the endpoints `x` and `x + δ` differ by `δ` with `δ.val = c+1` or `δ.val = 2n+1-(c+1)`,
+then the ND-colour of the edge `s(x, x+δ)` is `c`. This is the arithmetic core behind the Case A
+embedding: a `±(c+1)` step in `Fin (2n+1)` realizes colour `c`. -/
+lemma ndColouring_step (n : ℕ) (hn : 0 < n) (x δ : Fin (2 * n + 1)) (c : Fin n)
+    (h : δ.val = c.val + 1 ∨ δ.val = 2 * n + 1 - (c.val + 1)) :
+    ndColouring n hn s(x, x + δ) = c := by
+  have hd : ((x + δ).val + (2 * n + 1) - x.val) % (2 * n + 1) = δ.val := by
+    rw [ndColour_val_eq_sub]; congr 1; abel
+  change ndColour n hn x (x + δ) = c
+  have hc := c.isLt
+  simp only [ndColour, hd]
+  rcases h with h | h
+  · rw [dif_pos ⟨by omega, by omega⟩]; apply Fin.ext; simp; omega
+  · rw [dif_neg (by omega), dif_pos (by omega)]; apply Fin.ext; simp; omega
+
 /-- A colouring is a **2-factorization** if every vertex is incident to exactly two edges of each
 colour. The ND-colouring is the running example. (§2.) -/
 def IsTwoFactorization (n : ℕ) (c : Sym2 (Fin (2 * n + 1)) → Fin n) : Prop :=
@@ -285,8 +300,15 @@ def IsCaseA (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
     ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard
 
 /-- **Case B** (§2): $T$ with $n$ edges has $\geq \lfloor \delta n/800 \rfloor$ vertex-disjoint bare paths each of
-length $\lfloor \delta^{-1} \rfloor$ edges. -/
-def IsCaseB (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop := False
+length $\lfloor \delta^{-1} \rfloor$ edges. Paths are vertex-disjoint (full vertex sets pairwise disjoint).
+A bare path $P$ is a list of vertices forming a simple path whose internal vertices have degree $2$ in $T$. -/
+def IsCaseB (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
+  ∃ paths : List (List V),
+    (∀ P ∈ paths, IsBarePath T P) ∧
+    (∀ P ∈ paths, P.length = ⌊(δ : ℝ)⁻¹⌋₊ + 1) ∧
+    (∀ P ∈ paths, ∀ Q ∈ paths, P ≠ Q →
+      Disjoint ({v : V | v ∈ P} : Set V) {v : V | v ∈ Q}) ∧
+    ⌊δ * (n : ℝ) / 800⌋₊ ≤ paths.length
 
 /-- **Case C** (§2): deleting leaves adjacent to vertices with $\geq \lfloor \delta^{-4} \rfloor$ leaf-neighbours
 leaves $\leq n/100$ vertices. -/

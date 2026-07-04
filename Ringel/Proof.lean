@@ -3,6 +3,7 @@ import Ringel.CaseDivision
 import Ringel.CaseA
 import Ringel.CaseB
 import Ringel.CaseC
+import Ringel.Spine
 
 namespace Ringel
 
@@ -20,12 +21,12 @@ theorem ringel_conjecture_large_proof (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_po
   have h_rainbow : HasRainbowCopy n T := by
     classical
     by_cases hC : IsCaseC δ n T
-    · exact caseC_rainbow δ hδ n hn_pos T hT hcard hC
-    · rcases case_division δ hδ n hn_pos hn_large T hT hcard with hA | hB | hC2
+    · exact caseC_embedding_exists δ hδ n hn_pos T hT hcard hC
+    · rcases tree_split δ hδ n T hT hcard with hA | hB | hC2
       · rcases hA with ⟨S, hS_leaves, hS_indep, hS_size⟩
         exact caseA_rainbow δ hδ n hn_pos hn_large T hT hcard S hS_leaves hS_size hS_indep
-      · exact caseB_rainbow δ hδ n hn_pos T hT hcard hB hC
+      · exact caseB_embedding_exists δ hδ n hn_pos T hT hcard hB hC
       · exact False.elim (hC hC2)
-  exact rainbow_implies_decomposition n hn_pos T hT hcard h_rainbow
+  exact decomp_of_rainbow_copy T hT hcard h_rainbow
 
 end Ringel

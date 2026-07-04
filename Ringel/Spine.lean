@@ -85,7 +85,9 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
         exact hi.elim
       · intro he
         have : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeSet.ncard = 0 := by
-          have hc1 : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeSet.ncard = (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeFinset.card := by sorry
+          have hc1 : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeSet.ncard =
+              (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeFinset.card := by
+            simp [Set.ncard_eq_toFinset_card', SimpleGraph.edgeFinset]
           have hc2 : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeFinset.card = Nat.choose (2 * 0 + 1) 2 := by
             have h := SimpleGraph.card_edgeFinset_top_eq_card_choose_two (V := Fin (2 * 0 + 1))
             have h_card : Fintype.card (Fin (2 * 0 + 1)) = 2 * 0 + 1 := Fintype.card_fin _
@@ -171,14 +173,21 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
       have h_sub : (⨆ i, T.map (f i)).edgeSet ⊆ (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet := 
         SimpleGraph.edgeSet_subset_edgeSet.mpr le_top
       have h_card_top : (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet.ncard = n'.succ * (2 * n'.succ + 1) := by
-        have hc1 : (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet.ncard = (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeFinset.card := by sorry
+        have hc1 : (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet.ncard =
+            (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeFinset.card := by
+          simp [Set.ncard_eq_toFinset_card', SimpleGraph.edgeFinset]
         have hc2 : (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeFinset.card = Nat.choose (2 * n'.succ + 1) 2 := by
           have h := SimpleGraph.card_edgeFinset_top_eq_card_choose_two (V := Fin (2 * n'.succ + 1))
           have h_card : Fintype.card (Fin (2 * n'.succ + 1)) = 2 * n'.succ + 1 := Fintype.card_fin _
           rw [h_card] at h
           exact h
         rw [hc1, hc2]
-        sorry
+        rw [Nat.choose_two_right]
+        have h1 : 2 * n'.succ + 1 - 1 = 2 * n'.succ := by omega
+        rw [h1]
+        have h2 : (2 * n'.succ + 1) * (2 * n'.succ) =
+            2 * (n'.succ * (2 * n'.succ + 1)) := by ring
+        rw [h2]; omega
       have h_card_union : (⋃ i, (T.map (f i)).edgeSet).ncard = n'.succ * (2 * n'.succ + 1) := by
         have h_card_i : ∀ i, (T.map (f i)).edgeSet.ncard = n'.succ := by
           intro i
@@ -189,13 +198,19 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
           rw [this]
           exact finsum_congr h_card_i
         rw [h_sum]
-        have h_sum2 : (∑ᶠ i : Fin (2 * n'.succ + 1), n'.succ) = Nat.card (Fin (2 * n'.succ + 1)) * n'.succ := by sorry
+        have h_sum2 : (∑ᶠ i : Fin (2 * n'.succ + 1), n'.succ) =
+            Nat.card (Fin (2 * n'.succ + 1)) * n'.succ := by
+          rw [finsum_eq_sum_of_fintype]
+          simp [Finset.sum_const, Nat.card_eq_fintype_card,
+            Fintype.card_fin]
         have hcard : Nat.card (Fin (2 * n'.succ + 1)) = 2 * n'.succ + 1 := by rw [Nat.card_eq_fintype_card, Fintype.card_fin]
-        rw [h_sum2, hcard]
-        sorry
+        rw [h_sum2, hcard]; ring
       have hf : (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet.Finite := Set.toFinite _
-      have h_eq : (⨆ i, T.map (f i)).edgeSet = (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet := by
-        sorry
+      have h_card_isup : (⨆ i, T.map (f i)).edgeSet.ncard = n'.succ * (2 * n'.succ + 1) := by
+        rw [edgeSet_iSup, h_card_union]
+      have h_eq : (⨆ i, T.map (f i)).edgeSet = (⊤ : SimpleGraph (Fin (2 * n'.succ + 1))).edgeSet :=
+        Set.eq_of_subset_of_ncard_le h_sub
+          (le_of_eq (h_card_top.trans h_card_isup.symm)) hf
       rw [← SimpleGraph.edgeSet_inj]
       exact h_eq⟩
 
@@ -207,19 +222,20 @@ contains a rainbow copy of every $n$-edge tree. This is the heart of the MPS pro
 theorem rainbow_copy_exists :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
       T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by
-  have hd : (0 : ℝ) < 1 := by norm_num
+  have hd : (0 : ℝ) < 1 / 4 := by norm_num
+  have hd' : (1 / 4 : ℝ) ≤ 1 / 4 := le_refl _
   filter_upwards [
-    case_division 1 hd,
-    caseA_rainbow 1 hd,
-    caseB_rainbow 1 hd,
-    caseC_rainbow 1 hd
+    case_division (1 / 4) hd hd',
+    caseA_rainbow_eventually (1 / 4) hd,
+    caseB_rainbow (1 / 4) hd,
+    caseC_rainbow (1 / 4) hd
   ] with n hn_div hn_A hn_B hn_C
   intro V _ T hT hcard
   rcases hn_div T hT hcard with hA | hB | hC
-  · by_cases hC2 : IsCaseC 1 n T
+  · by_cases hC2 : IsCaseC (1 / 4) n T
     · exact hn_C T hT hcard hC2
     · exact hn_A T hT hcard hA hC2
-  · by_cases hC2 : IsCaseC 1 n T
+  · by_cases hC2 : IsCaseC (1 / 4) n T
     · exact hn_C T hT hcard hC2
     · exact hn_B T hT hcard hB hC2
   · exact hn_C T hT hcard hC
