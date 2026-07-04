@@ -21,7 +21,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y graphviz texlive-xetex texlive-fonts-extra texlive-extra-utils pdf2svg
+          sudo apt-get install -y graphviz texlive-xetex texlive-fonts-extra texlive-extra-utils pdf2svg latexmk
 
       - name: Setup Python
         uses: actions/setup-python@v5
@@ -35,7 +35,6 @@ jobs:
 
       - name: Build blueprint
         run: |
-          cd blueprint
           leanblueprint pdf
           leanblueprint web
 
