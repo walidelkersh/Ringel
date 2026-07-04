@@ -4,4 +4,4 @@ A Lean 4 formalization of the Montgomery–Pokrovskiy–Sudakov proof of Ringel'
 
 * [Blueprint](blueprint/)
 * [Dependency Graph](blueprint/dep_graph_document.html)
-* [GitHub Repository](https://github.com/Doublew08/Ringel)
+* [GitHub Repository](https://github.com/walidelkersh/Ringel)
