@@ -1,0 +1,54 @@
+name: Build Blueprint
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build_blueprint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y graphviz texlive-xetex texlive-fonts-extra texlive-extra-utils pdf2svg
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install leanblueprint
+
+      - name: Build blueprint
+        run: |
+          cd blueprint
+          leanblueprint pdf
+          leanblueprint web
+
+      - name: Prepare Pages
+        run: |
+          mkdir -p public
+          cp -r blueprint/web public/blueprint
+          cp blueprint/print/print.pdf public/blueprint.pdf || true
+          cp -r docs/* public/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./public
+          publish_branch: gh-pages
