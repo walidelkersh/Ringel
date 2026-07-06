@@ -56,6 +56,37 @@ lemma disjoint_cyclicInterval_of_no_wrap {n : ℕ} {a b : Fin (2 * n + 1)} {la l
   rw [mem_cyclicInterval_of_no_wrap hb] at hub
   omega
 
+/-- **Up-fan injectivity.** If the colour value `col` is strictly increasing in the
+index and the anchor position `p` is non-decreasing, the up-position `p j + col j` is
+strictly increasing, hence injective. -/
+lemma up_pos_injOn (N : ℕ) (col p : ℕ → ℕ)
+    (hcol : ∀ i j, i < j → j < N → col i < col j)
+    (hp : ∀ i j, i < j → j < N → p i ≤ p j) :
+    Set.InjOn (fun j => p j + col j) (Set.Iio N) := by
+  intro i hi j hj hij
+  rw [Set.mem_Iio] at hi hj
+  rcases lt_trichotomy i j with h | h | h
+  · have := hcol i j h hj; have := hp i j h hj; simp only at hij; omega
+  · exact h
+  · have := hcol j i h hi; have := hp j i h hi; simp only at hij; omega
+
+/-- **Down-fan injectivity.** If the colour value `col` is strictly increasing and the
+anchor position `p` is non-increasing (with no underflow), the down-position
+`p j - col j - 1` is strictly decreasing, hence injective. -/
+lemma down_pos_injOn (N : ℕ) (col p : ℕ → ℕ)
+    (hcol : ∀ i j, i < j → j < N → col i < col j)
+    (hp : ∀ i j, i < j → j < N → p j ≤ p i)
+    (hnw : ∀ j, j < N → col j + 1 ≤ p j) :
+    Set.InjOn (fun j => p j - col j - 1) (Set.Iio N) := by
+  intro i hi j hj hij
+  rw [Set.mem_Iio] at hi hj
+  rcases lt_trichotomy i j with h | h | h
+  · have := hcol i j h hj; have := hp i j h hj
+    have := hnw i hi; have := hnw j hj; simp only at hij; omega
+  · exact h
+  · have := hcol j i h hi; have := hp j i h hi
+    have := hnw i hi; have := hnw j hj; simp only at hij; omega
+
 /-- Values along the sorted list of a subset `D ⊆ Fin n` exceed their index by at most
 the number of missing values: `ds[i] ≤ i + (n - |D|)`.  (Among the `ds[i]` values
 `0, …, ds[i]`, exactly `i` smaller ones are in `D`, so at least `ds[i] - i` are
