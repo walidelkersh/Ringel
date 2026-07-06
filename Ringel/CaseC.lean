@@ -1,4 +1,3 @@
-import Ringel.Statement
 import Ringel.Primitives
 import Ringel.TreeStructure
 import Mathlib.Data.Set.Card.Arithmetic

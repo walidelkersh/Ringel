@@ -1,8 +1,12 @@
 import Mathlib
 import Ringel.Primitives
 import Ringel.ProbBounds
-import Mathlib.Data.Set.Card.Arithmetic
+import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
+import Ringel.LittlewoodOfford
+import Ringel.ProbabilisticMatching
+
 namespace Ringel
+
 
 
 

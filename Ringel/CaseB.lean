@@ -1,11 +1,14 @@
-import Ringel.Statement
+
 import Ringel.Primitives
 import Ringel.ProbBounds
 import Ringel.CaseA
 import Mathlib.Data.Set.Card.Arithmetic
 import Mathlib.Order.Filter.Basic
+import Ringel.LittlewoodOfford
+import Ringel.ProbabilisticMatching
 
 namespace Ringel
+
 
 lemma caseB_embedding_exists (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_pos : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (hn : T.edgeSet.ncard = n) (hB : IsCaseB δ n T) (hC : ¬IsCaseC δ n T) : HasRainbowCopy n T := by

@@ -3,6 +3,7 @@ import Ringel.CaseDivision
 import Ringel.CaseA
 import Ringel.CaseB
 import Ringel.CaseC
+import Ringel.CaseCOneVertex
 import Ringel.Spine
 
 namespace Ringel

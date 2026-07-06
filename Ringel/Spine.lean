@@ -3,7 +3,7 @@ Copyright (c) 2026 Walid K. Elkersh. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Walid K. Elkersh
 -/
-import Ringel.Statement
+
 import Ringel.Primitives
 import Mathlib.Data.Sym.Sym2
 import Mathlib.Combinatorics.SimpleGraph.Basic
@@ -15,6 +15,7 @@ import Mathlib.Tactic.Linarith
 import Ringel.CaseA
 import Ringel.CaseB
 import Ringel.CaseC
+import Ringel.CaseCOneVertex
 import Ringel.CaseDivision
 import Mathlib.Data.Set.Card.Arithmetic
 import Mathlib.Data.Nat.ModEq

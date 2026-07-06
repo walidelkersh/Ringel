@@ -4,6 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Walid K. Elkersh
 -/
 import Mathlib
+import Ringel.Spine
 
 /-!
 # Ringel's Conjecture
@@ -32,13 +33,12 @@ The hypothesis `[Finite V]` rules out infinite trees (for which `edgeSet.ncard` 
 In general this remains open; the large-$n$ form actually proved by Montgomery, Pokrovskiy and
 Sudakov is `ringel_conjecture_large` below, which is the target of this formalization.
 -/
-theorem ringel_conjecture {V : Type*} [Finite V]
+def RingelConjecture {V : Type*} [Finite V]
     (T : SimpleGraph V) (hT : T.IsTree)
-    (n : ℕ) (hn : T.edgeSet.ncard = n) :
+    (n : ℕ) (hn : T.edgeSet.ncard = n) : Prop :=
     ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
       Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
-      ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
-  sorry
+      ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1)))
 
 /--
 **Ringel's Conjecture for large $n$ (Montgomery–Pokrovskiy–Sudakov, 2020).** For all
@@ -51,6 +51,6 @@ theorem ringel_conjecture_large :
       ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
         Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
         ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
-  sorry
+  exact ringel_conjecture_large_via_spine
 
 end Ringel
