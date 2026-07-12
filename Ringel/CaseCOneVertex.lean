@@ -60,7 +60,7 @@ lemma card_edges_in_subset_lt {V : Type*} [Fintype V] [DecidableEq V]
       refine ⟨s(⟨x, hxy.1⟩, ⟨y, hxy.2⟩), ?_, ?_⟩
       · rw [Finset.mem_coe, SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet]
         exact hadj
-      · rw [Sym2.map_mk]
+      · rw [Sym2.map_mk, Prod.map_apply]
   have hle := Finset.card_le_card_of_surjOn _ hsurj
   omega
 
@@ -279,7 +279,8 @@ lemma greedy_embed_interval (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Deci
           rw [Finset.mk_mem_sym2_iff] at hxy
           have hxne : x ≠ w := (Finset.mem_erase.mp hxy.1).1
           have hyne : y ≠ w := (Finset.mem_erase.mp hxy.2).1
-          simp only [Sym2.map_mk, Function.update_of_ne hxne, Function.update_of_ne hyne]
+          simp only [Sym2.map_mk, Prod.map_apply, Function.update_of_ne hxne,
+            Function.update_of_ne hyne]
       rcases Finset.eq_empty_or_nonempty Nb with hNe | hNe
       · -- No new core edge: place `w` at any unused position of `W`.
         have hUlt : U.card < W.card := by omega
@@ -361,7 +362,8 @@ lemma greedy_embed_interval (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Deci
           rw [hseteq, Finset.image_insert]
           have hnew : Sym2.map (Function.update g' w p) s(w, u) = s(p, g' u) := by
             have hune : u ≠ w := (Finset.mem_erase.mp huSe).1
-            simp only [Sym2.map_mk, Function.update_self, Function.update_of_ne hune]
+            simp only [Sym2.map_mk, Prod.map_apply, Function.update_self,
+              Function.update_of_ne hune]
           rw [hnew, Finset.image_congr (hmapeq p), Finset.coe_insert]
           refine (Set.injOn_insert ?_).mpr ⟨hg'rb, ?_⟩
           · -- `s(p, g' u)` is not among the old placed edges.
@@ -420,7 +422,7 @@ theorem one_large_vertex (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
   have hT'adj : ∀ x y, T'.Adj x y ↔ (T.Adj x y ∧ x ∉ L ∧ y ∉ L) := by
     intro x y; rw [hT'def]
   have hT'le : T' ≤ T := fun x y h => ((hT'adj x y).mp h).1
-  have hac : T'.IsAcyclic := hT.isAcyclic.anti hT'le
+  have hac : T'.IsAcyclic := hT.IsAcyclic.anti hT'le
   -- The core vertex set.
   set S : Finset V := Finset.univ.filter (fun v => v ∉ L) with hSdef
   have hv1S : v1 ∈ S := by
@@ -575,13 +577,13 @@ theorem one_large_vertex (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
       have hadj : T'.Adj a b := by
         rwa [SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet] at hd
       obtain ⟨_, haL, hbL⟩ := (hT'adj a b).mp hadj
-      rw [Sym2.map_mk, Sym2.map_mk, hfS a haL, hfS b hbL]
+      rw [Sym2.map_mk, Sym2.map_mk, Prod.map_apply, Prod.map_apply, hfS a haL, hfS b hbL]
   -- Colour of a leaf edge.
   have hleafcol : ∀ (w : V) (hw : w ∈ L),
       ndColouring n hn (Sym2.map f s(v1, w)) = ↑(eqv ⟨w, hw⟩) := by
     intro w hw
     have hfv1 : f v1 = 0 := by rw [hfS v1 hv1L]; exact hgv1
-    rw [Sym2.map_mk, hfv1, hfL w hw]
+    rw [Sym2.map_mk, Prod.map_apply, hfv1, hfL w hw]
     have hzero : s((0 : Fin (2 * n + 1)), attachPos ↑(eqv ⟨w, hw⟩))
         = s((0 : Fin (2 * n + 1)), 0 + attachPos ↑(eqv ⟨w, hw⟩)) := by rw [zero_add]
     rw [hzero]

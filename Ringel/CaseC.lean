@@ -86,7 +86,7 @@ lemma acyclic_ncard_edgeSet_le_ncard_support {V : Type*} [Finite V] (G : SimpleG
         have : w = u := huniq w hadjw
         subst this
         exact hne' (by simp)
-      have hvin : v ∈ G.support := hadj.mem_support_left
+      have hvin : v ∈ G.support := ⟨u, hadj⟩
       have hsub : G'.support ⊆ G.support := SimpleGraph.support_mono hle
       have hsub2 : G'.support ⊆ G.support \ {v} := by
         intro x hx
@@ -131,7 +131,7 @@ lemma caseC_decompose (δ : ℝ) (n : ℕ) {V : Type*} [Finite V] (T : SimpleGra
     exact hv_leaf
   · -- T_core.edgeSet.ncard ≤ n / 100
     have hle : T_core ≤ T := fun u v h => h.1
-    have hac : T_core.IsAcyclic := hT.isAcyclic.anti hle
+    have hac : T_core.IsAcyclic := hT.IsAcyclic.anti hle
     have hsupp : T_core.support ⊆ Set.univ \ removedLeaves := by
       intro v hv
       obtain ⟨w, hw⟩ := hv
@@ -306,7 +306,8 @@ private lemma caseC_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decid
           rw [Finset.mk_mem_sym2_iff] at hab
           have hane : a ≠ w := (Finset.mem_erase.mp hab.1).1
           have hbne : b ≠ w := (Finset.mem_erase.mp hab.2).1
-          simp only [Sym2.map_mk, Function.update_of_ne hane, Function.update_of_ne hbne]
+          simp only [Sym2.map_mk, Prod.map_apply, Function.update_of_ne hane,
+            Function.update_of_ne hbne]
       rcases Finset.eq_empty_or_nonempty Nb with hNe | hNe
       · -- No new core edge: place `w` at any unused position.
         obtain ⟨p, hp⟩ : ∃ p : Fin (2 * n + 1), p ∉ U := by
@@ -315,7 +316,7 @@ private lemma caseC_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decid
             have : U.card = 2 * n + 1 := by rw [hU, Finset.card_univ, Fintype.card_fin]
             omega
           obtain ⟨p, _, hp⟩ := Finset.exists_of_ssubset
-            (lt_of_le_of_ne (Finset.subset_univ U) hUne)
+            (Finset.ssubset_univ_iff.mpr hUne)
           exact ⟨p, hp⟩
         refine ⟨Function.update g' w p, hInjOnOf p hp, ?_⟩
         have hseteq : T_core.edgeFinset ∩ S.sym2 = T_core.edgeFinset ∩ (S.erase w).sym2 := by
@@ -380,7 +381,8 @@ private lemma caseC_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decid
         rw [hseteq, Finset.image_insert]
         have hnew : Sym2.map (Function.update g' w p) s(w, u) = s(p, g' u) := by
           have hune : u ≠ w := (Finset.mem_erase.mp huSe).1
-          simp only [Sym2.map_mk, Function.update_self, Function.update_of_ne hune]
+          simp only [Sym2.map_mk, Prod.map_apply, Function.update_self,
+            Function.update_of_ne hune]
         rw [hnew, Finset.image_congr (hmapeq p), Finset.coe_insert]
         refine (Set.injOn_insert ?_).mpr ⟨hg'rb, ?_⟩
         · -- `s(p, g' u)` is not among the old placed edges.
@@ -413,7 +415,7 @@ lemma caseC_embed_core (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
     have he : T.edgeFinset.card = n := by
       rw [← hcard]; exact (Set.ncard_eq_toFinset_card' T.edgeSet).symm
     omega
-  have hac : T_core.IsAcyclic := hT.isAcyclic.anti h_le
+  have hac : T_core.IsAcyclic := hT.IsAcyclic.anti h_le
   have hbound : T_core.edgeFinset.card ≤ n / 100 := by
     rw [show T_core.edgeFinset.card = T_core.edgeSet.ncard from
       (Set.ncard_eq_toFinset_card' T_core.edgeSet).symm]

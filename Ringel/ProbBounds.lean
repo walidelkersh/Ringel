@@ -64,7 +64,8 @@ lemma bound_vertex_collisions_prob (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
 def valid_absorption (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (S : Set V) (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1)) (f_leaves : S ↪ Fin (2 * n + 1)) : Prop :=
   Disjoint (Set.range f_leaves) (Set.range f_core) ∧
-  Set.InjOn (ndColouring n hn) ((T.map (fun v => if h : v ∈ S then f_leaves ⟨v, h⟩ else f_core ⟨v, h⟩)).edgeSet)
+  Set.InjOn (ndColouring n hn)
+    (Sym2.map (fun v => if h : v ∈ S then f_leaves ⟨v, h⟩ else f_core ⟨v, h⟩) '' T.edgeSet)
 
 lemma exists_absorption_matching_prob (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (S : Set V) (hS_leaves : ∀ v ∈ S, IsLeaf T v)
@@ -98,7 +99,9 @@ def valid_caseB_absorption (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : Si
     (f_core : ((CaseBRemovedVertices paths)ᶜ : Set V) ↪ Fin (2 * n + 1))
     (f_paths : CaseBRemovedVertices paths ↪ Fin (2 * n + 1)) : Prop :=
   Disjoint (Set.range f_paths) (Set.range f_core) ∧
-  Set.InjOn (ndColouring n hn) ((T.map (fun v => if h : v ∈ CaseBRemovedVertices paths then f_paths ⟨v, h⟩ else f_core ⟨v, h⟩)).edgeSet)
+  Set.InjOn (ndColouring n hn)
+    (Sym2.map (fun v => if h : v ∈ CaseBRemovedVertices paths then f_paths ⟨v, h⟩ else f_core ⟨v, h⟩)
+      '' T.edgeSet)
 
 lemma exists_absorption_paths_prob (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree)
     (paths : List (List V))

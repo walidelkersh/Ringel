@@ -79,10 +79,10 @@ lemma extend_rainbow_leaves (n : ℕ) (hn : 0 < n) {V : Type*}
     | _ a b =>
       have ha : a ∉ leaves := fun h => he a h (Sym2.mem_mk_left a b)
       have hb : b ∉ leaves := fun h => he b h (Sym2.mem_mk_right a b)
-      simp only [Sym2.map_mk, hfcore a ha, hfcore b hb]
+      simp only [Sym2.map_mk, Prod.map_apply, hfcore a ha, hfcore b hb]
   have hmapleaf : ∀ x ∈ leaves, Sym2.map f s(x, anchor x) = s(pos x, g (anchor x)) := by
     intro x hx
-    simp only [Sym2.map_mk, hfleaf x hx, hfcore (anchor x) (hanchor x hx)]
+    simp only [Sym2.map_mk, Prod.map_apply, hfleaf x hx, hfcore (anchor x) (hanchor x hx)]
   -- Rainbow on the mapped edge set.
   refine ⟨⟨f, hfinj⟩, ?_⟩
   rw [SimpleGraph.edgeSet_map]

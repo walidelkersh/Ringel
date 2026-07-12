@@ -390,7 +390,8 @@ lemma small_tree_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decidabl
           rw [Finset.mk_mem_sym2_iff] at hxy
           have hxne : x ≠ w := (Finset.mem_erase.mp hxy.1).1
           have hyne : y ≠ w := (Finset.mem_erase.mp hxy.2).1
-          simp only [Sym2.map_mk, Function.update_of_ne hxne, Function.update_of_ne hyne]
+          simp only [Sym2.map_mk, Prod.map_apply, Function.update_of_ne hxne,
+            Function.update_of_ne hyne]
       -- Which vertices can sit in a side block.
       have himg_side : ∀ (p : Fin 2) (j : ℕ), j < (partClass part (some p)).card →
           ∀ v ∈ S', g' v ∈ sideBlock n (ap p) L j → part v = some p := by
@@ -699,7 +700,8 @@ lemma small_tree_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decidabl
           intro pos
           rw [hseteq, Finset.image_insert]
           have hnew : Sym2.map (Function.update g' w pos) s(w, vf) = s(pos, g' vf) := by
-            simp only [Sym2.map_mk, Function.update_self, Function.update_of_ne hvfw]
+            simp only [Sym2.map_mk, Prod.map_apply, Function.update_self,
+              Function.update_of_ne hvfw]
           rw [hnew, Finset.image_congr (fun e he => hmapeq pos e he)]
         have husedins : ∀ pos : Fin (2 * n + 1),
             usedColours n hn T S (Function.update g' w pos)
@@ -922,14 +924,13 @@ lemma small_tree_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decidabl
           set W : Finset (Fin (2 * n + 1)) := freeSet.biUnion
             (fun j => (sideBlock n (ap p) L j).filter
               (fun u => ndColouring n hn s(uf, u) ∈ sideClass n k p s₀)) with hWdef
-          have hdisjW : ∀ j1 ∈ freeSet, ∀ j2 ∈ freeSet, j1 ≠ j2 →
-              Disjoint ((sideBlock n (ap p) L j1).filter
-                  (fun u => ndColouring n hn s(uf, u) ∈ sideClass n k p s₀))
-                ((sideBlock n (ap p) L j2).filter
-                  (fun u => ndColouring n hn s(uf, u) ∈ sideClass n k p s₀)) := by
+          have hdisjW : (↑freeSet : Set ℕ).PairwiseDisjoint
+              (fun j => (sideBlock n (ap p) L j).filter
+                (fun u => ndColouring n hn s(uf, u) ∈ sideClass n k p s₀)) := by
             intro j1 hj1 j2 hj2 hne
             exact Finset.disjoint_filter_filter
-              (sideBlock_disjoint n (ap p) L _ (hJn p) (hfreeN j1 hj1) (hfreeN j2 hj2) hne)
+              (sideBlock_disjoint n (ap p) L _ (hJn p) (hfreeN j1 (Finset.mem_coe.mp hj1))
+                (hfreeN j2 (Finset.mem_coe.mp hj2)) hne)
           have hWcard : (L / (2 * (2 * k + 1)) - 6) * freeSet.card ≤ W.card := by
             rw [hWdef, Finset.card_biUnion hdisjW]
             calc (L / (2 * (2 * k + 1)) - 6) * freeSet.card

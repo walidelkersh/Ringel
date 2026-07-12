@@ -375,7 +375,7 @@ private lemma core_embedding_caseC (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k) {V
       refine ⟨s(⟨a, Finset.mem_coe.mpr ha⟩, ⟨b, Finset.mem_coe.mpr hb⟩), ?_, ?_⟩
       · rw [Finset.mem_coe, SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet]
         exact hadj
-      · rw [Sym2.map_mk, Sym2.map_mk, hgval a ha, hgval b hb]
+      · rw [Sym2.map_mk, Sym2.map_mk, Prod.map_apply, Prod.map_apply, hgval a ha, hgval b hb]
     intro e₁ he₁ e₂ he₂ hc₁ hc₂ hcol
     induction e₁ using Sym2.ind with
     | _ a b =>
@@ -435,6 +435,60 @@ private lemma core_embedding_caseC (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k) {V
     have := hgcblk 1 _ (hpart1 u huc hu) _ (hpart1 v hvc hv) hne
     rw [hidxval u huc, hidxval v hvc]
     exact this
+
+/-- **Leaf placement for Case C (many vertices).**  The geometric heart of the many-vertex
+case: given the core embedding `g` (interval layout `hgI₀`, `hgV₁`, `hgV₂`, one side vertex
+per length-`L` block), a placement `pos` of the leaves exists satisfying exactly the four
+hypotheses that `extend_rainbow_leaves` needs — injective positions, positions disjoint
+from the core image, injective leaf-edge colours, and leaf-edge colours fresh from the
+core-edge colours.
+
+Construction (MPS §7): each leaf gets a distinct *free* colour (unused by any core edge),
+drawn from the ascending list of free colours in blocks assigned to leaf-bearing vertices
+in position order; a leaf realizing colour `c` at anchor `u` is placed at `u - (c+1)`
+(type 1, `V₁` even-rank, into `[…, 0.70n)`), `u + (c+1)` (type 2, `V₁` odd-rank, into
+`(0.71n, 0.82n]`), or `u + (c+1)` (type 3, `V₂`, into `[0.96n, 1.92n]`).  Distinct free
+colours give colour-injectivity and freshness directly (via `ndColouring_attach_sub`/
+`ndColouring_attach_add` and `freeCol_fresh`); position injectivity and core-disjointness
+follow from the interval layout, the block structure, and colour-value bounds
+(`sort_val_le_index_add`, `sorted_val_add_index_le`), using that each leaf-bearing vertex
+carries at least `100·L` leaves so colour gaps dominate position gaps. -/
+private lemma caseC_leaf_placement (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
+    {V : Type*} [Fintype V] [DecidableEq V]
+    (T : SimpleGraph V) (hT : T.IsAcyclic)
+    (core : Finset V) (anchor : V → V) (V₁ V₂ : Finset V)
+    (g : V → Fin (2 * n + 1)) (idx : V → ℕ)
+    (leaves : Finset V)
+    (hmem_leaves : ∀ x, x ∈ leaves ↔ x ∉ core)
+    (hanchor : ∀ v, v ∉ core → anchor v ∈ core ∧ T.Adj v (anchor v)
+      ∧ ∀ w, T.Adj v w → w = anchor v)
+    (hanchor_big : ∀ x ∈ leaves, anchor x ∈ V₁ ∨ anchor x ∈ V₂)
+    (a₀ ap₁ ap₂ : Fin (2 * n + 1)) (len₀ : ℕ)
+    (ha₀ : a₀.val = 83 * n / 100) (hap₁ : ap₁.val = 70 * n / 100)
+    (hap₂ : ap₂.val = 91 * n / 100) (hlen₀ : len₀ = 7 * n / 100)
+    (hV₁core : V₁ ⊆ core) (hV₂core : V₂ ⊆ core) (hV₁V₂ : Disjoint V₁ V₂)
+    (hcore : core.card ≤ n / 100)
+    (hV₁L : V₁.card * L ≤ n / 100) (hV₂L : V₂.card * L ≤ n / 100)
+    (hL : L = 40 * (2 * k + 1))
+    (hginjcore : Set.InjOn g ↑core)
+    (hgI₀ : ∀ v ∈ core, v ∉ V₁ → v ∉ V₂ →
+      a₀.val ≤ (g v).val ∧ (g v).val < a₀.val + len₀)
+    (hgV₁ : ∀ v ∈ V₁, (g v).val = ap₁.val + idx v ∧ idx v < V₁.card * L)
+    (hgV₂ : ∀ v ∈ V₂, (g v).val = ap₂.val + idx v ∧ idx v < V₂.card * L)
+    (hblkV₁ : ∀ u ∈ V₁, ∀ v ∈ V₁, u ≠ v → idx u / L ≠ idx v / L)
+    (hblkV₂ : ∀ u ∈ V₂, ∀ v ∈ V₂, u ≠ v → idx u / L ≠ idx v / L)
+    (hdeg : ∀ u ∈ V₁ ∪ V₂, 100 * L ≤ (leaves.filter (fun x => anchor x = u)).card)
+    (hdeg_up : ∀ u : V, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
+    (hn : 1000000 ≤ n) :
+    ∃ pos : V → Fin (2 * n + 1),
+      Set.InjOn pos ↑leaves ∧
+      (∀ x ∈ leaves, ∀ v, v ∉ leaves → pos x ≠ g v) ∧
+      (∀ x₁ ∈ leaves, ∀ x₂ ∈ leaves,
+        ndColouring n hn0 s(pos x₁, g (anchor x₁))
+          = ndColouring n hn0 s(pos x₂, g (anchor x₂)) → x₁ = x₂) ∧
+      (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
+        ndColouring n hn0 s(pos x, g (anchor x)) ≠ ndColouring n hn0 (Sym2.map g e)) := by
+  sorry
 
 /-- **Embedding trees in Case C, many-vertex branch** (`Theorem_case_C`, MPS §7).
 `T` is a tree on `n+1` vertices; `core` is a set of at most `n/100` vertices such that
@@ -651,6 +705,40 @@ theorem caseC_many_vertex (n t k : ℕ) {V : Type*} [Fintype V] [DecidableEq V]
       (fun u hu v hv h => by
         by_contra hne
         exact hblkV₂ u (Finset.mem_coe.mp hu) v (Finset.mem_coe.mp hv) hne h)
-  sorry
+  -- Every leaf's anchor is a leaf-bearing core vertex, hence lies in `V₁ ∪ V₂ = bigs`.
+  have hanchor_big : ∀ x ∈ leaves, anchor x ∈ V₁ ∨ anchor x ∈ V₂ := by
+    intro x hx
+    have hxnc : x ∉ core := (hmem_leaves x).mp hx
+    have hab : anchor x ∈ bigs := by
+      rw [hbigsdef, Finset.mem_filter]
+      exact ⟨(hanchor x hxnc).1, ⟨x, mem_leafSet.mpr ⟨hxnc, rfl⟩⟩⟩
+    rw [← hV₁union, Finset.mem_union] at hab
+    exact hab
+  -- Restate the leaf-count facts through `leaves.filter (anchor · = u)`.
+  have hls : ∀ u : V, leaves.filter (fun x => anchor x = u) = leafSet core anchor u := by
+    intro u; ext v
+    simp only [Finset.mem_filter, hmem_leaves, mem_leafSet]
+  have hdeg : ∀ u ∈ V₁ ∪ V₂, 100 * L ≤ (leaves.filter (fun x => anchor x = u)).card := by
+    intro u hu
+    rw [hls u]
+    rw [hV₁union] at hu
+    exact le_trans htL (hbigs_t u hu)
+  have hdeg_up : ∀ u : V, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3 := by
+    intro u; rw [hls u]; exact hsmalldeg' u
+  -- Obtain the leaf placement and assemble via `extend_rainbow_leaves`.
+  obtain ⟨pos, hposinj, hdisj, hcolinj, hcolfresh⟩ :=
+    caseC_leaf_placement n k L hn0 hk T hT core anchor V₁ V₂ g idx leaves hmem_leaves hanchor
+      hanchor_big a₀ ap₁ ap₂ len₀ (by rw [ha₀]) (by rw [hap₁def]) (by rw [hap₂def])
+      (by rw [hlen₀def]) hV₁core hV₂core hV₁V₂ hcore hV₁L hV₂L hLdef hginjcore hgI₀ hgV₁ hgV₂
+      hblkV₁ hblkV₂ hdeg hdeg_up hn
+  have hrbcore' : ∀ e₁ ∈ T.edgeSet, ∀ e₂ ∈ T.edgeSet, (∀ x ∈ leaves, x ∉ e₁) →
+      (∀ x ∈ leaves, x ∉ e₂) →
+      ndColouring n hn0 (Sym2.map g e₁) = ndColouring n hn0 (Sym2.map g e₂) →
+      Sym2.map g e₁ = Sym2.map g e₂ := by
+    intro e₁ he₁ e₂ he₂ h1 h2 hc
+    exact hrbcore e₁ he₁ e₂ he₂ (fun x hx => h1 x ((hmem_leaves x).mpr hx))
+      (fun x hx => h2 x ((hmem_leaves x).mpr hx)) hc
+  exact extend_rainbow_leaves n hn0 T leaves anchor hanchor_notmem hedges g pos
+    hginj_leaves hposinj hdisj hrbcore' hcolinj hcolfresh
 
 end Ringel

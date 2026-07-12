@@ -41,7 +41,7 @@ theorem card_branch_add_two_le_card_leaves {V : Type*} [Fintype V] [DecidableEq 
     intro v
     rw [Nat.one_le_iff_ne_zero, ← Nat.pos_iff_ne_zero, SimpleGraph.degree_pos_iff_exists_adj]
     obtain ⟨u, hu⟩ := Fintype.exists_ne_of_one_lt_card (by omega : 1 < Fintype.card V) v
-    obtain ⟨p⟩ := hT.connected.preconnected v u
+    obtain ⟨p⟩ := hT.isConnected.preconnected v u
     cases p with
     | nil => exact absurd rfl hu
     | cons h _ => exact ⟨_, h⟩
@@ -72,7 +72,7 @@ theorem card_vert_eq_card_leaves_add {V : Type*} [Fintype V] [DecidableEq V]
     intro v
     rw [Nat.one_le_iff_ne_zero, ← Nat.pos_iff_ne_zero, SimpleGraph.degree_pos_iff_exists_adj]
     obtain ⟨u, hu⟩ := Fintype.exists_ne_of_one_lt_card (by omega : 1 < Fintype.card V) v
-    obtain ⟨p⟩ := hT.connected.preconnected v u
+    obtain ⟨p⟩ := hT.isConnected.preconnected v u
     cases p with
     | nil => exact absurd rfl hu
     | cons h _ => exact ⟨_, h⟩
@@ -210,7 +210,7 @@ theorem induce_deg_two_linearForest {V : Type*} [Fintype V] [DecidableEq V]
     (T : SimpleGraph V) [DecidableRel T.Adj] (hT : T.IsTree) :
     (T.induce {v | T.degree v = 2}).IsAcyclic ∧
       ∀ w : {v | T.degree v = 2}, (T.induce {v | T.degree v = 2}).degree w ≤ 2 := by
-  refine ⟨hT.isAcyclic.induce _, fun w => ?_⟩
+  refine ⟨hT.IsAcyclic.induce _, fun w => ?_⟩
   have hle : (T.induce {v | T.degree v = 2}).degree w ≤ T.degree (w : V) := by
     rw [← SimpleGraph.card_neighborFinset_eq_degree, ← SimpleGraph.card_neighborFinset_eq_degree]
     apply Finset.card_le_card_of_injOn Subtype.val
@@ -354,7 +354,7 @@ theorem card_component_induce_deg_two_add {V : Type*} [Fintype V] [DecidableEq V
         + (T.induce {v | T.degree v = 2}).edgeFinset.card
       = Fintype.card {v | T.degree v = 2} :=
   card_connectedComponent_add_card_edgeFinset (T.induce {v | T.degree v = 2})
-    (hT.isAcyclic.induce _)
+    (hT.IsAcyclic.induce _)
 
 /-- **Bare-segment count bound.** The number of maximal bare segments (connected components of the
 degree-`2` induced subgraph) is at most `#leaves + #branch − 1`. Proof: the forest component
@@ -654,8 +654,8 @@ theorem exists_component_path {V : Type*} [Fintype V] [DecidableEq V] (G : Simpl
     ∃ L : List V, L.Nodup ∧ L.IsChain G.Adj ∧ (∀ v ∈ L, G.connectedComponentMk v = C) ∧
       L.length = (Finset.univ.filter (fun v => G.connectedComponentMk v = C)).card := by
   classical
-  have hCacyc : C.toSimpleGraph.IsAcyclic := (hacyc.isTree_connectedComponent C).isAcyclic
-  have hCconn : C.toSimpleGraph.Connected := (hacyc.isTree_connectedComponent C).connected
+  have hCacyc : C.toSimpleGraph.IsAcyclic := (hacyc.isTree_connectedComponent C).IsAcyclic
+  have hCconn : C.toSimpleGraph.Connected := (hacyc.isTree_connectedComponent C).isConnected
   have hCdeg : ∀ w, C.toSimpleGraph.degree w ≤ 2 := by
     intro w
     refine le_trans ?_ (hdeg (w : V))
@@ -892,7 +892,7 @@ theorem tree_split_via_split (δ : ℝ) (hδ : 0 < δ) (hδ' : δ ≤ 1 / 4) (n 
           omega
         rw [Finset.mem_compl, Finset.mem_insert, Finset.mem_singleton, not_or] at hx
         obtain ⟨hxv, hxw⟩ := hx
-        obtain ⟨p⟩ := hTree.connected.preconnected v x
+        obtain ⟨p⟩ := hTree.isConnected.preconnected v x
         rcases hclosed v x p (Or.inl rfl) with h | h
         · exact hxv h
         · exact hxw h

@@ -288,7 +288,8 @@ lemma card_pred_nbrs_in_cyclicInterval (n : ℕ) (hn : 0 < n)
       have : b2 * D < (b1 + 1) * D := by rw [add_mul, one_mul]; exact h21
       exact lt_of_mul_lt_mul_right this (Nat.zero_le D)
     omega
-  have hcard := Finset.card_le_card_of_injOn _ hmaps hinj
+  have hcard := Finset.card_le_card_of_injOn _
+    (fun b hb => Finset.mem_coe.mpr (hmaps b (Finset.mem_coe.mp hb))) hinj
   omega
 
 /-- A shifted cyclic subinterval is contained in the ambient cyclic interval. -/

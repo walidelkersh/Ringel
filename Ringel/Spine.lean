@@ -139,7 +139,7 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
       intro heq h_not_diag
       induction e_base using Sym2.ind with
       | _ u v =>
-        rw [Sym2.map_mk, Sym2.map_mk] at heq
+        simp only [Sym2.map_mk, Prod.map_apply] at heq
         rw [Sym2.eq_iff] at heq
         rcases heq with ⟨h_u, h_v⟩ | ⟨h_u, h_v⟩
         · have : u + j = u + i := h_u

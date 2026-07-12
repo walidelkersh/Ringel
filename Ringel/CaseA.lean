@@ -20,12 +20,12 @@ lemma isTree_core {V : Type*} (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
     (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w) :
     (CaseACore T S).IsTree := by
-  have h_acyc : (CaseACore T S).IsAcyclic := hT.isAcyclic.induce (Sᶜ)
+  have h_acyc : (CaseACore T S).IsAcyclic := hT.IsAcyclic.induce (Sᶜ)
   have h_conn : (CaseACore T S).Connected := {
     preconnected := by
       intro u v
       classical
-      have ⟨p⟩ := hT.connected.preconnected u.val v.val
+      have ⟨p⟩ := hT.isConnected.preconnected u.val v.val
       let p_path := p.toPath
       have h_trail : p_path.val.IsTrail := p_path.property.isTrail
       have h_support : ∀ x ∈ p_path.val.support, x ∈ Sᶜ := by
@@ -53,7 +53,7 @@ lemma isTree_core {V : Type*} (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
         ext x; simp
         by_contra h_not_S
         exact h_empty ⟨⟨x, h_not_S⟩⟩
-      have ⟨u⟩ : Nonempty V := hT.connected.nonempty
+      have ⟨u⟩ : Nonempty V := hT.isConnected.nonempty
       have hu_S : u ∈ S := by simp [h_univ]
       have ⟨w, hw_adj, _⟩ := hS_leaves u hu_S
       have hw_S : w ∈ S := by simp [h_univ]
@@ -308,12 +308,12 @@ lemma random_embed_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_lar
   obtain ⟨u, v, huv, rfl⟩ : ∃ u v, (CaseACore T S).Adj u v ∧ s(f_core u, f_core v) = e1 := by
     induction' e1 using Sym2.ind with x y
     have h1_adj : (SimpleGraph.map f_core (CaseACore T S)).Adj x y := h1
-    rcases h1_adj with ⟨_, u, v, huv, rfl, rfl⟩
+    rcases h1_adj with ⟨u, v, huv, rfl, rfl⟩
     exact ⟨u, v, huv, rfl⟩
   obtain ⟨x, y, hxy, rfl⟩ : ∃ x y, (CaseACore T S).Adj x y ∧ s(f_core x, f_core y) = e2 := by
     induction' e2 using Sym2.ind with w z
     have h2_adj : (SimpleGraph.map f_core (CaseACore T S)).Adj w z := h2
-    rcases h2_adj with ⟨_, x, y, hxy, rfl, rfl⟩
+    rcases h2_adj with ⟨x, y, hxy, rfl, rfl⟩
     exact ⟨x, y, hxy, rfl⟩
   -- Now we use the property of f that it exactly matches C
   have hc1 := hf_props.2 u v huv
@@ -355,7 +355,7 @@ lemma exists_absorption_matching (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (
     -- A perfect matching exists between S and (Fin n \ UsedColors) into (Fin (2n+1) \ UsedVertices)
     ∃ f_leaves : S ↪ Fin (2 * n + 1),
       (Disjoint (Set.range f_leaves) (UsedVertices S f_core)) ∧
-      Set.InjOn (ndColouring n hn) ((T.map (extend_map S n f_core f_leaves)).edgeSet) := by
+      Set.InjOn (ndColouring n hn) (Sym2.map (extend_map S n f_core f_leaves) '' T.edgeSet) := by
   haveI : Fintype (S ↪ Fin (2 * n + 1)) := Fintype.ofFinite _
   have h := exists_absorption_matching_prob n hn T hT S hS_leaves hS_indep f_core sorry
   exact h
@@ -401,7 +401,9 @@ lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : 
       have := f_core.injective h_eq
       exact Subtype.ext_iff.mp this
   -- The full map is an injective rainbow copy!
-  exact ⟨⟨f_full, h_inj⟩, fun _ => h_rainbow⟩
+  refine ⟨⟨f_full, h_inj⟩, fun _ => ?_⟩
+  rw [SimpleGraph.edgeSet_map]
+  exact h_rainbow
 
 /-- **Case A rainbow copy (§4, §6, M1+M2).** For small $\delta > 0$ and large $n$, every Case A
 tree that is not Case C has a rainbow copy in the ND-coloured $K_{2n+1}$. -/
