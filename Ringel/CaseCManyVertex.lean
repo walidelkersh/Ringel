@@ -87,6 +87,28 @@ lemma down_pos_injOn (N : ℕ) (col p : ℕ → ℕ)
   · have := hcol j i h hi; have := hp j i h hi
     have := hnw i hi; have := hnw j hj; simp only at hij; omega
 
+/-- **Down-fan injectivity, gap form.** If the colour value grows strictly faster than
+the anchor position (colour gaps dominate position gaps), the down-position
+`p j - col j - 1` is injective even when the anchor position also increases.  This is
+the engine of the interleaved type-1 leaf packing: consecutive same-type anchors are
+separated in colour by a whole intervening (other-type) fan (`≥ 100·L` colours), which
+dominates their `≤ 3·L` position gap. -/
+lemma down_pos_gap_injOn (N : ℕ) (col p : ℕ → ℕ)
+    (hcolmono : ∀ i j, i < j → j < N → col i ≤ col j)
+    (hpmono : ∀ i j, i < j → j < N → p i ≤ p j)
+    (hgap : ∀ i j, i < j → j < N → p j - p i < col j - col i)
+    (hnw : ∀ j, j < N → col j + 1 ≤ p j) :
+    Set.InjOn (fun j => p j - col j - 1) (Set.Iio N) := by
+  intro i hi j hj hij
+  rw [Set.mem_Iio] at hi hj
+  simp only at hij
+  rcases lt_trichotomy i j with h | h | h
+  · have := hcolmono i j h hj; have := hpmono i j h hj
+    have := hgap i j h hj; have := hnw i hi; have := hnw j hj; omega
+  · exact h
+  · have := hcolmono j i h hi; have := hpmono j i h hi
+    have := hgap j i h hi; have := hnw i hi; have := hnw j hj; omega
+
 /-- Values along the sorted list of a subset `D ⊆ Fin n` exceed their index by at most
 the number of missing values: `ds[i] ≤ i + (n - |D|)`.  (Among the `ds[i]` values
 `0, …, ds[i]`, exactly `i` smaller ones are in `D`, so at least `ds[i] - i` are
@@ -436,6 +458,61 @@ private lemma core_embedding_caseC (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k) {V
     rw [hidxval u huc, hidxval v hvc]
     exact this
 
+/-- **Placement together with the realized colour** for Case C (many vertices).  This is
+the geometric core: it produces both the leaf placement `pos` and the explicit colour
+function `col` it realizes on each leaf edge, with `col` an injection of the leaves into
+the *free* colours (those unused by the core edges) and `pos` injective and off the core
+image.  From this, the four `extend_rainbow_leaves` preconditions follow by pure colour
+bookkeeping (see `caseC_leaf_placement`).
+
+Construction (MPS §7): each leaf gets a distinct free colour drawn from the ascending
+list of free colours in blocks assigned to leaf-bearing vertices in position order; a
+leaf realizing colour `c` at anchor `u` is placed at `u - (c+1)` (type 1, `V₁` lower
+half, into `[1, 0.70n)`), `u + (c+1)` (type 2, `V₁` upper half, into `(window-top, 0.83n)`),
+or `u + (c+1)` (type 3, all of `V₂`, into `[0.96n, 1.92n]`).  Position injectivity and
+core-disjointness follow from the interval layout, the block structure, and colour-value
+bounds (`sort_val_le_index_add`, `sorted_val_add_index_le`, `down_pos_gap_injOn`), using
+that each leaf-bearing vertex carries at least `100·L` leaves so colour gaps dominate
+position gaps. -/
+private lemma caseC_place_and_colour (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
+    {V : Type*} [Fintype V] [DecidableEq V]
+    (T : SimpleGraph V) [DecidableRel T.Adj] (hT : T.IsAcyclic)
+    (core : Finset V) (anchor : V → V) (V₁ V₂ : Finset V)
+    (g : V → Fin (2 * n + 1)) (idx : V → ℕ)
+    (leaves : Finset V)
+    (hmem_leaves : ∀ x, x ∈ leaves ↔ x ∉ core)
+    (hanchor : ∀ v, v ∉ core → anchor v ∈ core ∧ T.Adj v (anchor v)
+      ∧ ∀ w, T.Adj v w → w = anchor v)
+    (hanchor_big : ∀ x ∈ leaves, anchor x ∈ V₁ ∨ anchor x ∈ V₂)
+    (a₀ ap₁ ap₂ : Fin (2 * n + 1)) (len₀ : ℕ)
+    (ha₀ : a₀.val = 83 * n / 100) (hap₁ : ap₁.val = 70 * n / 100)
+    (hap₂ : ap₂.val = 91 * n / 100) (hlen₀ : len₀ = 7 * n / 100)
+    (hV₁core : V₁ ⊆ core) (hV₂core : V₂ ⊆ core) (hV₁V₂ : Disjoint V₁ V₂)
+    (hcore : core.card ≤ n / 100)
+    (hV₁L : V₁.card * L ≤ n / 100) (hV₂L : V₂.card * L ≤ n / 100)
+    (hL : L = 40 * (2 * k + 1))
+    (hginjcore : Set.InjOn g ↑core)
+    (hgI₀ : ∀ v ∈ core, v ∉ V₁ → v ∉ V₂ →
+      a₀.val ≤ (g v).val ∧ (g v).val < a₀.val + len₀)
+    (hgV₁ : ∀ v ∈ V₁, (g v).val = ap₁.val + idx v ∧ idx v < V₁.card * L)
+    (hgV₂ : ∀ v ∈ V₂, (g v).val = ap₂.val + idx v ∧ idx v < V₂.card * L)
+    (hblkV₁ : ∀ u ∈ V₁, ∀ v ∈ V₁, u ≠ v → idx u / L ≠ idx v / L)
+    (hblkV₂ : ∀ u ∈ V₂, ∀ v ∈ V₂, u ≠ v → idx u / L ≠ idx v / L)
+    (hdeg : ∀ u ∈ V₁ ∪ V₂, 100 * L ≤ (leaves.filter (fun x => anchor x = u)).card)
+    (hdeg_up : ∀ u : V, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
+    (hV₁gt : n / 20 < ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card)
+    (hV₁le : ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
+    (hV₁small : 2 ≤ V₁.card →
+      ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ n / 10)
+    (hn : 1000000 ≤ n) :
+    ∃ (pos : V → Fin (2 * n + 1)) (col : V → Fin n),
+      Set.InjOn pos ↑leaves ∧
+      (∀ x ∈ leaves, ∀ v, v ∉ leaves → pos x ≠ g v) ∧
+      Set.InjOn col ↑leaves ∧
+      (∀ x ∈ leaves, col x ∈ freeCols hn0 T core g) ∧
+      (∀ x ∈ leaves, ndColouring n hn0 s(pos x, g (anchor x)) = col x) := by
+  sorry
+
 /-- **Leaf placement for Case C (many vertices).**  The geometric heart of the many-vertex
 case: given the core embedding `g` (interval layout `hgI₀`, `hgV₁`, `hgV₂`, one side vertex
 per length-`L` block), a placement `pos` of the leaves exists satisfying exactly the four
@@ -479,6 +556,10 @@ private lemma caseC_leaf_placement (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
     (hblkV₂ : ∀ u ∈ V₂, ∀ v ∈ V₂, u ≠ v → idx u / L ≠ idx v / L)
     (hdeg : ∀ u ∈ V₁ ∪ V₂, 100 * L ≤ (leaves.filter (fun x => anchor x = u)).card)
     (hdeg_up : ∀ u : V, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
+    (hV₁gt : n / 20 < ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card)
+    (hV₁le : ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
+    (hV₁small : 2 ≤ V₁.card →
+      ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ n / 10)
     (hn : 1000000 ≤ n) :
     ∃ pos : V → Fin (2 * n + 1),
       Set.InjOn pos ↑leaves ∧
@@ -488,7 +569,27 @@ private lemma caseC_leaf_placement (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
           = ndColouring n hn0 s(pos x₂, g (anchor x₂)) → x₁ = x₂) ∧
       (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
         ndColouring n hn0 s(pos x, g (anchor x)) ≠ ndColouring n hn0 (Sym2.map g e)) := by
-  sorry
+  classical
+  obtain ⟨pos, col, hposinj, hoff, hcolinj, hcolfree, hedge⟩ :=
+    caseC_place_and_colour n k L hn0 hk T hT core anchor V₁ V₂ g idx leaves hmem_leaves
+      hanchor hanchor_big a₀ ap₁ ap₂ len₀ ha₀ hap₁ hap₂ hlen₀ hV₁core hV₂core hV₁V₂ hcore
+      hV₁L hV₂L hL hginjcore hgI₀ hgV₁ hgV₂ hblkV₁ hblkV₂ hdeg hdeg_up hV₁gt hV₁le hV₁small hn
+  refine ⟨pos, hposinj, hoff, ?_, ?_⟩
+  · -- colour injectivity: the leaf-edge colour equals the (injective) free colour `col`
+    intro x₁ h1 x₂ h2 hc
+    rw [hedge x₁ h1, hedge x₂ h2] at hc
+    exact hcolinj (Finset.mem_coe.mpr h1) (Finset.mem_coe.mpr h2) hc
+  · -- freshness: the leaf-edge colour `col x` is free, hence differs from any core colour
+    intro x hx e he hne
+    rw [hedge x hx]
+    induction e using Sym2.ind with
+    | _ a b =>
+      rw [SimpleGraph.mem_edgeSet] at he
+      have ha : a ∈ core := by
+        by_contra h; exact hne a ((hmem_leaves a).mpr h) (Sym2.mem_mk_left a b)
+      have hb : b ∈ core := by
+        by_contra h; exact hne b ((hmem_leaves b).mpr h) (Sym2.mem_mk_right a b)
+      exact (freeCol_fresh hn0 T core g (hcolfree x hx) ha hb he).symm
 
 /-- **Embedding trees in Case C, many-vertex branch** (`Theorem_case_C`, MPS §7).
 `T` is a tree on `n+1` vertices; `core` is a set of at most `n/100` vertices such that
@@ -557,23 +658,28 @@ theorem caseC_many_vertex (n t k : ℕ) {V : Type*} [Fintype V] [DecidableEq V]
   have htL : 100 * L ≤ t := by
     rw [hLdef]
     omega
-  -- Select the colour-heavy side `V₁`: leaf-sum in `(n/20, 2n/3 + n/20]`.
+  -- Select the colour-heavy side `V₁`: leaf-sum in `(n/20, 2n/3]`, and `≤ n/10`
+  -- whenever `V₁` has at least two vertices (only the single huge vertex reaches `2n/3`).
   have hselect : ∃ V₁ ⊆ bigs, n / 20 < ∑ u ∈ V₁, (leafSet core anchor u).card ∧
-      ∑ u ∈ V₁, (leafSet core anchor u).card ≤ 2 * n / 3 + n / 20 := by
+      ∑ u ∈ V₁, (leafSet core anchor u).card ≤ 2 * n / 3 ∧
+      (2 ≤ V₁.card → ∑ u ∈ V₁, (leafSet core anchor u).card ≤ n / 10) := by
     by_cases hhuge : ∃ u ∈ bigs, n / 20 < (leafSet core anchor u).card
     · obtain ⟨u₀, hu₀b, hu₀⟩ := hhuge
-      refine ⟨{u₀}, Finset.singleton_subset_iff.mpr hu₀b, ?_, ?_⟩
+      refine ⟨{u₀}, Finset.singleton_subset_iff.mpr hu₀b, ?_, ?_, ?_⟩
       · rw [Finset.sum_singleton]
         exact hu₀
       · rw [Finset.sum_singleton]
         have := hsmalldeg' u₀
         omega
+      · intro hcard
+        rw [Finset.card_singleton] at hcard
+        omega
     · push Not at hhuge
       have hgt0 : n / 20 < ∑ u ∈ bigs, (leafSet core anchor u).card := by omega
       obtain ⟨V₁, hsub, hgt, hle⟩ := exists_subset_sum_between bigs
         (fun u => (leafSet core anchor u).card) (n / 20) hgt0 hhuge
-      exact ⟨V₁, hsub, hgt, by omega⟩
-  obtain ⟨V₁, hV₁bigs, hV₁gt, hV₁le⟩ := hselect
+      exact ⟨V₁, hsub, hgt, by omega, fun _ => by omega⟩
+  obtain ⟨V₁, hV₁bigs, hV₁gt, hV₁le, hV₁10⟩ := hselect
   set V₂ : Finset V := bigs \ V₁ with hV₂def
   have hV₂bigs : V₂ ⊆ bigs := Finset.sdiff_subset
   have hV₁V₂ : Disjoint V₁ V₂ := Finset.disjoint_sdiff
@@ -725,12 +831,16 @@ theorem caseC_many_vertex (n t k : ℕ) {V : Type*} [Fintype V] [DecidableEq V]
     exact le_trans htL (hbigs_t u hu)
   have hdeg_up : ∀ u : V, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3 := by
     intro u; rw [hls u]; exact hsmalldeg' u
+  have hsumV₁eq : ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card
+      = ∑ u ∈ V₁, (leafSet core anchor u).card :=
+    Finset.sum_congr rfl (fun u _ => by rw [hls u])
   -- Obtain the leaf placement and assemble via `extend_rainbow_leaves`.
   obtain ⟨pos, hposinj, hdisj, hcolinj, hcolfresh⟩ :=
     caseC_leaf_placement n k L hn0 hk T hT core anchor V₁ V₂ g idx leaves hmem_leaves hanchor
       hanchor_big a₀ ap₁ ap₂ len₀ (by rw [ha₀]) (by rw [hap₁def]) (by rw [hap₂def])
       (by rw [hlen₀def]) hV₁core hV₂core hV₁V₂ hcore hV₁L hV₂L hLdef hginjcore hgI₀ hgV₁ hgV₂
-      hblkV₁ hblkV₂ hdeg hdeg_up hn
+      hblkV₁ hblkV₂ hdeg hdeg_up (by rw [hsumV₁eq]; exact hV₁gt)
+      (by rw [hsumV₁eq]; exact hV₁le) (fun hc => by rw [hsumV₁eq]; exact hV₁10 hc) hn
   have hrbcore' : ∀ e₁ ∈ T.edgeSet, ∀ e₂ ∈ T.edgeSet, (∀ x ∈ leaves, x ∉ e₁) →
       (∀ x ∈ leaves, x ∉ e₂) →
       ndColouring n hn0 (Sym2.map g e₁) = ndColouring n hn0 (Sym2.map g e₂) →
