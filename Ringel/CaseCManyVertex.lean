@@ -6,6 +6,7 @@ Authors: Walid K. Elkersh
 import Ringel.Primitives
 import Ringel.SmallTree
 import Ringel.CaseCAssembly
+import Ringel.CaseCLeafPacking
 
 /-!
 # Case C with many high-degree vertices (`Theorem_case_C`, MPS §7)
@@ -504,14 +505,120 @@ private lemma caseC_place_and_colour (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
     (hV₁le : ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
     (hV₁small : 2 ≤ V₁.card →
       ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ n / 10)
-    (hn : 1000000 ≤ n) :
+    (hn : 1000000 ≤ n) (hcardV : Fintype.card V ≤ n + 1) :
     ∃ (pos : V → Fin (2 * n + 1)) (col : V → Fin n),
       Set.InjOn pos ↑leaves ∧
       (∀ x ∈ leaves, ∀ v, v ∉ leaves → pos x ≠ g v) ∧
       Set.InjOn col ↑leaves ∧
       (∀ x ∈ leaves, col x ∈ freeCols hn0 T core g) ∧
       (∀ x ∈ leaves, ndColouring n hn0 s(pos x, g (anchor x)) = col x) := by
-  sorry
+  classical
+  have hanchor_big' : ∀ x ∈ leaves, anchor x ∈ V₁ ∪ V₂ :=
+    fun x hx => Finset.mem_union.mpr (hanchor_big x hx)
+  have hrank1 : ∀ u ∈ V₁, idx u / L < V₁.card := fun u hu =>
+    Nat.div_lt_of_lt_mul (by rw [Nat.mul_comm]; exact (hgV₁ u hu).2)
+  have hrank2 : ∀ u ∈ V₂, idx u / L < V₂.card := fun u hu =>
+    Nat.div_lt_of_lt_mul (by rw [Nat.mul_comm]; exact (hgV₂ u hu).2)
+  have hL1 : 1 ≤ L := by omega
+  have hcrank := cRank_injOn V₁ V₂ idx L hV₁V₂ hrank1 hrank2 hblkV₁ hblkV₂
+  have hkey := cKey_injOn_leaves leaves V₁ V₂ idx L anchor hanchor_big' hcrank
+  have hdeg' : ∀ w ∈ V₁ ∪ V₂, 100 * L ≤ cDeg leaves anchor w := hdeg
+  have hV₁gt' : n / 20 < ∑ u ∈ V₁, cDeg leaves anchor u := hV₁gt
+  have hV₁le' : ∑ u ∈ V₁, cDeg leaves anchor u ≤ 2 * n / 3 := hV₁le
+  have hV₁small' : 2 ≤ V₁.card → ∑ u ∈ V₁, cDeg leaves anchor u ≤ n / 10 := hV₁small
+  have hV₁ne : V₁.Nonempty := by
+    rcases Finset.eq_empty_or_nonempty V₁ with h | h
+    · rw [h] at hV₁gt'; simp at hV₁gt'
+    · exact h
+  have hcorene : core.Nonempty := hV₁ne.mono hV₁core
+  set ds : List (Fin n) := (freeCols hn0 T core g).sort (· ≤ ·) with hds
+  have hds_sorted : ds.Pairwise (· < ·) := (Finset.sortedLT_sort _).pairwise
+  have hds_nodup : ds.Nodup := hds_sorted.imp fun h => ne_of_lt h
+  have hds_len : ds.length = (freeCols hn0 T core g).card := Finset.length_sort _
+  have hds_mem : ∀ i (hi : i < ds.length), ds[i]'hi ∈ freeCols hn0 T core g :=
+    fun i hi => (Finset.mem_sort (· ≤ ·)).mp (List.getElem_mem hi)
+  have hleavescompl : leaves = coreᶜ := by
+    ext v; rw [hmem_leaves, Finset.mem_compl]
+  have hleaves_card : leaves.card ≤ ds.length := by
+    rw [hds_len, hleavescompl, Finset.card_compl]
+    have hfree := card_freeCols_ge hn0 T hT core hcorene g
+    omega
+  set civ : V → ℕ := fun z => cCiv leaves V₁ V₂ idx L anchor z with hcivdef
+  have hcivlt : ∀ z ∈ leaves, civ z < ds.length := fun z hz =>
+    lt_of_lt_of_le (cCiv_lt_card leaves V₁ V₂ idx L anchor hz) hleaves_card
+  set col : V → Fin n := fun z => ds.getD (civ z) ⟨0, hn0⟩ with hcoldef
+  have hcolget : ∀ z (hz : z ∈ leaves), col z = ds[civ z]'(hcivlt z hz) := by
+    intro z hz; simp only [hcoldef]; rw [List.getD_eq_getElem _ _ (hcivlt z hz)]
+  set slack : ℕ := n - (freeCols hn0 T core g).card with hslackdef
+  have hslack : slack ≤ n / 100 := by
+    have hfree := card_freeCols_ge hn0 T hT core hcorene g
+    have hle : (freeCols hn0 T core g).card ≤ n := by
+      have := Finset.card_le_univ (freeCols hn0 T core g)
+      rwa [Fintype.card_fin] at this
+    rw [hslackdef]; omega
+  have hlb : ∀ z ∈ leaves, civ z ≤ (col z).val := by
+    intro z hz; rw [hcolget z hz]
+    have h := sorted_val_add_index_le hds_sorted (Nat.zero_le (civ z)) (hcivlt z hz)
+    simp only [Nat.sub_zero] at h; omega
+  have hgap : ∀ z ∈ leaves, ∀ z' ∈ leaves, civ z ≤ civ z' →
+      (col z).val + (civ z' - civ z) ≤ (col z').val := by
+    intro z hz z' hz' hle
+    rw [hcolget z hz, hcolget z' hz']
+    exact sorted_val_add_index_le hds_sorted hle (hcivlt z' hz')
+  have hub : ∀ z ∈ leaves, (col z).val ≤ civ z + slack := by
+    intro z hz; rw [hcolget z hz, hslackdef]
+    exact sort_val_le_index_add (freeCols hn0 T core g) (hcivlt z hz)
+  have hcolinj : Set.InjOn col ↑leaves := by
+    intro x hx y hy hxy
+    rw [Finset.mem_coe] at hx hy
+    rw [hcolget x hx, hcolget y hy] at hxy
+    have hciveq : civ x = civ y := (List.Nodup.getElem_inj_iff hds_nodup).mp hxy
+    exact cCiv_injOn_leaves leaves V₁ V₂ idx L anchor hkey
+      (Finset.mem_coe.mpr hx) (Finset.mem_coe.mpr hy) hciveq
+  set pos : V → Fin (2 * n + 1) := cPos V₁ V₂ idx L g anchor (fun z => (col z).val) with hposdef
+  refine ⟨pos, col, ?_, ?_, hcolinj, ?_, ?_⟩
+  · exact cPos_injOn leaves V₁ V₂ idx L anchor g col ap₁ ap₂ a₀ slack hn hap₁ hap₂ ha₀ hL1
+      hV₁V₂ hanchor_big' hkey hcrank hrank1 hrank2 hblkV₁ hblkV₂ hdeg' hgV₁ hgV₂ hV₁L hV₂L
+      hV₁le' hV₁small' hV₁gt' hlb hgap hub hslack hcolinj
+  · intro x hx v hv
+    have hvcore : v ∈ core := by
+      by_contra hnc; exact hv ((hmem_leaves v).mpr hnc)
+    exact cPos_off_core leaves V₁ V₂ idx L anchor g col ap₁ ap₂ a₀ slack core hn hap₁ hap₂ ha₀
+      len₀ hlen₀ hV₁V₂ hV₁core hV₂core hanchor_big' hcrank hrank1 hblkV₁ hdeg' hgV₁ hgV₂ hgI₀
+      hV₁L hV₂L hV₁le' hV₁small' hV₁gt' hlb hub hslack hx hvcore
+  · intro x hx; rw [hcolget x hx]; exact hds_mem (civ x) (hcivlt x hx)
+  · intro x hx
+    have hax := hanchor_big' x hx
+    have hlt := cPosVal_lt leaves V₁ V₂ idx L anchor g col ap₁ ap₂ a₀ slack hn hap₁ hap₂ ha₀
+      hV₁V₂ hanchor_big' hrank1 hgV₁ hgV₂ hV₁L hV₂L hV₁le' hV₁small' hV₁gt' hlb hub hslack hx
+    have hposval : (pos x).val = cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) x := by
+      rw [hposdef]; simp only [cPos]; exact Nat.mod_eq_of_lt hlt
+    by_cases hux : anchor x ∈ V₁
+    · by_cases h1x : idx (anchor x) / L < (V₁.card + 1) / 2
+      · obtain ⟨ht1eq, _, _⟩ := cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁
+          hrank1 hgV₁ hV₁L hV₁le' hub hslack hx hux h1x
+        have hle : (col x).val + 1 ≤ (g (anchor x)).val := by omega
+        have hpos_eq : pos x = ⟨(g (anchor x)).val - ((col x).val + 1), by omega⟩ := by
+          apply Fin.ext; rw [hposval]; simp only [cPosVal]; rw [if_pos ⟨hux, h1x⟩]
+        rw [hpos_eq]
+        exact ndColouring_attach_sub n hn0 (g (anchor x)) (col x) hle
+      · obtain ⟨ht2eq, ht2lt⟩ := cPosVal_type2 leaves V₁ V₂ idx L anchor g col ap₁ a₀ slack hn
+          hap₁ ha₀ hrank1 hgV₁ hV₁L hV₁small' hub hslack hx hux h1x
+        have hle : (g (anchor x)).val + (col x).val + 1 ≤ 2 * n := by rw [ha₀] at ht2lt; omega
+        have hpos_eq : pos x = ⟨(g (anchor x)).val + ((col x).val + 1), by omega⟩ := by
+          apply Fin.ext; rw [hposval]; simp only [cPosVal]
+          rw [if_neg (by rintro ⟨_, h⟩; exact h1x h)]
+        rw [hpos_eq, Sym2.eq_swap]
+        exact ndColouring_attach_add n hn0 (g (anchor x)) (col x) hle
+    · have hux2 : anchor x ∈ V₂ := (Finset.mem_union.mp hax).resolve_left hux
+      obtain ⟨ht3eq, _, ht3lt⟩ := cPosVal_type3 leaves V₁ V₂ idx L anchor g col ap₂ hn hap₂
+        hV₁V₂ hanchor_big' hrank1 hgV₂ hV₂L hV₁gt' hlb hx hux2
+      have hle : (g (anchor x)).val + (col x).val + 1 ≤ 2 * n := by omega
+      have hpos_eq : pos x = ⟨(g (anchor x)).val + ((col x).val + 1), by omega⟩ := by
+        apply Fin.ext; rw [hposval]; simp only [cPosVal]
+        rw [if_neg (by rintro ⟨h, _⟩; exact hux h)]
+      rw [hpos_eq, Sym2.eq_swap]
+      exact ndColouring_attach_add n hn0 (g (anchor x)) (col x) hle
 
 /-- **Leaf placement for Case C (many vertices).**  The geometric heart of the many-vertex
 case: given the core embedding `g` (interval layout `hgI₀`, `hgV₁`, `hgV₂`, one side vertex
@@ -560,7 +667,7 @@ private lemma caseC_leaf_placement (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
     (hV₁le : ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ 2 * n / 3)
     (hV₁small : 2 ≤ V₁.card →
       ∑ u ∈ V₁, (leaves.filter (fun x => anchor x = u)).card ≤ n / 10)
-    (hn : 1000000 ≤ n) :
+    (hn : 1000000 ≤ n) (hcardV : Fintype.card V ≤ n + 1) :
     ∃ pos : V → Fin (2 * n + 1),
       Set.InjOn pos ↑leaves ∧
       (∀ x ∈ leaves, ∀ v, v ∉ leaves → pos x ≠ g v) ∧
@@ -574,6 +681,7 @@ private lemma caseC_leaf_placement (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k)
     caseC_place_and_colour n k L hn0 hk T hT core anchor V₁ V₂ g idx leaves hmem_leaves
       hanchor hanchor_big a₀ ap₁ ap₂ len₀ ha₀ hap₁ hap₂ hlen₀ hV₁core hV₂core hV₁V₂ hcore
       hV₁L hV₂L hL hginjcore hgI₀ hgV₁ hgV₂ hblkV₁ hblkV₂ hdeg hdeg_up hV₁gt hV₁le hV₁small hn
+      hcardV
   refine ⟨pos, hposinj, hoff, ?_, ?_⟩
   · -- colour injectivity: the leaf-edge colour equals the (injective) free colour `col`
     intro x₁ h1 x₂ h2 hc
@@ -841,6 +949,7 @@ theorem caseC_many_vertex (n t k : ℕ) {V : Type*} [Fintype V] [DecidableEq V]
       (by rw [hlen₀def]) hV₁core hV₂core hV₁V₂ hcore hV₁L hV₂L hLdef hginjcore hgI₀ hgV₁ hgV₂
       hblkV₁ hblkV₂ hdeg hdeg_up (by rw [hsumV₁eq]; exact hV₁gt)
       (by rw [hsumV₁eq]; exact hV₁le) (fun hc => by rw [hsumV₁eq]; exact hV₁10 hc) hn
+      (le_of_eq hVcard)
   have hrbcore' : ∀ e₁ ∈ T.edgeSet, ∀ e₂ ∈ T.edgeSet, (∀ x ∈ leaves, x ∉ e₁) →
       (∀ x ∈ leaves, x ∉ e₂) →
       ndColouring n hn0 (Sym2.map g e₁) = ndColouring n hn0 (Sym2.map g e₂) →
