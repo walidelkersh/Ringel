@@ -5,6 +5,7 @@ import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Ringel.LittlewoodOfford
 import Ringel.ProbabilisticMatching
 import Ringel.CaseCOneVertex
+import Ringel.CaseCAssembly
 
 namespace Ringel
 
@@ -335,108 +336,102 @@ noncomputable def extend_map {V : Type*} (S : Set V) (n : ℕ)
     (f_leaves : S ↪ Fin (2 * n + 1)) : V → Fin (2 * n + 1) :=
   fun v => if h : v ∈ S then f_leaves ⟨v, h⟩ else f_core ⟨v, h⟩
 
-/-- Absorption matching: extend the core embedding by a leaf embedding `f_leaves` whose range
-avoids the core's vertices and whose glued map keeps the whole tree rainbow.
+/-- The anchor of a Case A leaf `x`: its unique tree-neighbour (arbitrary if `x` is not a leaf). -/
+noncomputable def caseALeafAnchor {V : Type*} (T : SimpleGraph V) (x : V) : V :=
+  if h : IsLeaf T x then h.choose else x
 
-**WARNING — this lemma is FALSE as stated, and its remaining `sorry` cannot be filled soundly.**
-It is retained (with the `sorry`) because it is load-bearing for the current Case A skeleton, but
-the honest situation is documented here and machine-checked in `Ringel/CaseAObstruction.lean`.
+lemma caseALeafAnchor_adj {V : Type*} (T : SimpleGraph V) {x : V} (hx : IsLeaf T x) :
+    T.Adj x (caseALeafAnchor T x) := by
+  rw [caseALeafAnchor, dif_pos hx]; exact hx.choose_spec.1
 
-The `sorry` sits behind `exists_absorption_matching_prob`, whose only real hypothesis is
-`prob_event (fun f_leaves => valid_absorption n hn T S f_core f_leaves) > 0`. By
-`prob_pos_of_exists` / `exists_of_prob_gt_zero` (in `Ringel/ProbBounds.lean`), over the finite,
-nonempty sample space of leaf embeddings this positivity is **equivalent** to the plain existence of
-an absorbing `f_leaves`; the difficulty is not probabilistic.
+lemma caseALeafAnchor_unique {V : Type*} (T : SimpleGraph V) {x y : V} (hx : IsLeaf T x)
+    (hxy : T.Adj x y) : y = caseALeafAnchor T x := by
+  rw [caseALeafAnchor, dif_pos hx]; exact hx.choose_spec.2 y hxy
 
-The conclusion glues `f_core` and `f_leaves` into a single injective vertex map (`extend_map`, via
-`extend_map_injective`) whose image edge-set must be rainbow under the `n`-colour `ndColouring`. A
-rainbow copy uses at most `n` distinct colours, so any successful absorption forces
-`T.edgeSet.ncard ≤ n` (`valid_caseA_absorption_edge_ncard_le`). But this lemma has **no** hypothesis
-bounding the number of edges — it omits `T.edgeSet.ncard = n` (available at its only call site in
-`extend_caseA_leaves`). Since a tree may have arbitrarily many edges while `n` is fixed, the
-conclusion cannot hold in general. This is proved as `exists_absorption_matching_statement_false`
-in `Ringel/CaseAObstruction.lean` via the concrete instance `T = pathGraph 3` (`2` edges), `n = 1`,
-leaves `S = {0, 2}`, which satisfies every hypothesis yet admits no absorbing embedding.
+/-- **Case A embedding data (the genuine MPS content of §4/§6).**
 
-A faithful, provable version would need to also carry the edge-count hypothesis and replace this
-`sorry` with the paper's genuine Hall/absorption argument. The `sorry` is thus a genuine,
-non-fillable gap under the current formulation; it is left in place rather than discharged by an
-unsound proof. This mirrors the honest treatment of the Case A Phase-1 gap
-(`bound_vertex_collisions`) and the Case B Phase-2 gap (`caseB_absorb_paths`). -/
-lemma exists_absorption_matching (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
-    (hT : T.IsTree) (S : Set V) (hS_leaves : ∀ v ∈ S, IsLeaf T v)
-    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
-    (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1)) :
-    -- A perfect matching exists between S and (Fin n \ UsedColors) into (Fin (2n+1) \ UsedVertices)
-    ∃ f_leaves : S ↪ Fin (2 * n + 1),
-      (Disjoint (Set.range f_leaves) (UsedVertices S f_core)) ∧
-      Set.InjOn (ndColouring n hn) (Sym2.map (extend_map S n f_core f_leaves) '' T.edgeSet) := by
-  haveI : Fintype (S ↪ Fin (2 * n + 1)) := Fintype.ofFinite _
-  have h := exists_absorption_matching_prob n hn T hT S hS_leaves hS_indep f_core sorry
-  exact h
+This is the one deep input to Case A: the *randomized rainbow near-embedding* of the core together
+with the *distributive-absorption* leaf placement. It asserts the existence of a core vertex map `g`
+and a leaf placement `pos` such that (i) `g` is injective off the leaves and rainbow on the core
+edges, (ii) `pos` is injective on the leaves and disjoint from the core image, and (iii) the leaf
+edges receive pairwise-distinct colours, all fresh with respect to the core. Combined with the
+(already proven) assembler `extend_rainbow_leaves`, these data yield a full rainbow copy of `T`.
 
-/-- Step 2 (Absorption): Extend the core embedding to include the leaves in $S$,
-yielding a full rainbow copy of $T$. -/
-lemma extend_caseA_leaves (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
-    (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
-    (hS_leaves : ∀ v ∈ S, IsLeaf T v)
-    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
-    (f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1))
-    (h_core_inj : Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet) :
-    HasRainbowCopy n T := by
-  -- The absorption lemma directly provides the matching
-  obtain ⟨f_leaves, h_disj, h_rainbow⟩ := exists_absorption_matching n hn T hT S hS_leaves hS_indep f_core
-  -- Assemble the global vertex map
-  let f_full := extend_map S n f_core f_leaves
-  -- Prove f_full is injective globally across V
-  have h_inj : Function.Injective f_full := by
-    intro v w h_eq
-    dsimp [f_full, extend_map] at h_eq
-    by_cases hv : v ∈ S <;> by_cases hw : w ∈ S
-    · -- Both in leaves
-      rw [dif_pos hv, dif_pos hw] at h_eq
-      have := f_leaves.injective h_eq
-      exact Subtype.ext_iff.mp this
-    · -- v in leaves, w in core
-      rw [dif_pos hv, dif_neg hw] at h_eq
-      have hv_in : f_leaves ⟨v, hv⟩ ∈ Set.range f_leaves := Set.mem_range_self _
-      have hw_in : f_core ⟨w, hw⟩ ∈ UsedVertices S f_core := Set.mem_range_self _
-      rw [h_eq] at hv_in
-      have := Set.disjoint_left.mp h_disj hv_in
-      exact False.elim (this hw_in)
-    · -- v in core, w in leaves
-      rw [dif_neg hv, dif_pos hw] at h_eq
-      have hw_in : f_leaves ⟨w, hw⟩ ∈ Set.range f_leaves := Set.mem_range_self _
-      have hv_in : f_core ⟨v, hv⟩ ∈ UsedVertices S f_core := Set.mem_range_self _
-      rw [←h_eq] at hw_in
-      have := Set.disjoint_left.mp h_disj hw_in
-      exact False.elim (this hv_in)
-    · -- Both in core
-      rw [dif_neg hv, dif_neg hw] at h_eq
-      have := f_core.injective h_eq
-      exact Subtype.ext_iff.mp this
-  -- The full map is an injective rainbow copy!
-  refine ⟨⟨f_full, h_inj⟩, fun _ => ?_⟩
-  rw [SimpleGraph.edgeSet_map]
-  exact h_rainbow
+Proving this lemma is exactly the content of the Montgomery–Pokrovskiy–Sudakov argument for Case A
+(the almost-embedding `Sketch_Near_Embedding`, imported from the earlier work, plus the finishing
+lemma `lem:finishA` of §4). It is the single genuine gap remaining in Case A; the surrounding
+glue below is fully proven. -/
+lemma caseA_embedding_data (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n)
+    {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
+    (leaves : Finset V)
+    (hleaf : ∀ x ∈ leaves, IsLeaf T x)
+    (hanchor : ∀ x ∈ leaves, caseALeafAnchor T x ∉ leaves)
+    (hindep : ∀ x ∈ leaves, ∀ y ∈ leaves, x ≠ y → ¬T.Adj x y)
+    (hleafsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card) :
+    ∃ g pos : V → Fin (2 * n + 1),
+      Set.InjOn g {v | v ∉ leaves} ∧
+      Set.InjOn pos ↑leaves ∧
+      (∀ x ∈ leaves, ∀ v, v ∉ leaves → pos x ≠ g v) ∧
+      (∀ e₁ ∈ T.edgeSet, ∀ e₂ ∈ T.edgeSet, (∀ x ∈ leaves, x ∉ e₁) →
+        (∀ x ∈ leaves, x ∉ e₂) →
+        ndColouring n hn (Sym2.map g e₁) = ndColouring n hn (Sym2.map g e₂) →
+        Sym2.map g e₁ = Sym2.map g e₂) ∧
+      (∀ x₁ ∈ leaves, ∀ x₂ ∈ leaves,
+        ndColouring n hn s(pos x₁, g (caseALeafAnchor T x₁))
+          = ndColouring n hn s(pos x₂, g (caseALeafAnchor T x₂)) → x₁ = x₂) ∧
+      (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
+        ndColouring n hn s(pos x, g (caseALeafAnchor T x)) ≠ ndColouring n hn (Sym2.map g e)) := by
+  sorry
 
 /-- **Case A rainbow copy (§4, §6, M1+M2).** For small $\delta > 0$ and large $n$, every Case A
-tree that is not Case C has a rainbow copy in the ND-coloured $K_{2n+1}$. -/
+tree that is not Case C has a rainbow copy in the ND-coloured $K_{2n+1}$.
+
+The proof reduces the goal, sorry-free, to the single deep input `caseA_embedding_data` (the MPS
+randomized near-embedding + distributive absorption) via the proven assembler
+`extend_rainbow_leaves`: it constructs the leaf set and anchor map, discharges all the structural
+side conditions (leaves are anchored outside the leaf set, every edge is a core edge or a
+leaf–anchor edge), and glues the resulting core embedding and leaf placement into a rainbow copy. -/
 theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
     (hS_size : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard)
     (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w) :
     HasRainbowCopy n T := by
-  have hn_pos : 0 < n := by linarith
-  -- 1. Embed the core (T \ S)
-  -- The general Case A → small-core reduction (the actual MPS random-embedding/absorption content)
-  -- is not available here: Case A only guarantees `|S| ≥ ⌊δ⁶n⌋`, far below the `|S| ≥ (n-2)/3`
-  -- needed for `3·|Sᶜ| ≤ 2n+5`. This is the genuine remaining Phase-1 gap.
-  have hsmall_core : 3 * (Sᶜ : Set V).ncard ≤ 2 * n + 5 := sorry
-  obtain ⟨f_core, h_core_inj⟩ := random_embed_core n hn T hT S hsmall_core
-  -- 2. Extend the embedding to cover the leaves S
-  exact extend_caseA_leaves δ hδ n hn T hT hcard S hS_leaves hS_indep f_core h_core_inj
+  classical
+  have hSfin : S.Finite := S.toFinite
+  set leaves := hSfin.toFinset with hlv
+  have hmem : ∀ x, x ∈ leaves ↔ x ∈ S := fun x => by rw [hlv]; exact hSfin.mem_toFinset
+  have hleaf : ∀ x ∈ leaves, IsLeaf T x := fun x hx => hS_leaves x ((hmem x).mp hx)
+  have hindep : ∀ x ∈ leaves, ∀ y ∈ leaves, x ≠ y → ¬T.Adj x y :=
+    fun x hx y hy hne => hS_indep x ((hmem x).mp hx) y ((hmem y).mp hy) hne
+  have hanchor : ∀ x ∈ leaves, caseALeafAnchor T x ∉ leaves := by
+    intro x hx hax
+    have hadj := caseALeafAnchor_adj T (hleaf x hx)
+    exact hindep x hx _ hax hadj.ne hadj
+  have hedges : ∀ e ∈ T.edgeSet,
+      (∀ x ∈ leaves, x ∉ e) ∨ ∃ x ∈ leaves, e = s(x, caseALeafAnchor T x) := by
+    intro e he
+    induction e using Sym2.ind with
+    | _ a b =>
+      by_cases ha : a ∈ leaves
+      · exact Or.inr ⟨a, ha, by
+          rw [caseALeafAnchor_unique T (hleaf a ha) (show T.Adj a b from he)]⟩
+      · by_cases hb : b ∈ leaves
+        · refine Or.inr ⟨b, hb, ?_⟩
+          rw [Sym2.eq_swap,
+            caseALeafAnchor_unique T (hleaf b hb) (show T.Adj b a from (show T.Adj a b from he).symm)]
+        · refine Or.inl ?_
+          intro x hx hxe
+          rcases Sym2.mem_iff.mp hxe with rfl | rfl
+          · exact ha hx
+          · exact hb hx
+  have hleafsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card := by
+    rw [hlv, ← Set.ncard_eq_toFinset_card S hSfin]; exact hS_size
+  obtain ⟨g, pos, hginj, hposinj, hdisj, hrb, hinj, hfresh⟩ :=
+    caseA_embedding_data δ hδ n hn hn_large T hT hcard leaves hleaf hanchor hindep hleafsize
+  obtain ⟨f, hf⟩ := extend_rainbow_leaves n hn T leaves (caseALeafAnchor T) hanchor hedges
+    g pos hginj hposinj hdisj hrb hinj hfresh
+  exact ⟨f, fun _ => hf⟩
 
 /-- `∀ᶠ` wrapper around `caseA_rainbow`, suitable for `filter_upwards` in the spine. -/
 theorem caseA_rainbow_eventually (δ : ℝ) (hδ : 0 < δ) :

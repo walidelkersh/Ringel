@@ -6,7 +6,6 @@ defaultTargets = ["Ringel"]
 [leanOptions]
 pp.unicode.fun = true # pretty-prints `fun a ↦ b`
 relaxedAutoImplicit = false
-"linter.all" = false
 maxSynthPendingDepth = 3
 
 [[require]]
