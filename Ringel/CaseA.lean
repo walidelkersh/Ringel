@@ -194,11 +194,43 @@ lemma exists_embed_from_signs (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T :
     root root_val C σ
 
 
-/-- The vertex collision probability bound using the Littlewood-Offord / random walk logic.
-Since the tree paths sum independent random edge signs ±1, the probability that any two
-distinct vertices evaluate to the same color in Fin (2n+1) is at most O(n^{-1/2}).
-By the union bound over all pairs in S^c, the total collision probability is < 1,
-hence an injective sign assignment exists. -/
+/-- The vertex collision "bound".
+
+**WARNING — this lemma is FALSE as stated, and its remaining `sorry` cannot be filled soundly.**
+It is retained (with the `sorry`) because it is load-bearing for the current Case A skeleton, but
+the honest situation is documented here.
+
+The embedding produced by `tree_embed`/`exists_embed_from_signs` sends each core vertex `v` to
+`root_val + Σ ±(C(e)+1)` (signed sum of edge-lengths `C(e)+1 ∈ {1,…,n}` along the unique root→v
+path), with the signs determined by `σ`. Injectivity of this map (for the *fixed* colouring `C`
+from the hypotheses) is equivalent to: choosing signs so that all core vertices land on distinct
+residues of `ℤ/(2n+1)`.
+
+1. **False for a fixed `C`.** Take the 5-edge path core (vertices `v₀,…,v₅`) with `n = 7`
+   (so the modulus is `2·7+1 = 15`), rooted at `v₀`, and let `C` assign the edge-lengths
+   `(C(eᵢ)+1) = (2,1,3,4,7)` along the path (i.e. `C`-values `(1,0,2,3,6)`, all distinct in
+   `Fin 7`). One checks over all `2⁵ = 32` sign patterns that *none* makes the six partial sums
+   `0, ±2, …` pairwise distinct in `ℤ/15`. Hence for this instance
+   `prob_event (… Injective …) = 0`, contradicting the required `> 0`. Such a core arises from a
+   genuine 7-edge tree (the path plus two non-adjacent pendant leaves `S`), so all hypotheses of
+   the lemma are met. (This was verified by exhaustive enumeration.)
+
+2. **The union-bound reasoning in the old docstring is invalid.** With random signs the *expected*
+   number of colliding vertex pairs is `Θ(n)` (each pair collides with probability `≈ 1/(2n+1)`
+   and there are `Θ(n²)` pairs), not `o(1)`; a per-pair `O(n^{-1/2})` Littlewood–Offord bound is
+   far too weak to sum below `1`.
+
+3. **The natural correction is an open/hard problem, not a wiring fix.** The only faithful repair is
+   to also *choose* the edge-length assignment `C` (i.e. prove `∃ C σ, Injective …`). That is
+   exactly the statement that the core tree admits a cyclic (ρ-type) labelling of `K_{2n+1}` — the
+   cyclic-decomposition route to Ringel's conjecture, which the Montgomery–Pokrovskiy–Sudakov
+   proof does **not** establish (their argument is a non-cyclic absorption method). Closing Case A
+   soundly therefore requires replacing this `tree_embed`-based skeleton with the paper's actual
+   absorption construction; it cannot be obtained from the Littlewood–Offord infrastructure in
+   `Ringel/LittlewoodOfford.lean`.
+
+The `sorry` below is thus a genuine, non-fillable gap under the current formulation; it is left in
+place rather than discharged by an unsound proof. -/
 lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
     (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
@@ -206,8 +238,8 @@ lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T :
     (C : CoreColors n T S) :
     ∃ σ : CoreSigns T S, Function.Injective (Classical.choose (exists_embed_from_signs n hn T hT S hS_leaves hS_indep root root_val C σ)) := by
   haveI : Fintype (CoreSigns T S) := by unfold CoreSigns; exact Fintype.ofFinite _
-  -- `h_exists` is discharged constructively by `exists_embed_from_signs` (proven via `tree_embed`);
-  -- the remaining `sorry` is the genuine Littlewood–Offord anticoncentration bound (`h_prob`).
+  -- See the docstring: with a FIXED colouring `C` this goal (`prob_event … > 0`) is false in
+  -- general (explicit 5-edge-path counterexample, n = 7), so `h_prob` cannot be discharged.
   exact bound_vertex_collisions_prob n hn T hT S hS_leaves hS_indep root root_val C
     (fun σ => exists_embed_from_signs n hn T hT S hS_leaves hS_indep root root_val C σ) sorry
 
