@@ -16,7 +16,7 @@ which analytically implies the full graph decomposition.
 -/
 theorem ringel_conjecture_large_proof (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_pos : 0 < n) (hn_large : 1 < n)
     {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
-    (hInput : CaseBEmbeddingInput n T) :
+    (hInputA : CaseAEmbeddingInput n T) (hInput : CaseBEmbeddingInput n T) :
     ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
       Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
       ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
@@ -26,7 +26,7 @@ theorem ringel_conjecture_large_proof (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_po
     · exact caseC_embedding_exists δ hδ n hn_pos T hT hcard hC
     · rcases tree_split δ hδ n T hT hcard with hA | hB | hC2
       · rcases hA with ⟨S, hS_leaves, hS_indep, hS_size⟩
-        exact caseA_rainbow δ hδ n hn_pos hn_large T hT hcard S hS_leaves hS_size hS_indep
+        exact caseA_rainbow δ hδ n hn_pos hn_large T hT hcard S hS_leaves hS_size hS_indep hInputA
       · exact caseB_embedding_exists δ hδ n hn_pos T hT hcard hB hC hInput
       · exact False.elim (hC hC2)
   exact decomp_of_rainbow_copy T hT hcard h_rainbow

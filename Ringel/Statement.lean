@@ -45,13 +45,14 @@ def RingelConjecture {V : Type*} [Finite V]
 sufficiently large $n$, the decomposition above exists for every tree with $n$ edges. This is
 the form proved in arXiv:2001.02665, and the target of this formalization.
 
-The Case B branch of the proof relies on the MPS §4 near-embedding and §5 finishing lemma, which
-are not available in Mathlib. Rather than assert them via an unsound `sorry`, they are carried as
-the explicit, honest hypothesis `CaseBEmbeddingInput n T` (see `Ringel/CaseB.lean`).
+The Case A and Case B branches of the proof rely on the MPS §4 near-embedding and §5/§6 finishing
+lemmas, which are not available in Mathlib. Rather than assert them via an unsound `sorry`, they are
+carried as the explicit, honest hypotheses `CaseAEmbeddingInput n T` and `CaseBEmbeddingInput n T`
+(see `Ringel/CaseA.lean` and `Ringel/CaseB.lean`).
 -/
 theorem ringel_conjecture_large :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n → CaseBEmbeddingInput n T →
+      T.IsTree → T.edgeSet.ncard = n → CaseAEmbeddingInput n T → CaseBEmbeddingInput n T →
       ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
         Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
         ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by

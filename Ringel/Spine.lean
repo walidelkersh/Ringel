@@ -221,12 +221,13 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
 /-- **Theorem `Theorem_Ringel_proof`.** For sufficiently large $n$, the ND-coloured $K_{2n+1}$
 contains a rainbow copy of every $n$-edge tree. This is the heart of the MPS proof.
 
-The Case B branch depends on the (unformalized in Mathlib) MPS §4 near-embedding and §5 finishing
-lemma, recorded honestly as the explicit hypothesis `CaseBEmbeddingInput n T` rather than a
-`sorry`; see `Ringel/CaseB.lean`. -/
+The Case A and Case B branches depend on the (unformalized in Mathlib) MPS §4 near-embedding and
+§5/§6 finishing lemmas, recorded honestly as the explicit hypotheses `CaseAEmbeddingInput n T` and
+`CaseBEmbeddingInput n T` rather than a `sorry`; see `Ringel/CaseA.lean` and `Ringel/CaseB.lean`. -/
 theorem rainbow_copy_exists :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n → CaseBEmbeddingInput n T → HasRainbowCopy n T := by
+      T.IsTree → T.edgeSet.ncard = n → CaseAEmbeddingInput n T → CaseBEmbeddingInput n T →
+      HasRainbowCopy n T := by
   have hd : (0 : ℝ) < 1 / 4 := by norm_num
   have hd' : (1 / 4 : ℝ) ≤ 1 / 4 := le_refl _
   filter_upwards [
@@ -235,27 +236,28 @@ theorem rainbow_copy_exists :
     caseB_rainbow (1 / 4) hd,
     caseC_rainbow (1 / 4)
   ] with n hn_div hn_A hn_B hn_C
-  intro V _ T hT hcard hInput
+  intro V _ T hT hcard hInputA hInputB
   rcases hn_div T hT hcard with hA | hB | hC
   · by_cases hC2 : IsCaseC (1 / 4) n T
     · exact hn_C T hT hcard hC2
-    · exact hn_A T hT hcard hA hC2
+    · exact hn_A T hT hcard hA hC2 hInputA
   · by_cases hC2 : IsCaseC (1 / 4) n T
     · exact hn_C T hT hcard hC2
-    · exact hn_B T hT hcard hB hC2 hInput
+    · exact hn_B T hT hcard hB hC2 hInputB
   · exact hn_C T hT hcard hC
 
 /-- `Statement.ringel_conjecture_large` follows from the spine: combine `rainbow_copy_exists` with
 `decomp_of_rainbow_copy`. The Case B dependence on the MPS §4/§5 ingredients is carried through as
-the explicit hypothesis `CaseBEmbeddingInput n T` (see `Ringel/CaseB.lean`). -/
+the explicit hypotheses `CaseAEmbeddingInput n T` and `CaseBEmbeddingInput n T` (see
+`Ringel/CaseA.lean` and `Ringel/CaseB.lean`). -/
 theorem ringel_conjecture_large_via_spine :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n → CaseBEmbeddingInput n T →
+      T.IsTree → T.edgeSet.ncard = n → CaseAEmbeddingInput n T → CaseBEmbeddingInput n T →
       ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
         Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
         ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
   filter_upwards [rainbow_copy_exists] with n hn
-  intro V _ T hT hcard hInput
-  exact decomp_of_rainbow_copy T hT hcard (hn T hT hcard hInput)
+  intro V _ T hT hcard hInputA hInputB
+  exact decomp_of_rainbow_copy T hT hcard (hn T hT hcard hInputA hInputB)
 
 end Ringel

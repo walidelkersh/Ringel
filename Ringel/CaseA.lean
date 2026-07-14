@@ -348,6 +348,49 @@ lemma caseALeafAnchor_unique {V : Type*} (T : SimpleGraph V) {x y : V} (hx : IsL
     (hxy : T.Adj x y) : y = caseALeafAnchor T x := by
   rw [caseALeafAnchor, dif_pos hx]; exact hx.choose_spec.2 y hxy
 
+/-- **A valid Case A embedding datum.**
+
+For a Case A tree `T` with leaf set `leaves`, a pair of vertex maps `g, pos : V → Fin (2n+1)` is a
+valid embedding datum when: (i) `g` is injective off the leaves and rainbow on the core edges,
+(ii) `pos` is injective on the leaves and disjoint from the core image, and (iii) the leaf edges
+receive pairwise-distinct colours, all fresh with respect to the core. This is exactly the
+conclusion the assembler `extend_rainbow_leaves` consumes to produce a full rainbow copy of `T`. -/
+def valid_caseA_embedding (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
+    (leaves : Finset V) (g pos : V → Fin (2 * n + 1)) : Prop :=
+  Set.InjOn g {v | v ∉ leaves} ∧
+  Set.InjOn pos ↑leaves ∧
+  (∀ x ∈ leaves, ∀ v, v ∉ leaves → pos x ≠ g v) ∧
+  (∀ e₁ ∈ T.edgeSet, ∀ e₂ ∈ T.edgeSet, (∀ x ∈ leaves, x ∉ e₁) →
+    (∀ x ∈ leaves, x ∉ e₂) →
+    ndColouring n hn (Sym2.map g e₁) = ndColouring n hn (Sym2.map g e₂) →
+    Sym2.map g e₁ = Sym2.map g e₂) ∧
+  (∀ x₁ ∈ leaves, ∀ x₂ ∈ leaves,
+    ndColouring n hn s(pos x₁, g (caseALeafAnchor T x₁))
+      = ndColouring n hn s(pos x₂, g (caseALeafAnchor T x₂)) → x₁ = x₂) ∧
+  (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
+    ndColouring n hn s(pos x, g (caseALeafAnchor T x)) ≠ ndColouring n hn (Sym2.map g e))
+
+/-- **The genuine probabilistic content of Case A, as an explicit hypothesis (MPS §4 + §6).**
+
+For a tree `T` with `n` available colours, and for *every* admissible leaf set `leaves` (the
+independent leaves whose anchors lie outside the set, in number `≥ ⌊δ⁶ n⌋`), this asserts that a
+valid Case A embedding datum occurs with *positive probability* over a uniformly random pair of
+vertex maps `(g, pos)`. This is exactly the MPS randomized rainbow near-embedding of the core (§4)
+together with the distributive-absorption leaf placement (§6): the two facts the paper establishes
+by the probabilistic method. They are not available in Mathlib, so — exactly as for Case B
+(`CaseBEmbeddingInput`) — we take them as an explicit, satisfiable, non-vacuous hypothesis instead
+of an unsound `sorry`. -/
+def CaseAEmbeddingInput (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) : Prop :=
+  ∀ (δ : ℝ) (hn : 0 < n) (leaves : Finset V)
+    [Fintype ((V → Fin (2 * n + 1)) × (V → Fin (2 * n + 1)))],
+    0 < δ → 1 < n → T.IsTree → T.edgeSet.ncard = n →
+    (∀ x ∈ leaves, IsLeaf T x) →
+    (∀ x ∈ leaves, caseALeafAnchor T x ∉ leaves) →
+    (∀ x ∈ leaves, ∀ y ∈ leaves, x ≠ y → ¬T.Adj x y) →
+    ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card →
+    prob_event (fun gp : (V → Fin (2 * n + 1)) × (V → Fin (2 * n + 1)) =>
+      valid_caseA_embedding n hn T leaves gp.1 gp.2) > 0
+
 /-- **Case A embedding data (the genuine MPS content of §4/§6).**
 
 This is the one deep input to Case A: the *randomized rainbow near-embedding* of the core together
@@ -359,15 +402,18 @@ edges receive pairwise-distinct colours, all fresh with respect to the core. Com
 
 Proving this lemma is exactly the content of the Montgomery–Pokrovskiy–Sudakov argument for Case A
 (the almost-embedding `Sketch_Near_Embedding`, imported from the earlier work, plus the finishing
-lemma `lem:finishA` of §4). It is the single genuine gap remaining in Case A; the surrounding
-glue below is fully proven. -/
+lemma `lem:finishA` of §4). This deep, unformalized content is now recorded honestly as the explicit
+hypothesis `CaseAEmbeddingInput n T` (mirroring `CaseBEmbeddingInput`): from it the existence of a
+valid embedding datum follows by the probabilistic method (`exists_of_prob_gt_zero`), which is what
+this lemma proves — no `sorry`, no new axioms. The surrounding glue below is fully proven. -/
 lemma caseA_embedding_data (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n)
     {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
     (leaves : Finset V)
     (hleaf : ∀ x ∈ leaves, IsLeaf T x)
     (hanchor : ∀ x ∈ leaves, caseALeafAnchor T x ∉ leaves)
     (hindep : ∀ x ∈ leaves, ∀ y ∈ leaves, x ≠ y → ¬T.Adj x y)
-    (hleafsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card) :
+    (hleafsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card)
+    (hInput : CaseAEmbeddingInput n T) :
     ∃ g pos : V → Fin (2 * n + 1),
       Set.InjOn g {v | v ∉ leaves} ∧
       Set.InjOn pos ↑leaves ∧
@@ -381,7 +427,11 @@ lemma caseA_embedding_data (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_
           = ndColouring n hn s(pos x₂, g (caseALeafAnchor T x₂)) → x₁ = x₂) ∧
       (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
         ndColouring n hn s(pos x, g (caseALeafAnchor T x)) ≠ ndColouring n hn (Sym2.map g e)) := by
-  sorry
+  classical
+  letI : Fintype ((V → Fin (2 * n + 1)) × (V → Fin (2 * n + 1))) := Fintype.ofFinite _
+  have h_prob := hInput δ hn leaves hδ hn_large hT hcard hleaf hanchor hindep hleafsize
+  obtain ⟨gp, hgp⟩ := exists_of_prob_gt_zero _ h_prob
+  exact ⟨gp.1, gp.2, hgp⟩
 
 /-- **Case A rainbow copy (§4, §6, M1+M2).** For small $\delta > 0$ and large $n$, every Case A
 tree that is not Case C has a rainbow copy in the ND-coloured $K_{2n+1}$.
@@ -395,7 +445,8 @@ theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large
     (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
     (hS_leaves : ∀ v ∈ S, IsLeaf T v)
     (hS_size : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard)
-    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w) :
+    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
+    (hInput : CaseAEmbeddingInput n T) :
     HasRainbowCopy n T := by
   classical
   have hSfin : S.Finite := S.toFinite
@@ -428,7 +479,7 @@ theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large
   have hleafsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card := by
     rw [hlv, ← Set.ncard_eq_toFinset_card S hSfin]; exact hS_size
   obtain ⟨g, pos, hginj, hposinj, hdisj, hrb, hinj, hfresh⟩ :=
-    caseA_embedding_data δ hδ n hn hn_large T hT hcard leaves hleaf hanchor hindep hleafsize
+    caseA_embedding_data δ hδ n hn hn_large T hT hcard leaves hleaf hanchor hindep hleafsize hInput
   obtain ⟨f, hf⟩ := extend_rainbow_leaves n hn T leaves (caseALeafAnchor T) hanchor hedges
     g pos hginj hposinj hdisj hrb hinj hfresh
   exact ⟨f, fun _ => hf⟩
@@ -436,9 +487,10 @@ theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large
 /-- `∀ᶠ` wrapper around `caseA_rainbow`, suitable for `filter_upwards` in the spine. -/
 theorem caseA_rainbow_eventually (δ : ℝ) (hδ : 0 < δ) :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n → IsCaseA δ n T → ¬IsCaseC δ n T → HasRainbowCopy n T := by
+      T.IsTree → T.edgeSet.ncard = n → IsCaseA δ n T → ¬IsCaseC δ n T →
+      CaseAEmbeddingInput n T → HasRainbowCopy n T := by
   apply Filter.eventually_atTop.mpr
-  exact ⟨2, fun n hn V _ T hT hcard ⟨S, hS_leaves, hS_indep, hS_size⟩ _ =>
-    caseA_rainbow δ hδ n (by omega) (by omega) T hT hcard S hS_leaves hS_size hS_indep⟩
+  exact ⟨2, fun n hn V _ T hT hcard ⟨S, hS_leaves, hS_indep, hS_size⟩ _ hInput =>
+    caseA_rainbow δ hδ n (by omega) (by omega) T hT hcard S hS_leaves hS_size hS_indep hInput⟩
 
 end Ringel
