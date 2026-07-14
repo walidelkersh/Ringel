@@ -377,9 +377,34 @@ noncomputable def extend_map {V : Type*} (S : Set V) (n : ℕ)
     (f_leaves : S ↪ Fin (2 * n + 1)) : V → Fin (2 * n + 1) :=
   fun v => if h : v ∈ S then f_leaves ⟨v, h⟩ else f_core ⟨v, h⟩
 
-/-- Hall's condition bounds for the absorption bipartite graph.
-For each leaf in S and available color, we match them if the resulting vertex is not in UsedVertices.
-MPS proves this matching exists because the core is relatively small. -/
+/-- Absorption matching: extend the core embedding by a leaf embedding `f_leaves` whose range
+avoids the core's vertices and whose glued map keeps the whole tree rainbow.
+
+**WARNING — this lemma is FALSE as stated, and its remaining `sorry` cannot be filled soundly.**
+It is retained (with the `sorry`) because it is load-bearing for the current Case A skeleton, but
+the honest situation is documented here and machine-checked in `Ringel/CaseAObstruction.lean`.
+
+The `sorry` sits behind `exists_absorption_matching_prob`, whose only real hypothesis is
+`prob_event (fun f_leaves => valid_absorption n hn T S f_core f_leaves) > 0`. By
+`prob_pos_of_exists` / `exists_of_prob_gt_zero` (in `Ringel/ProbBounds.lean`), over the finite,
+nonempty sample space of leaf embeddings this positivity is **equivalent** to the plain existence of
+an absorbing `f_leaves`; the difficulty is not probabilistic.
+
+The conclusion glues `f_core` and `f_leaves` into a single injective vertex map (`extend_map`, via
+`extend_map_injective`) whose image edge-set must be rainbow under the `n`-colour `ndColouring`. A
+rainbow copy uses at most `n` distinct colours, so any successful absorption forces
+`T.edgeSet.ncard ≤ n` (`valid_caseA_absorption_edge_ncard_le`). But this lemma has **no** hypothesis
+bounding the number of edges — it omits `T.edgeSet.ncard = n` (available at its only call site in
+`extend_caseA_leaves`). Since a tree may have arbitrarily many edges while `n` is fixed, the
+conclusion cannot hold in general. This is proved as `exists_absorption_matching_statement_false`
+in `Ringel/CaseAObstruction.lean` via the concrete instance `T = pathGraph 3` (`2` edges), `n = 1`,
+leaves `S = {0, 2}`, which satisfies every hypothesis yet admits no absorbing embedding.
+
+A faithful, provable version would need to also carry the edge-count hypothesis and replace this
+`sorry` with the paper's genuine Hall/absorption argument. The `sorry` is thus a genuine,
+non-fillable gap under the current formulation; it is left in place rather than discharged by an
+unsound proof. This mirrors the honest treatment of the Case A Phase-1 gap
+(`bound_vertex_collisions`) and the Case B Phase-2 gap (`caseB_absorb_paths`). -/
 lemma exists_absorption_matching (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (S : Set V) (hS_leaves : ∀ v ∈ S, IsLeaf T v)
     (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)

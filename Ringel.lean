@@ -9,4 +9,5 @@ import Ringel.CaseCAssembly
 import Ringel.CaseA
 import Ringel.CaseB
 import Ringel.CaseBObstruction
+import Ringel.CaseAObstruction
 import Ringel.Statement
