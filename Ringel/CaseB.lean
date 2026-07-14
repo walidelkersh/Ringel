@@ -121,7 +121,33 @@ which together is exactly `valid_caseB_absorption`. In the paper this finishing 
 The hypothesis `h_core` records the genuine dependence of the finishing step on the core embedding
 (the leftover colour pool is `C(K_{2n+1})` minus the colours used by the core). The single
 remaining `sorry` is the probabilistic content of `lem:finishB`: that `valid_caseB_absorption`
-holds with positive probability over the random choice of `f_paths`. -/
+holds with positive probability over the random choice of `f_paths`.
+
+**Status of this `sorry` (honest assessment; see `Ringel/CaseBObstruction.lean`).**
+By `prob_pos_of_exists` / `exists_of_prob_gt_zero` (in `Ringel/ProbBounds.lean`), over the finite,
+nonempty sample space of embeddings the positivity goal fed to `exists_absorption_paths_prob` is
+*equivalent* to the plain existence `∃ f_paths, valid_caseB_absorption …`. So the difficulty is not
+probabilistic.
+
+As currently stated this lemma is in fact **false**, because it lacks any hypothesis bounding the
+number of edges of `T` by the number `n` of available colours. `valid_caseB_absorption` glues
+`f_core` and `f_paths` into a single injective vertex map whose image edge-set is rainbow under the
+`n`-colour `ndColouring`; a rainbow copy uses at most `n` distinct colours, so any successful
+absorption forces `T.edgeSet.ncard ≤ n` (this is the machine-checked
+`valid_caseB_absorption_edge_ncard_le`). Yet none of the hypotheses here supply that bound:
+`caseB_absorb_paths` omits the edge-count hypothesis `T.edgeSet.ncard = n` (and the paper's regime
+hypotheses `h_len`, `h_count`, `¬IsCaseC`, large `n`) that *are* available at its only call site
+inside `caseB_embedding_exists`. The concrete counterexample `T = pathGraph 3` (a tree with `2`
+edges), `n = 1`, single bare path `[0,1,2]`, satisfies every hypothesis yet admits no absorbing
+embedding — this is proved in full in `caseB_absorb_paths_statement_false`.
+
+Even the faithful, `hcard`-corrected version is the genuine §5 finishing lemma `lem:finishB`, whose
+proof requires the paper's absorption machinery (colour switchers `lem-switchpath`, path absorbers
+`lem-absorbpath`, distributive absorption `absorbBmacro`, the colour cover `colourcoverB` /
+`finishingB`) and a *controlled* (quasirandom) core embedding rather than the arbitrary `f_core`
+taken here — a large development, not a wiring fix, and absent from Mathlib. It is therefore left
+in place rather than closed by an unsound proof, mirroring the honest treatment of the Phase-1 gap
+(`caseB_embed_core`) and the Case A gap (`bound_vertex_collisions`). -/
 lemma caseB_absorb_paths (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
     (hT : T.IsTree) (paths : List (List V))
     (h_bare : ∀ P ∈ paths, IsBarePath T P)
