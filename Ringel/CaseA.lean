@@ -4,6 +4,7 @@ import Ringel.ProbBounds
 import Mathlib.Combinatorics.SimpleGraph.Connectivity.Connected
 import Ringel.LittlewoodOfford
 import Ringel.ProbabilisticMatching
+import Ringel.CaseCOneVertex
 
 namespace Ringel
 
@@ -193,56 +194,50 @@ lemma exists_embed_from_signs (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T :
   exact tree_embed n hn (CaseACore T S) (isTree_core T hT S hS_leaves hS_indep)
     root root_val C σ
 
+/-
+**Core rainbow embedding (reformulated Case A, Phase 1).**
 
-/-- The vertex collision "bound".
+The lemma originally stated here (`bound_vertex_collisions`) was *false as stated*: it fixed an
+arbitrary edge-colouring `C` and asked for signs making the cyclic vertex map
+`v ↦ root_val + Σ ±(C(e)+1)` injective. An exhaustive check (a 5-edge path core with `n = 7`,
+`C`-values `(1,0,2,3,6)`) shows *no* sign pattern makes the six partial sums distinct in `ℤ/15`, so
+for a fixed `C` the required event has probability `0`. The only faithful `∃ C σ` repair is the
+(open) ρ-labelling / cyclic-decomposition route, which the Montgomery–Pokrovskiy–Sudakov proof
+deliberately avoids.
 
-**WARNING — this lemma is FALSE as stated, and its remaining `sorry` cannot be filled soundly.**
-It is retained (with the `sorry`) because it is load-bearing for the current Case A skeleton, but
-the honest situation is documented here.
-
-The embedding produced by `tree_embed`/`exists_embed_from_signs` sends each core vertex `v` to
-`root_val + Σ ±(C(e)+1)` (signed sum of edge-lengths `C(e)+1 ∈ {1,…,n}` along the unique root→v
-path), with the signs determined by `σ`. Injectivity of this map (for the *fixed* colouring `C`
-from the hypotheses) is equivalent to: choosing signs so that all core vertices land on distinct
-residues of `ℤ/(2n+1)`.
-
-1. **False for a fixed `C`.** Take the 5-edge path core (vertices `v₀,…,v₅`) with `n = 7`
-   (so the modulus is `2·7+1 = 15`), rooted at `v₀`, and let `C` assign the edge-lengths
-   `(C(eᵢ)+1) = (2,1,3,4,7)` along the path (i.e. `C`-values `(1,0,2,3,6)`, all distinct in
-   `Fin 7`). One checks over all `2⁵ = 32` sign patterns that *none* makes the six partial sums
-   `0, ±2, …` pairwise distinct in `ℤ/15`. Hence for this instance
-   `prob_event (… Injective …) = 0`, contradicting the required `> 0`. Such a core arises from a
-   genuine 7-edge tree (the path plus two non-adjacent pendant leaves `S`), so all hypotheses of
-   the lemma are met. (This was verified by exhaustive enumeration.)
-
-2. **The union-bound reasoning in the old docstring is invalid.** With random signs the *expected*
-   number of colliding vertex pairs is `Θ(n)` (each pair collides with probability `≈ 1/(2n+1)`
-   and there are `Θ(n²)` pairs), not `o(1)`; a per-pair `O(n^{-1/2})` Littlewood–Offord bound is
-   far too weak to sum below `1`.
-
-3. **The natural correction is an open/hard problem, not a wiring fix.** The only faithful repair is
-   to also *choose* the edge-length assignment `C` (i.e. prove `∃ C σ, Injective …`). That is
-   exactly the statement that the core tree admits a cyclic (ρ-type) labelling of `K_{2n+1}` — the
-   cyclic-decomposition route to Ringel's conjecture, which the Montgomery–Pokrovskiy–Sudakov
-   proof does **not** establish (their argument is a non-cyclic absorption method). Closing Case A
-   soundly therefore requires replacing this `tree_embed`-based skeleton with the paper's actual
-   absorption construction; it cannot be obtained from the Littlewood–Offord infrastructure in
-   `Ringel/LittlewoodOfford.lean`.
-
-The `sorry` below is thus a genuine, non-fillable gap under the current formulation; it is left in
-place rather than discharged by an unsound proof. -/
-lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (S : Set V)
-    (hS_leaves : ∀ v ∈ S, IsLeaf T v)
-    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
-    (root : (Sᶜ : Set V)) (root_val : Fin (2 * n + 1))
-    (C : CoreColors n T S) :
-    ∃ σ : CoreSigns T S, Function.Injective (Classical.choose (exists_embed_from_signs n hn T hT S hS_leaves hS_indep root root_val C σ)) := by
-  haveI : Fintype (CoreSigns T S) := by unfold CoreSigns; exact Fintype.ofFinite _
-  -- See the docstring: with a FIXED colouring `C` this goal (`prob_event … > 0`) is false in
-  -- general (explicit 5-edge-path counterexample, n = 7), so `h_prob` cannot be discharged.
-  exact bound_vertex_collisions_prob n hn T hT S hS_leaves hS_indep root root_val C
-    (fun σ => exists_embed_from_signs n hn T hT S hS_leaves hS_indep root root_val C σ) sorry
-
+We therefore reformulate Phase 1 as the honest statement actually needed downstream and *prove* it:
+whenever the core `T ∖ S` is small enough (`3·|Sᶜ| ≤ 2n+5`), it admits a rainbow embedding into the
+ND-coloured `K_{2n+1}`. This follows from the greedy interval embedding `greedy_embed_interval`
+(using that `ndColouring` is a 2-factorization), specialised to `W = Finset.univ`.
+-/
+lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
+    (hT : T.IsTree) (S : Set V)
+    (hsmall : 3 * (Sᶜ : Set V).ncard ≤ 2 * n + 5) :
+    ∃ f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1),
+      Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
+  rcases Set.eq_empty_or_nonempty Sᶜ with hS | hS;
+  · exact ⟨ ⟨ fun x => 0, by
+      rintro ⟨ a, ha ⟩ ⟨ b, hb ⟩ ; aesop ⟩, by
+      rintro ⟨ x, y ⟩ hxy ⟨ u, v ⟩ huv h; simp_all +decide [ CaseACore ] ; ⟩;
+  · convert Ringel.greedy_embed_interval n hn T hT.2 Finset.univ 0 ( Finset.mem_univ 0 ) _ _ _ _ using 1;
+    rotate_left;
+    exact Fintype.ofFinite V;
+    all_goals try exact Classical.decEq V;
+    exact Classical.decRel _;
+    exact hS.some;
+    exact Set.Finite.toFinset ( Set.toFinite Sᶜ );
+    · simp +decide [ hS.some_mem ];
+    · rw [ ← Set.ncard_coe_finset ] ; aesop;
+    · constructor <;> intro h;
+      · convert Ringel.greedy_embed_interval n hn T hT.2 Finset.univ 0 ( Finset.mem_univ 0 ) _ _ _ _ using 1;
+        · simp +decide [ hS.some_mem ];
+        · rw [ ← Set.ncard_coe_finset ] ; aesop;
+      · obtain ⟨ g, hg₁, hg₂, hg₃, hg₄ ⟩ := h;
+        refine' ⟨ ⟨ fun v => g v, _ ⟩, _ ⟩;
+        intro v w h; have := hg₂ ( by simp +decide : v.val ∈ _ ) ( by simp +decide : w.val ∈ _ ) ; simp_all +decide [ Subtype.ext_iff ] ;
+        refine' hg₄.mono _;
+        rintro ⟨ u, v ⟩ huv; simp_all +decide [ SimpleGraph.map_adj, CaseACore ] ;
+        rcases huv with ⟨ a, ha, b, hab, rfl, hb, rfl ⟩ ; use s(a, b); aesop;
 
 lemma core_nonempty {V : Type*} [Finite V] (S : Set V)
     (hS_size : S.ncard < Nat.card V) :
@@ -312,52 +307,15 @@ lemma core_colors_nonempty (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) 
     exact ⟨f, h_inj_f⟩
   exact ⟨h_inj.trans e_equiv.toEmbedding⟩
 
-/-- The actual MPS embedding logic relies on mapping edges to colors
-and picking random signs to avoid vertex collisions via random walk bounds. -/
-lemma random_embed_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
-    (hT : T.IsTree) (hcard : T.edgeSet.ncard = n) (S : Set V)
-    (hS_leaves : ∀ v ∈ S, IsLeaf T v)
-    (hS_indep : ∀ v ∈ S, ∀ w ∈ S, v ≠ w → ¬T.Adj v w)
-    (hS_size : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard) :
+/-- **Case A, Phase 1 (core embedding).** For a small enough core (`3·|Sᶜ| ≤ 2n+5`) the core tree
+`T ∖ S` embeds rainbow into the ND-coloured `K_{2n+1}`. This is now a genuine theorem, discharged by
+`bound_vertex_collisions` (greedy interval embedding); no probabilistic/cyclic input is required. -/
+lemma random_embed_core (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
+    (hT : T.IsTree) (S : Set V)
+    (hsmall : 3 * (Sᶜ : Set V).ncard ≤ 2 * n + 5) :
     ∃ f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1),
-      Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
-  -- 1. Pick an arbitrary root in the core (since T is a tree, core is a tree, hence nonempty if n > 0)
-  have h_S_bound : S.ncard < Nat.card V := core_size_bound n hn hn_large T hT S hS_leaves hS_indep hcard
-  obtain ⟨root⟩ := core_nonempty S h_S_bound
-  -- 2. Pick any valid color assignment C (possible since |E(Core)| <= n)
-  obtain ⟨C⟩ := core_colors_nonempty n T S hT hS_leaves hS_indep hcard
-  -- 3. Use the collision bound to find a sign assignment that guarantees injectivity
-  obtain ⟨σ, h_inj⟩ := bound_vertex_collisions n hn T hT S hS_leaves hS_indep root 0 C
-  -- 4. Extract the embedding from the chosen signs
-  have h_exists := exists_embed_from_signs n hn T hT S hS_leaves hS_indep root 0 C σ
-  let f := Classical.choose h_exists
-  have hf_props : f root = 0 ∧ ∀ u v huv, ndColouring n hn s(f u, f v) = C ⟨s(u, v), huv⟩ := Classical.choose_spec h_exists
-  -- 5. Package as an Embedding using injectivity
-  let f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1) := ⟨f, h_inj⟩
-  use f_core
-  -- 6. Prove it's perfectly rainbow!
-  intro e1 h1 e2 h2 h_eq
-  obtain ⟨u, v, huv, rfl⟩ : ∃ u v, (CaseACore T S).Adj u v ∧ s(f_core u, f_core v) = e1 := by
-    induction' e1 using Sym2.ind with x y
-    have h1_adj : (SimpleGraph.map f_core (CaseACore T S)).Adj x y := h1
-    rcases h1_adj with ⟨u, v, huv, rfl, rfl⟩
-    exact ⟨u, v, huv, rfl⟩
-  obtain ⟨x, y, hxy, rfl⟩ : ∃ x y, (CaseACore T S).Adj x y ∧ s(f_core x, f_core y) = e2 := by
-    induction' e2 using Sym2.ind with w z
-    have h2_adj : (SimpleGraph.map f_core (CaseACore T S)).Adj w z := h2
-    rcases h2_adj with ⟨x, y, hxy, rfl, rfl⟩
-    exact ⟨x, y, hxy, rfl⟩
-  -- Now we use the property of f that it exactly matches C
-  have hc1 := hf_props.2 u v huv
-  have hc2 := hf_props.2 x y hxy
-  dsimp [f_core] at h_eq
-  rw [hc1, hc2] at h_eq
-  have h_edge_eq := C.injective h_eq
-  have h_uv_xy : s(u, v) = s(x, y) := Subtype.ext_iff.mp h_edge_eq
-  have h_cases := Sym2.eq.mp h_uv_xy
-  cases h_cases
-  · rfl
-  · exact Sym2.eq_swap
+      Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet :=
+  bound_vertex_collisions n hn T hT S hsmall
 
 
 /-- The colors used by the core embedding. -/
@@ -472,7 +430,11 @@ theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large
     HasRainbowCopy n T := by
   have hn_pos : 0 < n := by linarith
   -- 1. Embed the core (T \ S)
-  obtain ⟨f_core, h_core_inj⟩ := random_embed_core δ hδ n hn hn_large T hT hcard S hS_leaves hS_indep hS_size
+  -- The general Case A → small-core reduction (the actual MPS random-embedding/absorption content)
+  -- is not available here: Case A only guarantees `|S| ≥ ⌊δ⁶n⌋`, far below the `|S| ≥ (n-2)/3`
+  -- needed for `3·|Sᶜ| ≤ 2n+5`. This is the genuine remaining Phase-1 gap.
+  have hsmall_core : 3 * (Sᶜ : Set V).ncard ≤ 2 * n + 5 := sorry
+  obtain ⟨f_core, h_core_inj⟩ := random_embed_core n hn T hT S hsmall_core
   -- 2. Extend the embedding to cover the leaves S
   exact extend_caseA_leaves δ hδ n hn T hT hcard S hS_leaves hS_indep f_core h_core_inj
 
