@@ -12,6 +12,7 @@ import Mathlib.Tactic.IntervalCases
 import Mathlib.Tactic.Linarith
 import Mathlib.Data.Real.Basic
 import Mathlib.Data.Real.Archimedean
+import Mathlib.Data.Nat.Log
 
 /-!
 # Primitives for the Montgomery–Pokrovskiy–Sudakov proof of Ringel's Conjecture
@@ -310,11 +311,19 @@ def IsCaseB (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
       Disjoint ({v : V | v ∈ P} : Set V) {v : V | v ∈ Q}) ∧
     ⌊δ * (n : ℝ) / 800⌋₊ ≤ paths.length
 
-/-- **Case C** (§2): deleting leaves adjacent to vertices with $\geq \lfloor \delta^{-4} \rfloor$ leaf-neighbours
-leaves $\leq n/100$ vertices. -/
-def IsCaseC (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
+/-- The Case C leaf-degree threshold. A core vertex counts as *high leaf degree* when it has at
+least `caseCThreshold n` pendant-leaf neighbours. The paper uses a `log⁴ n` threshold; the value
+here is `8000·⌊log₂ n⌋ + 20000`, chosen so that a high-leaf-degree vertex carries enough leaves
+(`≥ 4000·(2k+1)` with `n < 2^(k-1)`) for the many-high-degree-vertex embedding
+`caseC_many_vertex` to apply. It is `Θ(log n)`, which the sharper doubling invariant of
+`caseC_many_vertex` improves over the paper's `log⁴ n`. -/
+def caseCThreshold (n : ℕ) : ℕ := 8000 * Nat.log 2 n + 20000
+
+/-- **Case C** (§2): deleting leaves adjacent to vertices with $\geq$ `caseCThreshold n`
+leaf-neighbours leaves $\leq n/100$ vertices. -/
+def IsCaseC (_δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   let highLeafDeg : Set V :=
-    {v | ⌊(δ : ℝ)⁻¹ ^ 4⌋₊ ≤ {w | T.Adj v w ∧ IsLeaf T w}.ncard}
+    {v | caseCThreshold n ≤ {w | T.Adj v w ∧ IsLeaf T w}.ncard}
   let removedLeaves : Set V :=
     {v | IsLeaf T v ∧ ∃ w, T.Adj v w ∧ w ∈ highLeafDeg}
   (Set.univ \ removedLeaves).ncard ≤ n / 100

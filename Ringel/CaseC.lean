@@ -1,5 +1,7 @@
 import Ringel.Primitives
 import Ringel.TreeStructure
+import Ringel.CaseCOneVertex
+import Ringel.CaseCManyVertex
 import Mathlib.Data.Set.Card.Arithmetic
 
 namespace Ringel
@@ -113,7 +115,7 @@ lemma caseC_decompose (δ : ℝ) (n : ℕ) {V : Type*} [Finite V] (T : SimpleGra
       (T_core.edgeSet ∪ {e ∈ T.edgeSet | ∃ v ∈ leaves, v ∈ e}) = T.edgeSet := by
   simp only [IsCaseC] at hC
   set highLeafDeg : Set V :=
-    {v | ⌊(δ : ℝ)⁻¹ ^ 4⌋₊ ≤ {w | T.Adj v w ∧ IsLeaf T w}.ncard}
+    {v | caseCThreshold n ≤ {w | T.Adj v w ∧ IsLeaf T w}.ncard}
   set removedLeaves : Set V :=
     {v | IsLeaf T v ∧ ∃ w, T.Adj v w ∧ w ∈ highLeafDeg}
   -- Define core as the restriction of T away from removedLeaves
@@ -400,86 +402,157 @@ private lemma caseC_greedy (n : ℕ) (hn : 0 < n) {V : Type*} [Fintype V] [Decid
           rw [hCdef, Sym2.eq_swap, ← hcx, ← hee]
           exact Finset.mem_image.mpr ⟨Sym2.map g' e, Finset.mem_image.mpr ⟨e, heX, rfl⟩, rfl⟩
 
-/-- **Core embedding.** A subforest of $T$ with $\leq n/100$ edges embeds rainbow
-into the ND-coloured $K_{2n+1}$. The key inputs are that $T$ is a tree (giving
-$|V| = n+1 \leq 2n+1$) and $T_\text{core} \leq T$ (so $T_\text{core}$ is acyclic). -/
-lemma caseC_embed_core (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
-    (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
-    (T_core : SimpleGraph V) (h_le : T_core ≤ T)
-    (h_small : T_core.edgeSet.ncard ≤ n / 100) :
-    ∃ f_core : V ↪ Fin (2 * n + 1), Set.InjOn (ndColouring n hn) (T_core.map f_core).edgeSet := by
+/-- **Case C many-high-degree-vertex bridge.** Suppose `T` is an `n`-edge tree in Case C
+(deleting the leaves adjacent to high-leaf-degree vertices — those with at least
+`caseCThreshold n` pendant-leaf neighbours — leaves at most `n/100` vertices), and *no*
+vertex has `≥ 2n/3` leaf-neighbours. Then `T` has a rainbow copy in the ND-coloured
+`K_{2n+1}`.
+
+This is the deterministic many-high-degree-vertex branch of MPS §7: the surviving core has
+at most `n/100` vertices, every removed vertex is a pendant leaf attached to a high-leaf-degree
+core vertex, each such core vertex carries between `caseCThreshold n` and `< 2n/3` leaves, and
+`caseC_many_vertex` embeds the whole tree.  The threshold `caseCThreshold n = 8000⌊log₂ n⌋ + 20000`
+is exactly `4000·(2k+1)` for `k = ⌊log₂ n⌋ + 2`, the amount of slack `caseC_many_vertex` needs. -/
+lemma caseC_many_bridge (δ : ℝ) (n : ℕ) (hn_large : 1000000 ≤ n) {V : Type*} [Finite V]
+    (T : SimpleGraph V) (hT : T.IsTree) (hn : T.edgeSet.ncard = n)
+    (hC : IsCaseC δ n T)
+    (hsmall : ∀ v : V, {w : V | T.Adj v w ∧ IsLeaf T w}.ncard < 2 * n / 3) :
+    HasRainbowCopy n T := by
   classical
   haveI : Fintype V := Fintype.ofFinite V
+  have hn0 : 0 < n := by omega
   have hVcard : Fintype.card V = n + 1 := by
     have hc := hT.card_edgeFinset
     have he : T.edgeFinset.card = n := by
-      rw [← hcard]; exact (Set.ncard_eq_toFinset_card' T.edgeSet).symm
+      rw [← hn]; exact (Set.ncard_eq_toFinset_card' T.edgeSet).symm
     omega
-  have hac : T_core.IsAcyclic := hT.IsAcyclic.anti h_le
-  have hbound : T_core.edgeFinset.card ≤ n / 100 := by
-    rw [show T_core.edgeFinset.card = T_core.edgeSet.ncard from
-      (Set.ncard_eq_toFinset_card' T_core.edgeSet).symm]
-    exact h_small
-  obtain ⟨g, hginj, hrb⟩ := caseC_greedy n hn hVcard T_core hac hbound Finset.univ
-  have ginj : Function.Injective g := fun a b hab => hginj (by simp) (by simp) hab
-  refine ⟨⟨g, ginj⟩, ?_⟩
-  rw [SimpleGraph.edgeSet_map]
-  have hcoe : (⟨g, ginj⟩ : V ↪ Fin (2 * n + 1)).sym2Map '' T_core.edgeSet
-      = ↑((T_core.edgeFinset ∩ Finset.univ.sym2).image (Sym2.map g)) := by
-    rw [Finset.sym2_univ, Finset.inter_univ, Finset.coe_image, SimpleGraph.coe_edgeFinset]
-    ext e
-    simp only [Set.mem_image, Function.Embedding.sym2Map_apply, Function.Embedding.coeFn_mk]
-  rw [hcoe]
-  exact hrb
+  -- Case C sets, exactly as in `IsCaseC`.
+  set L : V → Set V := fun u => {w | T.Adj u w ∧ IsLeaf T w} with hLdef
+  set highLeafDeg : Set V := {u | caseCThreshold n ≤ (L u).ncard} with hHLD
+  set removedLeaves : Set V := {v | IsLeaf T v ∧ ∃ w, T.Adj v w ∧ w ∈ highLeafDeg} with hRL
+  have hCthr : (Set.univ \ removedLeaves).ncard ≤ n / 100 := hC
+  -- The core: all non-removed vertices.
+  set core : Finset V := Finset.univ.filter (fun v => v ∉ removedLeaves) with hcoredef
+  have hcore_mem : ∀ v, v ∈ core ↔ v ∉ removedLeaves := by
+    intro v; rw [hcoredef]; simp
+  have hcoreset : (↑core : Set V) = Set.univ \ removedLeaves := by
+    ext v
+    simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq, Set.mem_diff,
+      hcoredef]
+    tauto
+  have hcore_card : core.card ≤ n / 100 := by
+    rw [← Set.ncard_coe_finset, hcoreset]; exact hCthr
+  -- The anchor: the (unique) neighbour of a leaf.
+  set anchor : V → V := fun v => if h : ∃ w, T.Adj v w then h.choose else v with hanchordef
+  -- A high-leaf-degree vertex has ≥ 2 neighbours, hence is not a leaf.
+  have hthr2 : 2 ≤ caseCThreshold n := by unfold caseCThreshold; omega
+  have hnotleaf : ∀ u, u ∈ highLeafDeg → ¬ IsLeaf T u := by
+    intro u hu hleaf
+    obtain ⟨w0, hw0, hw0uniq⟩ := hleaf
+    have hsub : L u ⊆ {w0} := fun x hx => Set.mem_singleton_iff.mpr (hw0uniq x hx.1)
+    have hle1 : (L u).ncard ≤ 1 := by
+      calc (L u).ncard ≤ ({w0} : Set V).ncard :=
+            Set.ncard_le_ncard hsub (Set.finite_singleton _)
+        _ = 1 := Set.ncard_singleton _
+    have : caseCThreshold n ≤ 1 := le_trans hu hle1
+    omega
+  have hhigh_core : ∀ u, u ∈ highLeafDeg → u ∈ core := by
+    intro u hu; rw [hcore_mem]; exact fun hrm => hnotleaf u hu hrm.1
+  -- Structure of a non-core vertex: it is a leaf whose anchor is a high-leaf-degree core vertex.
+  have hanchor_full : ∀ v, v ∉ core → IsLeaf T v ∧ T.Adj v (anchor v) ∧
+      anchor v ∈ highLeafDeg ∧ (∀ w, T.Adj v w → w = anchor v) := by
+    intro v hv
+    have hrm : v ∈ removedLeaves := not_not.mp ((hcore_mem v).not.mp hv)
+    obtain ⟨hleafv, w0, hadj0, hw0high⟩ := hrm
+    have hex : ∃ w, T.Adj v w := ⟨w0, hadj0⟩
+    have hav : anchor v = hex.choose := by rw [hanchordef]; simp only [dif_pos hex]
+    have hadjv : T.Adj v (anchor v) := by rw [hav]; exact hex.choose_spec
+    obtain ⟨w', hw', huniq⟩ := hleafv
+    have huniq' : ∀ w, T.Adj v w → w = anchor v := by
+      intro w hw
+      rw [huniq w hw, huniq (anchor v) hadjv]
+    have haw0 : anchor v = w0 := (huniq' w0 hadj0).symm
+    exact ⟨⟨w', hw', huniq⟩, hadjv, haw0 ▸ hw0high, huniq'⟩
+  have hanchor : ∀ v, v ∉ core → anchor v ∈ core ∧ T.Adj v (anchor v) ∧
+      ∀ w, T.Adj v w → w = anchor v := by
+    intro v hv
+    exact ⟨hhigh_core _ (hanchor_full v hv).2.2.1, (hanchor_full v hv).2.1,
+      (hanchor_full v hv).2.2.2⟩
+  -- Every leaf-count of an anchor is < 2n/3.
+  have hsmalldeg : ∀ u : V,
+      (Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)).card ≤ 2 * n / 3 := by
+    intro u
+    have hsub : (↑(Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)) : Set V) ⊆ L u := by
+      intro v hv
+      simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq] at hv
+      obtain ⟨hvnc, hvanc⟩ := hv
+      have hf := hanchor_full v hvnc
+      refine ⟨?_, hf.1⟩
+      have : T.Adj v u := by rw [← hvanc]; exact hf.2.1
+      exact this.symm
+    calc (Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)).card
+        = (↑(Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)) : Set V).ncard :=
+          (Set.ncard_coe_finset _).symm
+      _ ≤ (L u).ncard := Set.ncard_le_ncard hsub (Set.toFinite _)
+      _ ≤ 2 * n / 3 := le_of_lt (hsmall u)
+  -- Each nonempty anchor carries ≥ caseCThreshold n leaves.
+  have hbig : ∀ u ∈ core,
+      (Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)).Nonempty →
+      caseCThreshold n ≤ (Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)).card := by
+    intro u _ hne
+    obtain ⟨v, hv⟩ := hne
+    simp only [Finset.mem_filter, Finset.mem_univ, true_and] at hv
+    obtain ⟨hvnc, hvanc⟩ := hv
+    have hf := hanchor_full v hvnc
+    have huhigh : u ∈ highLeafDeg := by rw [← hvanc]; exact hf.2.2.1
+    have hsub : L u ⊆ (↑(Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)) : Set V) := by
+      intro w hw
+      obtain ⟨hadjuw, hleafw⟩ := hw
+      have hrmw : w ∈ removedLeaves := ⟨hleafw, u, hadjuw.symm, huhigh⟩
+      have hwnc : w ∉ core := by rw [hcore_mem]; exact not_not.mpr hrmw
+      have hancw : anchor w = u := ((hanchor_full w hwnc).2.2.2 u hadjuw.symm).symm
+      simp only [Finset.coe_filter, Finset.mem_univ, true_and, Set.mem_setOf_eq]
+      exact ⟨hwnc, hancw⟩
+    calc caseCThreshold n ≤ (L u).ncard := huhigh
+      _ ≤ (↑(Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)) : Set V).ncard :=
+          Set.ncard_le_ncard hsub (Set.toFinite _)
+      _ = (Finset.univ.filter (fun v => v ∉ core ∧ anchor v = u)).card := Set.ncard_coe_finset _
+  -- Apply the many-high-degree-vertex embedding.
+  have hkn : n < 2 ^ ((Nat.log 2 n + 2) - 1) := by
+    have h := Nat.lt_pow_succ_log_self (b := 2) (by norm_num) n
+    simpa using h
+  have hk : 1 ≤ Nat.log 2 n + 2 := by omega
+  have ht : 4000 * (2 * (Nat.log 2 n + 2) + 1) ≤ caseCThreshold n := by
+    unfold caseCThreshold; omega
+  obtain ⟨f, hf⟩ := caseC_many_vertex n (caseCThreshold n) (Nat.log 2 n + 2) T hT.IsAcyclic
+    hVcard core anchor hcore_card hanchor hbig hsmalldeg hkn hk ht hn_large
+  exact ⟨f, fun _ => hf⟩
 
-/-- **Leaf extension (MPS §7).** Given a rainbow embedding of the core, extend it to a full
-rainbow copy of $T$ by absorbing the leaf edges via the ND-colouring's 2-factorization.
-
-The hypotheses `hT : T.IsTree`, `hcard : T.edgeSet.ncard = n` and `h_small` are required for
-the statement to hold: without a bound tying the number of leaf edges to the number of
-available colours the claim is false (e.g. a star with `n + 1` leaves and empty core satisfies
-the decomposition data yet has `n + 1` edges, which cannot all receive distinct colours from
-`Fin n`). All three hold at the sole call site (`caseC_embedding_exists`), where `T` is the
-tree of the problem and the core comes from `caseC_decompose`.
-
-With these hypotheses the statement is a special case of Ringel's conjecture: because the tree
-is acyclic the leaf edges and the core edges partition `T.edgeSet`, so the number of leaves
-equals exactly the number of colours not used on the (rainbow) core, and the leaves must be
-packed around their anchors so that the induced leaf-edge colours are a bijection onto that
-free-colour pool. Discharging it is the geometric leaf-packing of MPS §7. -/
-lemma caseC_extend_embedding (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
-    (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
-    (T_core : SimpleGraph V) (leaves : Set V)
-    (h_decomp1 : T_core ≤ T) (h_decomp2 : ∀ v ∈ leaves, IsLeaf T v)
-    (h_small : T_core.edgeSet.ncard ≤ n / 100)
-    (h_decomp3 : T_core.edgeSet ∪ {e ∈ T.edgeSet | ∃ v ∈ leaves, v ∈ e} = T.edgeSet)
-    (f_core : V ↪ Fin (2 * n + 1))
-    (h_core_inj : Set.InjOn (ndColouring n hn) (T_core.map f_core).edgeSet) :
-    ∃ f : V ↪ Fin (2 * n + 1), Set.InjOn (ndColouring n hn) (T.map f).edgeSet := by
-  sorry
-
-lemma caseC_embedding_exists (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_pos : 0 < n) {V : Type*} [Finite V]
+/-- **Embedding trees in Case C.** Every `n`-edge Case C tree (for `n ≥ 10⁶`) has a rainbow copy
+in the ND-coloured `K_{2n+1}`.  We split on whether some vertex has `≥ 2n/3` leaf-neighbours: if
+so, `one_large_vertex` applies; otherwise `caseC_many_bridge` (the many-high-degree-vertex branch)
+applies. -/
+lemma caseC_embedding_exists (δ : ℝ) (n : ℕ) (hn_large : 1000000 ≤ n)
+    {V : Type*} [Finite V]
     (T : SimpleGraph V) (hT : T.IsTree) (hn : T.edgeSet.ncard = n) (hC : IsCaseC δ n T) :
     HasRainbowCopy n T := by
-  obtain ⟨T_core, leaves, h_decomp1, h_decomp2, h_small, h_decomp3⟩ :=
-    caseC_decompose δ n T hT hC
-  obtain ⟨f_core, h_core_inj⟩ :=
-    caseC_embed_core n hn_pos T hT hn T_core h_decomp1 h_small
-  obtain ⟨f, hf_inj⟩ :=
-    caseC_extend_embedding n hn_pos T hT hn T_core leaves h_decomp1 h_decomp2 h_small
-      h_decomp3 f_core h_core_inj
-  exact ⟨f, fun _ => hf_inj⟩
+  classical
+  have hn_pos : 0 < n := by omega
+  by_cases hbig : ∃ v1 : V, 2 * n / 3 ≤ {w : V | T.Adj v1 w ∧ IsLeaf T w}.ncard
+  · obtain ⟨v1, hv1⟩ := hbig
+    exact one_large_vertex n hn_pos T hT hn v1 hv1
+  · push_neg at hbig
+    exact caseC_many_bridge δ n hn_large T hT hn hC hbig
 
 /-- **Case C rainbow copy (§6–§7, M3, deterministic).** For small $\delta > 0$ and large $n$,
 every Case C tree has a rainbow copy in the ND-coloured $K_{2n+1}$. -/
-theorem caseC_rainbow (δ : ℝ) (hδ : 0 < δ) :
+theorem caseC_rainbow (δ : ℝ) :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
       T.IsTree → T.edgeSet.ncard = n →
       IsCaseC δ n T → HasRainbowCopy n T := by
   apply Filter.eventually_atTop.2
-  use 1
+  use 1000000
   intro n hn_large V _ T hT hn hC
-  have hn_pos : 0 < n := by omega
-  exact caseC_embedding_exists δ hδ n hn_pos T hT hn hC
+  exact caseC_embedding_exists δ n hn_large T hT hn hC
 
 end Ringel

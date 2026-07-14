@@ -229,7 +229,7 @@ theorem rainbow_copy_exists :
     case_division (1 / 4) hd hd',
     caseA_rainbow_eventually (1 / 4) hd,
     caseB_rainbow (1 / 4) hd,
-    caseC_rainbow (1 / 4) hd
+    caseC_rainbow (1 / 4)
   ] with n hn_div hn_A hn_B hn_C
   intro V _ T hT hcard
   rcases hn_div T hT hcard with hA | hB | hC
