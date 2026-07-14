@@ -1,0 +1,173 @@
+
+In this section, we prove Theorem~\ref{nearembedagain}. We start by formalising what we mean by a random rainbow embedding of a tree.
+\begin{definition}
+For a probability space $\Omega$, tree $T$ and a coloured graph $G$, a randomized rainbow  embedding of $T$ into $G$ is
+a triple $\phi=(V_\phi, C_\phi, T_\phi)$ consisting of a random set of vertices $V_\phi:\Omega\to V(G)$, a random set of colours $C_\phi:\Omega\to C(G)$, and a random subgraph $T_\phi:\Omega\to E(G)$ such that:
+\begin{itemize}
+\item $V(T_\phi)\subseteq V_\phi$ and $C(T_\phi)\subseteq C_\phi$ always hold.
+\item With high probability, $T_\phi$ is a rainbow copy of $T$.
+\end{itemize}
+\end{definition}
+
+We will embed a tree bit by bit, starting with a randomized rainbow embedding of a small tree and then extending it gradually. For this, we need a concept of one randomized embedding \emph{extending} another.
+\begin{definition}\label{Definition_embedding_extension}
+Let $G$ be a graph and $T_1\subseteq T_2$ two nested trees. Let $\phi_1=(V_{\phi_1}, C_{\phi_1}, S_{\phi_1})$ and $\phi_2=(V_{\phi_2}, C_{\phi_2}, S_{\phi_2})$ be randomized rainbow embeddings of $T_1$ and $T_2$ respectively into $G$. We say that $\phi_2$ extends $\phi_1$ if
+\begin{itemize}
+\item $T_{\phi_1}\subseteq T_{\phi_2}$, $C_{\phi_1}\subseteq C_{\phi_2}$, and $V_{\phi_1}\subseteq V_{\phi_2}$ always hold.
+\item $V(T_{\phi_2})\setminus V(T_{\phi_1})\subset V_{\phi_2}\setminus V_{\phi_1}$ and $C(T_{\phi_2})\setminus C(T_{\phi_1})\subset C_{\phi_2}\setminus C_{\phi_1}$ always hold.
+\end{itemize}
+\end{definition}
+The above definition implicitly assumes that the two randomized embeddings are defined on the same probability space, which is the case in our lemmas, except for Lemma~\ref{Lemma_extending_with_large_stars}. When $\phi_1$ and $\phi_2$ are defined on different probability spaces $\Omega_{\phi_1}$ and $\Omega_{\phi_2}$ respectively, we use the following definition. We say that an extension of $\phi_1$ is a  measure preserving transformation $f:\Omega_{\phi_2}\to \Omega_{\phi_1}$ (i.e.\ $\P(f^{-1}(A))=\P(A)$ for any $A\subseteq \Omega_{\phi_1}$). We say that $\phi_2$ extends $\phi_1$ if ``for every $\omega\in \Omega_{\phi_2}$ we have $T_{\phi_1}( f(\omega))\subseteq T_{\phi_2}$, $C_{\phi_1}( f(\omega))\subseteq C_{\phi_2}$,  $V_{\phi_1}( f(\omega))\subseteq V_{\phi_2}$, and $V(T_{\phi_2})\setminus V(T_{\phi_1}( f(\omega)))$ is 
+contained in $V_{\phi_2}\setminus V_{\phi_1}( f(\omega))$ and $C(T_{\phi_2})\setminus C(T_{\phi_1}(f(\omega)))$ is contained in 
+$C_{\phi_2}\setminus C_{\phi_1}( f(\omega))$''. Such a measure preserving transformation ensures that $\phi_1'=(T_{\phi_1}\circ f, C_{\phi_1}\circ f, V_{\phi_1}\circ f)$ is a randomized embedding of $T_1$ defined on $\Omega_{\phi_2}$ which is equivalent to $\phi_1$ (i.e.\ the probability of any outcomes  $\phi_1$ and $\phi_1'$ are the same). It also ensures that $\phi_2$ is an extension of $\phi_1'$ as in Definition~\ref{Definition_embedding_extension}.
+
+
+
+The following lemma extends randomized embeddings of trees by adding a large star forest. Recall that a 
+$p$-random subset of some finite set is formed by choosing every element of it independently 
+with probability $p$.
+\begin{lemma}[Extending with a large star forest]\label{Lemma_extending_with_large_stars}
+Let $p\gg \beta\gg \gamma \gg d^{-1}, n^{-1}$ and $\log^{-1} n\gg d^{-1}$.
+Let $T_1\subseteq T_2$ be forests such that $T_2$ is formed by adding stars with $\geq d$ leaves to vertices of $T_1$. Let  $K_{2n+1}$ be $2$-factorized and suppose that $|T_2|=(1-p)n$.
+Let $\phi_1=(V_{\phi_1}, C_{\phi_1}, T_{\phi_1})$ be a randomized rainbow embedding of $T_1$ into $K_{2n+1}$ where $V_{\phi_1}$ and $C_{\phi_1}$ are both $\gamma$-random.
+
+Then, $\phi_1$ can be extended into a randomized rainbow embedding $\phi_2=(V_{\phi_2}, C_{\phi_2}, T_{\phi_2})$ of $T_2$ so that $V_{\phi_2}$ and $C_{\phi_2}$ are $(1-p+\beta)$-random sets (with $V_{\phi_2}$ and $C_{\phi_2}$ allowed to depend on each other).
+
+
+
+\end{lemma}
+\begin{proof}
+Choose $\alpha$ such that $\beta\gg \alpha \gg \gamma $. Let $\theta =|T_1|/n$ and $F=T_2\setminus T_1$, noting that $F$ is a star forest with degrees $\geq d$ and $e(F)=(1-p-\theta)n$. Let $I\subseteq V(T_1)$ be the vertices to which stars are added to get $T_2$ from $T_1$.
+Let $\Omega$ be the probability space for $\phi_1$.
+We call $\omega\in \Omega$ \emph{successful} if $T_{\phi_1}(\omega)$ is a copy of $T_1$ and if we have $|V_{\phi_1}(\omega)|, |C_{\phi_1}(\omega)|\leq 4\gamma n$.
+Using Chernoff's bound and the fact that  $\phi_1$ is a randomized embedding of $T_1$ we have that with high probability a random $\omega \in \Omega$ is succesful.
+
+
+For every successful $\omega$, let $J^{\omega}$ be the copy of $I$ in $T_{\phi_1}(\omega)$.
+We can apply Lemma~\ref{Lemma_randomized_star_forest} with $F=F$, $J=J^{\omega}$,
+$V=V(K_{2n+1})\setminus V_{\phi_1}(\omega)$, $C=C(K_{2n+1})\setminus C_{\phi_1}(\omega)$, $p'=p+\theta, \alpha=\alpha, \gamma'=4\gamma, d=d$ and $n=n$. This gives a probability space $\Omega^\omega$, and a randomized subgraph $F^{\omega}$, and randomized sets
+$U^\omega\subseteq V(K_{2n+1})\setminus (V_{\phi_1}(\omega)\cup V(F^{\omega})),$ $D^{\omega}\subseteq  C(K_{2n+1})\setminus (C_{\phi_1}(\omega)\cup C(F^{\omega}))$ (so $F^{\omega}$, $U^\omega$, $D^{\omega}$ are functions from $\Omega^{\omega}$ to the families of subgraphs/subsets of vertices/sets of colours of $K_{2n+1}$ respectively). From Lemma~\ref{Lemma_randomized_star_forest} we know that, for each $\omega$,  $F^{\omega}$ is with high probability a copy of $F$, and that $U^{\omega}$ and $D^{\omega}$ are $(1-\alpha)(p+\theta)$-random subsets of $V(K_{2n+1})\setminus V_{\phi_1}(\omega)$ and $C(K_{2n+1})\setminus C_{\phi_1}(\omega)$ respectively. Setting $T^{\omega}=F^{\omega}\cup T_{\phi_1}(\omega)$ gives a subgraph which is a copy of $T_2$ with high probability (for successful $\omega$).
+For every unsuccessful $\omega$, set $T^{\omega}=T_{\phi_1}(\omega)$, and choose  $U^\omega\subseteq V(K_{2n+1})\setminus V_{\phi_1}(\omega),$ $D^{\omega}\subseteq  C(K_{2n+1})\setminus C_{\phi_1}(\omega)$ to be independent $(1-\alpha)(p+\theta)$-random  subsets (in this case letting $\Omega^{\omega}$ be an arbitrary probability space on which such $U^{\omega}, D^{\omega}$ are defined).
+
+
+
+Let $\Omega_2=\{(\omega, \omega'): \omega\in \Omega, \omega'\in \Omega^{\omega}\}$ and set $\P((\omega, \omega'))=\P(\omega)\P(\omega')$. Notice that $\Omega_2$ is a probability space.
+Let $T_{\phi_2}$ be a random subgraph formed by choosing $(\omega, \omega')\in \Omega_2$, and setting $T_{\phi_2}= T^\omega(\omega')$. Similarly define $U=U^{\omega}(\omega')$ and $D=D^{\omega}(\omega')$. Notice that $V\setminus V_{\phi_1}$ is $(1-\gamma)$-random and that $U|V_{\phi_1}$ is a $(1-\alpha)(p+\theta)$-random subset of $V\setminus V_{\phi_1}$. By Lemma~\ref{Lemma_mixture_of_p_random_sets}, $U$  is a $(1-\alpha)(1-\gamma)(p+\theta)$-random subset of $V(K_{2n+1})$. Similarly, $D$ is a $(1-\alpha)(1-\gamma)(p+\theta)$-random  subset of $C(K_{2n+1})$. Since $\beta\gg \alpha,\gamma$, we have $(1-\alpha)(1-\gamma)(p+\theta)\geq p-\beta$, and therefore can choose $(p-\beta)$-random subsets $U'$ and $D'$ such that $U'\subseteq  U$ and  $D'\subseteq D$.
+Now $V_{\phi_2}:=V(K_{2n+1})\setminus U'$ and $C_{\phi_2}=C(K_{2n+1})\setminus D'$ are $(1-p+\beta)$-random sets of vertices/colours.
+We also have that with high probability $T_{\phi_2}$ is a copy of $T_2$ since
+$$\P(\text{$T_{\phi_2}(\omega, \omega')$ is not a copy of $T_2$})\leq \P(\text{$\omega$ unsuccessful})+\P(\text{$\omega$ successful and $T_{\omega}$ not a copy of $T_2$}).$$
+Thus the required extension of $\phi_1$ is  $\phi_{2}=(T_{\phi_2}, V_{\phi_2}, C_{\phi_2})$ together with the measure preserving transformation $f:\Omega_2\to \Omega$ with $f:(\omega, \omega')\to\omega$.
+\end{proof}
+
+
+
+
+The following lemma extends randomized embeddings of trees by adding connecting paths.
+\begin{lemma}[Extending with connecting paths]\label{Lemma_extending_with_connecting_paths}
+Let $p\gg q\gg n^{-1}$.
+Let $T_1\subseteq T_2$ be forests such that $T_2$ is formed by adding $qn$ paths of length $3$ connecting different components of $T_1$. Let  $K_{2n+1}$ be $2$-factorized.
+Let $\phi_1=(V_{\phi_1}, C_{\phi_1}, T_{\phi_1})$ be a randomized rainbow embedding of $T_1$ into $K_{2n+1}$ and  let $U\subseteq V(K_{2n+1})\setminus V_{\phi_1}$, $D\subseteq C(K_{2n+1})\setminus C_{\phi_1}$ be $p$-random, independent subsets. Let $V_{\phi_2}=V_{\phi_1}\cup U$ and $C_{\phi_2}=C_{\phi_1}\cup D$.
+
+Then, $\phi_1$ can be extended into a randomized rainbow embedding $\phi_2=(V_{\phi_2}, C_{\phi_2}, T_{\phi_2})$ of $T_2$.
+\end{lemma}
+\begin{proof}
+Let $\Omega$ be the probability space for $\phi_1$.
+We say that $\omega\in \Omega$ is \emph{successful} if $T_{\phi_1}(\omega)$ is a copy of $T_1$ and the conclusion of Lemma~\ref{Lemma_few_connecting_paths} holds with $V=U$, $C=D$, $p=p$, $q=q$ and $n=n$. As $\phi_1$ is a randomized embedding of $T_1$, and by Lemma~\ref{Lemma_few_connecting_paths}, we have that, with high probability, $\omega$ is successful.
+
+For each successful $\omega$, let $x_1^{\omega}, y_1^{\omega}, \dots, x_{qn}^{\omega}, y_{qn}^{\omega}$ be the vertices of $T_{\phi_1}(\omega)$ which need to be joined by paths of length $3$ to get a copy of $T_2$. From the conclusion of Lemma~\ref{Lemma_few_connecting_paths}, for each successful $\omega$, we can find paths $P_i^\omega$, $i\in [qn]$, so that the paths are vertex disjoint and collectively $D$-rainbow, and each path $P_i^\omega$ is an $x_i,y_i$-path with length 3 and internal vertices in $U$.
+Letting $T_{\phi_2}=T_{\phi_1}(\omega)\cup P_1^{\omega}\cup \dots\cup P_{qn}^{\omega}$, $(V_{\phi_2}, C_{\phi_2}, T_{\phi_2})$ gives the required randomized embedding of $T_2$.
+\end{proof}
+
+
+The following lemma extends randomized embeddings of trees by adding a sequence of matchings of leaves.
+\begin{lemma}[Extending with matchings]\label{Lemma_extending_with_matchings}
+Let $\ell^{-1},p, q\gg  n^{-1}$.
+Let $T_1\subseteq T_{\ell}$ be forests such that $T_{\ell}$ is formed by adding a sequence of $\ell$ matchings of leaves to $T_1$. Let  $K_{2n+1}$ be $2$-factorized.  Suppose $|T_{\ell}|-|T_1|\leq pn$.
+Let $\phi_1=(V_{\phi_1}, C_{\phi_1}, T_{\phi_1})$ be a  randomized rainbow embedding of $T_1$ into $K_{2n+1}$.  Let $U_{ind}\subseteq V(K_{2n+1})\setminus V_{\phi_1}$, $D_{ind}\subseteq C(K_{2n+1})\setminus C_{\phi_1}$ be $q$-random, independent subsets.  Let $U_{dep}\subseteq V(K_{2n+1})\setminus (V_{\phi_1}\cup U_{ind})$ be $p/2$-random, and $D_{dep}\subseteq C(K_{2n+1})\setminus(C_{\phi_1}\cup D_{ind})$  $p$-random (possibly depending on each other).
+
+Then $\phi_1$ can be extended into a randomized rainbow embedding $\phi_{\ell}=(V_{\phi_{\ell}}, C_{\phi_{\ell}}, T_{\phi_{\ell}})$ of $T_{\ell}$ into $V_{\phi_{\ell}}=V_{\phi_1}\cup U_{ind}\cup U_{dep}$ and $C_{\phi_{\ell}}=C_{\phi_1}\cup D_{ind}\cup D_{dep}$.
+\end{lemma}
+\begin{proof}
+Without loss of generality, suppose that  $|T_{\ell}|-|T_1|= pn$.
+Define forests $T_1, \dots, T_{\ell}$, and $p_1, \dots, p_{\ell}\in [0,1]$ such that each $T_{i+1}$ is constructed from $T_i$ by adding a matching of $p_in$ leaves.
+Randomly partition $U_{dep}=\{U_{dep}^1, \dots, U_{dep}^{\ell}\}$ and $D_{dep}=\{D_{dep}^1, \dots, D_{dep}^{\ell}\}$ so that each set $U_{dep}^i\subseteq V(K_{2n+1})$ is $p_i/2$-random and each set $D_{dep}^i\subseteq C(K_{2n+1})$ is $p_i$-random.
+Randomly partition   $U_{ind}=\{U_{ind}^1, \dots, U_{ind}^{\ell}\}, D_{ind}=\{D_{ind}^1, \dots, D_{ind}^{\ell}\}$ so that each set $U_{ind}^i$ and $D_{ind}^i$ is $(q/\ell)$-random.
+
+Let $\Omega$ be the probability space for $\phi_1$.
+We say that $\omega\in \Omega$ is \emph{successful} if $T_{\phi_1}(\omega)$ is a copy of $T_1$ and, for each $i\in [\ell]$, the conclusion of Lemma~\ref{Lemma_sat_matching_random_embedding} holds for $U_{dep}^{i}$, $U_{ind}^{i}$, $D_{dep}^{i}$, $D_{ind}^{i}$, $p=p_i$, $\gamma = q/\ell$ and    $n=n$.
+As $\phi_1$ is a randomized embedding of $T_1$, and by Lemma~\ref{Lemma_sat_matching_random_embedding}, we have that, with high probability, $\omega$ is successful. Note that, for this, we take a union bound over $\ell$ events, using that the conclusion of Lemma~\ref{Lemma_sat_matching_random_embedding} holds
+with probability $1-o(n^{-1})$ in each application.
+
+For each successful $\omega$, define a sequence of trees $T_0^{\omega},T_1^{\omega}, \dots, T_{\ell}^{\omega}$. Fix $T_0^{\omega}=T_{\phi_1}(\omega)$ and recursively construct $T_{i+1}^{\omega}$ from $T_i^{\omega}$ by adding an appropriate $(D_{dep}^i\cup D_{ind}^i)$-rainbow size $p_in$ matching into $U_{dep}^i\cup U_{ind}^i$ to make $T_i^\omega$ into a copy of $T_{i+1}$ (which exists as the conclusion of Lemma~\ref{Lemma_sat_matching_random_embedding} holds because $\omega$ is successful).
+Letting $T_{\phi_{\ell}}(\omega)= T_{\ell}^{\omega}$ gives the required randomized embedding of $T_{\ell}$.
+\end{proof}
+
+
+The following lemma gives a randomized embedding of any small tree.
+\begin{lemma} [Small trees with a replete subset]\label{Lemma_embedding_small_tree}
+Let $q\gg \gamma\geq \nu \gg \xi \gg n^{-1}$.
+Let $T$ be a tree with $|T|= \gamma n$ containing a set $U\subset V(T)$ with $|U|= \nu n$. Let $K_{2n+1}$ be $2$-factorized with $V_\phi, C_\phi$ $q$-random sets of vertices and colours respectively.
+Then, there is a randomized rainbow embedding $\phi=(T_\phi, V_\phi, C_\phi)$ along with independent $q/2$-random sets $V_0\subseteq V_{\phi}\setminus V(T_{\phi})$,  $C_0\subseteq C_{\phi}\setminus C(T_{\phi})$    with $(V_0, U_\phi)$ $\xi n$-replete with high probability (where $U_\phi$ is the copy of $U$ in $T_\phi$).
+\end{lemma}
+\begin{proof}
+Choose $\alpha$ such that $q\gg \alpha\gg \gamma, \nu$.
+Inside $V_{\phi}$ choose disjoint sets $V_0, V_1, V_2$ which are $q/2$-random, $\alpha$-random, and $100\nu/q$-random respectively.
+Inside $C_{\phi}$ choose disjoint sets  $C_0, C_1, C_2$ which are $q/2$-random, $q/4$-random, and $q/4$-random respectively. Notice that the total number of edges of any particular color is $2n+1$
+and the probability that any such edge is going from $V_2$ to $V_1  \cup V_2$ is 
+$2(100\nu/q)(100\nu/q+\alpha)$. Therefore by Lemmas~\ref{Lemma_high_degree_into_random_set} and \ref{Lemma_Azuma} the following hold with high probability.
+\begin{enumerate}[label = {\bfseries \Alph{propcounter}\arabic{enumi}}]
+    \item \label{eq_repletetree_1} Every vertex $v$ has $|N_{C_1}(v)\cap V_1|\geq \alpha q n/4\geq 3|T|$ and $|N_{C_2}(v)\cap V_2|\geq (100\nu/q)\cdot qn/4\geq 4|U|$.
+ \item \label{eq_repletetree_3} Every colour has at most $400\alpha (\nu/q) n\leq 0.1|U|$ edges from $V_2$ to $V_1\cup V_2$.
+\end{enumerate}
+Using \ref{eq_repletetree_1}, we can greedily find a rainbow copy $T_\phi$ of $T$ in $V_1\cup V_2\cup C_1\cup C_2$ with $U$ embedded into $V_2$. Indeed,  embed one vertex at a time, always embedding a vertex which has one neighbour into preceding vertices. Moreover,  put a vertex from $T\setminus U$ into $V_1$ using an edge of colour from $C_1$ and put a vertex from $U$ into $V_2$ using an edge of colour from $C_2$.
+Let $U_\phi$ be the copy of $U$ in $T_\phi$. By~\ref{eq_repletetree_3}, and as $|U_\phi|=\nu n$, $(U_\phi, V(K_{2n+1})\setminus (V_1\cup V_2))$ is  $0.9\nu n$-replete. Indeed, for every color there are at least $|U_\phi|$ edges of this color incident to $U_\phi$ and at most $0.1|U_\phi|$ of them going to $V_1 \cup V_2$.
+
+
+Consider a set $V_0'\subseteq V(K_{2n+1})$ which is $\big(\frac{1}{1-\alpha-100\nu/q}\big)\cdot (q/2)$-random and independent of $V_1, V_2, C_0, C_1, C_2$. Notice that $V_0'\setminus (V_1\cup V_2)$ is $q/2$-random. Thus the joint distributions of the families of random sets $\{V_0'\setminus (V_1\cup V_2),  V_1, V_2, C_0, C_1, C_2\}$ and $\{V_0,  V_1, V_2, C_0, C_1, C_2\}$ are exactly the same. By Lemma~\ref{Lemma_inheritence_of_lower_boundedness_random} applied with $A=U_{\phi}, B=V(K_{2n+1})\setminus (V_1\cup V_2), V=V_0'$, the pair $(U_{\phi}, V_0'\setminus (V_1\cup V_2))$ is $\xi$-replete with high probability. Since $(U_{\phi}, V_0'\setminus (V_1\cup V_2))$ has the same distribution as $(U_{\phi}, V_0)$, the latter pair is also  $\xi$-replete with high probability.
+\end{proof}
+
+The following is the main result of this section. It finds a rainbow embedding of every nearly-spanning tree. Given the preceding lemmas, the proof is quite simple. First, we decompose the tree into star forests, matchings of leaves, and connecting paths using  Lemma~\ref{Lemma_tree_splitting}. Then, we embed each of these parts using the preceding lemmas in this section.
+\begin{proof}[Proof of Theorem~\ref{nearembedagain}]
+Choose $\beta$ and $d$ such that $1\geq  \eps\gg  \eta\gg \beta \gg  \mu\gg  d^{-1}\gg  \xi$ with $k^{-1}\gg d^{-1}$.
+By Lemma~\ref{Lemma_tree_splitting}, there are forests $T_1^{\mathrm{small}}\subseteq T_2^{\mathrm{stars}}\subseteq T_3^{\mathrm{match}}\subseteq T_4^{\mathrm{paths}}\subseteq T_5^{\mathrm{match}}=T'$ satisfying \ref{rush1} -- \ref{rush5} with  $d=d, n=(1-\eps)n$ and $U=U$. Fix $U'=U\cap T_1^{\mathrm{small}}$.
+
+Fix $p'=1-|T_2^{\mathrm{stars}}|/n=(|T'|-|T_2^{\mathrm{stars}}|)/n+\eps$. We claim that $p'\geq (p+\eps)/2$. To see this, let $T''$ be the tree with $|T''|=pn$ formed by deleting leaves of vertices with $\geq k$ leaves in $T'$. Let $A\subset V(T_1^{\mathrm{small}})$ be the vertices to which leaves need added to get $T_2^{\mathrm{stars}}$ from $T_1^{\mathrm{small}}$, and, for each $v\in A$, let $d_v\geq d$ be the number of such leaves that are added to $v$. Then we have that $\sum_{v\in A} d_v=|T_2^{\mathrm{stars}}|-|T_1^{\mathrm{small}}|$.
+Let $d'_v$ be the number of these leaves added to $v$ which are not themselves leaves in $T'$. 
+Note that, for each $v\in A$, at least $d_v'$ neighbours of $v$ lie in $V(T')\setminus V(T_2^{\mathrm{stars}})$. Thus, we have
+$\sum_{v\in A}d_v'\leq |T'|-|T_2^{\mathrm{stars}}|$. Moreover, for each $v\in A$ with $d_v-d'_v \geq k$ we deleted  $d_v-d'_v$ leaves attached to $v$ when we formed $T''$ from $T'$, otherwise we deleted nothing. In both cases we deleted at least $d_v-d'_v-k$ leaves for each $v \in A$.
+Therefore, using that $|A| \leq|T_1^{\mathrm{small}}|\leq n/d$, we have
+$$|T'|-|T''| \geq \sum_{v\in A}(d_v-d_v'-k)=|T_2^{\mathrm{stars}}|-|T_1^{\mathrm{small}}|-\sum_{v\in A}(d_v'+k) \geq |T_2^{\mathrm{stars}}|-(k+1)n/d-\sum_{v\in A}d_v'\,.$$
+Thus,
+$$
+pn= |T''| \leq |T'|-|T_2^{\mathrm{stars}}|+(k+1)n/d+\sum_{v\in A}d_v'\leq 2(|T'|-|T_2^{\mathrm{stars}}|)+\eps n= 2p'n-\eps n,
+$$
+implying, $p'\geq (p+\eps)/2$.
+
+For each $i\in \{2, \dots, 5\}$ (and the label $*$ meaning ``$\mathrm{small},\, \mathrm{stars},\,  \mathrm{match}$ or $\mathrm{paths}$" appropriately), let $p_i=(|T_i^*|-|T_{i-1}^*|)/n$. Set $p_6=\epsilon-\beta.$
+These constants represent the proportion of colours which are used for embedding each of the subtrees (with $p_6$ representing the proportion of colours left over for the set $C$ in the statement of the lemma).
+Notice that $p'=p_3+p_4+p_5+p_6+\beta$.
+For each $i\in [6]$, choose disjoint, independent $2\mu$-random sets $V^{i}_{ind}, C_{ind}^i$. Do the following.
+
+\begin{itemize}
+    \item Apply Lemma~\ref{Lemma_embedding_small_tree} to $T_1^{\mathrm{small}}$, $U=U'$, $V_\phi=V_{1}^{ind}$, $C_\phi=C_{1}^{ind}$, $q=2\mu$, $\gamma=|T_1^{small}|/n$, $\nu=|U'|/n$ and $\xi=\xi$.
+This gives a  randomized rainbow embedding $\phi_1=(T_{\phi_1}, V_{1}^{ind}, C_{1}^{ind})$ of $T_1^{small}$ and  $\mu$-random, independent sets $V_0\subseteq V_{1}^{ind}\setminus V(T_{\phi_1})$, $C_0\subseteq C_{1}^{ind}\setminus C(T_{\phi_1})$ with $(U'_{\phi_1},V_0)$ $\xi n$-replete with high probability (where $U'_{\phi_1}$ is the copy of $U'$ in $T_{\phi_1}$).
+\end{itemize}
+Notice that $\phi_1'=(V_1^{ind}\cup \dots \cup V_6^{ind}, C_1^{ind}\cup \dots\cup C_6^{ind}, T_{\phi_1} )$ is also a  randomized embedding  of $T_1^{\mathrm{small}}$. 
+Then, do the following.
+\begin{itemize}
+\item Apply  Lemma~\ref{Lemma_extending_with_large_stars} with $T_1=T_1^{\mathrm{small}}$, $T_2=T_2^{\mathrm{stars}}$, $\phi_1=\phi_1'$, $p=p', \beta=\beta, \gamma=12\mu, d=d, n=n$. This gives a randomized embedding $\phi_{2}=(V_{\phi_2}, C_{\phi_2}, T_{\phi_2})$ of $T_2^{\mathrm{stars}}$ extending $\phi_{1}'$, with $V_{dep}=V(K_{2n+1})\setminus V_{\phi_2}$, $C_{dep}=C(K_{2n+1})\setminus C_{\phi_2}$ $(p'-\beta)$-random sets of vertices/colours.
+\end{itemize} 
+Notice that $\phi_2'=(V_{\phi_2}\setminus (V_3^{ind}\cup \dots \cup V_6^{ind}), C_{\phi_2}\setminus (C_3^{ind}\cup \dots \cup C_6^{ind}), T_{\phi_2})$ is also a randomized embedding  of $T_2^{\mathrm{stars}}$. Indeed, recall that by our definition of extension we embed vertices of $T_2^{\mathrm{stars}}\setminus T_1^{small}$ outside of the set $V_1^{ind}\cup \dots \cup V_6^{ind}$ using the edges whose colors are also outside of $C_1^{ind}\cup \dots\cup C_6^{ind}$. Moreover, by our constriction, $V(T_{\phi_1})$ is disjoint from
+$V_2^{ind}\cup \dots \cup V_6^{ind}$ and $C(T_{\phi_1})$ is disjoint from
+$C_2^{ind}\cup \dots\cup C_6^{ind}$.
+
+Using that $p_3+p_4+p_5+p_6 = p'-\beta$ and Lemma~\ref{Lemma_mixture_of_p_random_sets}, randomly partition $C_{dep}= C_{dep}^3\cup C_{dep}^4\cup C_{dep}^5\cup C_{dep}^6$  with the sets $C_{dep}^i$ $p_i$-random subsets of $C(K_{2n+1})$.
+
+Using that $p'-\beta= (p_3+p_4+p_5+p_6)/2 + (p'-\beta)/2\geq p_3/2+p_4/2+p_5/2+ (p+\eps)/6$, inside $V_{dep}$ we can choose disjoint sets $V_{dep}^3, V_{dep}^4, V_{dep}^5, V_{dep}^6$ which are $\rho$-random for $\rho=p_3/2, p_4/2, p_5/2, (p+\eps)/6$ respectively. We remark that some of the random sets ($V_{ind}^2, C_{ind}^2, V_{ind}^6, C_{ind}^6, V_{dep}^4,$ and $C_{dep}^4$) will not actually used in the embedding. They are only there because it is notationally convenient to allocate equal amounts of vertices/colours for the different parts of the embedding.
+\begin{itemize}
+\item Apply Lemma~\ref{Lemma_extending_with_matchings} with $T_{\ell}=T_3^{\mathrm{match}}, T_1=T_{2}^{\mathrm{stars}}$, $V_{dep}=V_{dep}^3$, $C_{dep}=C_{dep}^3$, $V_{ind}=V_{ind}^3$, $C_{ind}=C_{ind}^3$, $\phi_1=\phi_2'$, $\ell=d, p=p_3, q=2\mu, n=n$. This gives we get a  randomized embedding $\phi_3=(V_{\phi_3}, C_{\phi_3}, T_{\phi_3})$  of $T_3^{\mathrm{match}}$ into $V^3_{ind}\cup V^3_{dep}\cup V_{\phi_2'}$, $V^3_{dep}\cup  V^3_{ind}\cup C_{\phi_2'}$ extending  $\phi_2$.
+\item Apply Lemma~\ref{Lemma_extending_with_connecting_paths} with $T_2=T_4^{\mathrm{paths}}, T_1=T_{3}^{\mathrm{match}}$, $V_{ind}=V_{ind}^4$, $C_{ind}=C_{ind}^4$, $\phi_1=\phi_3$, $p=2\mu, q=(2k)^{-1}, n=n$. This gives a  randomized embedding $\phi_4=(V_{\phi_4}, C_{\phi_4}, T_{\phi_4})$  of $T_4^{\mathrm{paths}}$ into $V^4_{ind}\cup V_{\phi_3}, C^4_{ind}\cup C_{\phi_3}$ extending  $\phi_3$.
+\item By Lemma~\ref{Lemma_extending_with_matchings} with $T_{\ell}=T_5^{\mathrm{match}}, T_1=T_{4}^{\mathrm{paths}}$, $V_{dep}=V_{dep}^5$, $C_{dep}=C_{dep}^5$, $V_{ind}=V_{ind}^5$, $C_{ind}=C_{ind}^5$, $\phi_1=\phi_4$, $\ell=d, p=p_5, q=2\mu, n=n$, we get a  randomized embedding $\phi_5=(V_{\phi_5}, C_{\phi_5}, T_{\phi_5})$  of $T_5^{\mathrm{match}}$ into $V^5_{ind}\cup V^5_{dep}\cup V_{\phi_4}$, $C^5_{dep}\cup  C^5_{ind}\cup V_{\phi_4}$ extending  $\phi_4$.
+\end{itemize}
+Now the lemma holds with $\hat T'=T_{\phi_5}$, $V_0=V_0$, $C_0=C_0$ (recall that these sets are from the application of Lemma~\ref{Lemma_embedding_small_tree} above),  $V=V_{dep}^6$, and $C\subseteq C_{dep}^6$ a $(1-\eta)\eps$-random subset. 
+\end{proof}

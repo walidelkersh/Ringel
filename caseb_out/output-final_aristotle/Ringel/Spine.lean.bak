@@ -1,0 +1,249 @@
+/-
+Copyright (c) 2026 Walid K. Elkersh. All rights reserved.
+Released under Apache 2.0 license as described in the file LICENSE.
+Authors: Walid K. Elkersh
+-/
+import Ringel.Statement
+import Ringel.Primitives
+
+/-!
+# Proof spine for Ringel's Conjecture (Montgomery–Pokrovskiy–Sudakov)
+
+The top-level architecture of `arXiv:2001.02665`, as a `sorry`-stubbed skeleton. The proof reduces
+`Ringel.ringel_conjecture_large` (in `Ringel/Statement.lean`) to the **rainbow-copy** statement
+`rainbow_copy_exists` (paper Theorem `Theorem_Ringel_proof`), via the cyclic-shift step
+`decomp_of_rainbow_copy`. The rainbow statement is then split by `case_division` into Cases A, B, C.
+
+Each leaf reduces into the per-section lemmas (to live in `Ringel/SectionN.lean`):
+* Case A → finishing lemma A (§4),
+* Case B → finishing lemma B (§5),
+* Case C → `Theorem_case_C` (§6–§7),
+* Cases A/B share the randomized near-embedding `nearembedagain` (§6).
+
+**Note (cyclic / Kotzig form).** `decomp_of_rainbow_copy` builds the decomposition out of the
+`2*n+1` cyclic shifts of a single rainbow copy. So what is actually proved for large `n` is the
+*cyclic* decomposition (Kotzig's form), which is strictly stronger than plain Ringel; plain Ringel
+is the forgetful weakening. See the discussion after Theorem `main` in the paper.
+-/
+
+open SimpleGraph
+
+namespace Ringel
+
+/-- **Theorem `Theorem_Ringel_proof`.** For sufficiently large `n`, the ND-coloured `K_{2n+1}`
+contains a rainbow copy of every `n`-edge tree. This is the heart of the MPS proof. -/
+theorem rainbow_copy_exists :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by
+  have hd : (0 : ℝ) < 1 := by norm_num
+  filter_upwards [
+    case_division 1 hd,
+    caseA_rainbow 1 hd,
+    caseB_rainbow 1 hd,
+    caseC_rainbow 1 hd
+  ] with n hn_div hn_A hn_B hn_C V _ T hT hcard
+  rcases hn_div T hT hcard with hA | hB | hC
+  · by_cases hC2 : IsCaseC 1 n T
+    · exact hn_C T hT hcard hC2
+    · exact hn_A T hT hcard hA hC2
+  · by_cases hC2 : IsCaseC 1 n T
+    · exact hn_C T hT hcard hC2
+    · exact hn_B T hT hcard hB hC2
+  · exact hn_C T hT hcard hC
+
+/-- **Cyclic-shift step (Kotzig).** A rainbow copy of `T` in the ND-colouring yields `2*n+1`
+pairwise edge-disjoint copies of `T` covering `K_{2n+1}` — taken as the cyclic shifts of the one
+copy. Bridges the rainbow statement to the decomposition in `Statement.lean`. -/
+theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
+    (T : SimpleGraph V) (hT : T.IsTree) (hn : T.edgeSet.ncard = n)
+    (h : HasRainbowCopy n T) :
+    ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
+      Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
+      ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
+  rcases h with ⟨f0, h_inj⟩
+  use fun i => f0.trans (Equiv.addRight i).toEmbedding
+  cases n with
+  | zero =>
+    constructor
+    · intro i j hij
+      rw [Set.disjoint_iff]
+      intro e ⟨h1, _⟩
+      have : (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet.ncard = 0 := by
+        have h_inj' : Function.Injective (Sym2.map (f0.trans (Equiv.addRight i).toEmbedding)) :=
+          Sym2.map_injective (f0.trans (Equiv.addRight i).toEmbedding).injective
+        rw [SimpleGraph.map_edgeSet, Set.ncard_image_of_injective _ h_inj', hn]
+      have hemt : (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet = ∅ := Set.ncard_eq_zero.mp this
+      rw [hemt] at h1
+      exact h1
+    · ext e
+      simp only [edgeSet_iSup, Set.mem_iUnion, top_edgeSet, Set.mem_univ, true_and]
+      constructor
+      · rintro ⟨i, hi⟩
+        have : (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet.ncard = 0 := by
+          have h_inj' : Function.Injective (Sym2.map (f0.trans (Equiv.addRight i).toEmbedding)) :=
+            Sym2.map_injective (f0.trans (Equiv.addRight i).toEmbedding).injective
+          rw [SimpleGraph.map_edgeSet, Set.ncard_image_of_injective _ h_inj', hn]
+        have hemt : (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet = ∅ := Set.ncard_eq_zero.mp this
+        rw [hemt] at hi
+        exact hi.elim
+      · intro he
+        have : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeSet.ncard = 0 := by
+          have hc1 : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeSet.ncard = (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeFinset.card := by
+            rw [← edgeFinset_card]; exact Set.ncard_def _
+          have hc2 : (⊤ : SimpleGraph (Fin (2 * 0 + 1))).edgeFinset.card = Nat.choose (2 * 0 + 1) 2 := card_edgeFinset_top_eq_card_choose_two
+          rw [hc1, hc2]
+          rfl
+        have hemt : (⊤ : SimpleGraph (Fin 1)).edgeSet = ∅ := Set.ncard_eq_zero.mp this
+        rw [hemt] at he
+        exact he.elim
+  | succ n' =>
+    have hn_pos : 0 < n.succ := Nat.zero_lt_succ _
+    have h_inj' := h_inj hn_pos
+    have h_pairwise : Pairwise (fun i j => Disjoint (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet
+      (T.map (f0.trans (Equiv.addRight j).toEmbedding)).edgeSet) := by
+      intro i j hij
+      rw [Set.disjoint_iff]
+      rintro e ⟨h1, h2⟩
+      rw [SimpleGraph.map_edgeSet] at h1 h2
+      rcases h1 with ⟨e1, he1, rfl⟩
+      rcases h2 with ⟨e2, he2, heq⟩
+      have h_addRight_map : ∀ (e : Sym2 (Fin (2*n.succ+1))) k,
+          ndColouring n.succ hn_pos (Sym2.map (fun x => x + k) e) = ndColouring n.succ hn_pos e := by
+        intro e k
+        induction e using Sym2.ind with
+        | _ u v => exact ndColouring_addRight n.succ hn_pos u v k
+      have h_comp1 : Sym2.map (f0.trans (Equiv.addRight i).toEmbedding) e1 =
+                     Sym2.map (fun x => x + i) (Sym2.map f0 e1) := by rw [Sym2.map_map]; rfl
+      have h_comp2 : Sym2.map (f0.trans (Equiv.addRight j).toEmbedding) e2 =
+                     Sym2.map (fun x => x + j) (Sym2.map f0 e2) := by rw [Sym2.map_map]; rfl
+      rw [h_comp1] at heq
+      rw [h_comp2] at heq
+      have hcol_eq : ndColouring n.succ hn_pos (Sym2.map (fun x => x + i) (Sym2.map f0 e1)) =
+                     ndColouring n.succ hn_pos (Sym2.map (fun x => x + j) (Sym2.map f0 e2)) := by rw [heq]
+      rw [h_addRight_map, h_addRight_map] at hcol_eq
+      have he1_mapped : Sym2.map f0 e1 ∈ (T.map f0).edgeSet := Set.mem_image_of_mem _ he1
+      have he2_mapped : Sym2.map f0 e2 ∈ (T.map f0).edgeSet := Set.mem_image_of_mem _ he2
+      have h_e_eq : Sym2.map f0 e1 = Sym2.map f0 e2 := h_inj' he1_mapped he2_mapped hcol_eq
+      rw [h_e_eq] at heq
+      have h_not_diag : ¬(Sym2.map f0 e2).IsDiag := by
+        have h_edge := (T.map f0).not_isDiag_of_mem_edgeSet he2_mapped
+        intro h_diag
+        rw [← Sym2.isDiag_iff_mem_diagSet] at h_diag
+        exact h_edge h_diag
+      revert heq h_not_diag
+      generalize Sym2.map f0 e2 = e_base
+      intro heq h_not_diag
+      induction e_base using Sym2.ind with
+      | _ u v =>
+        rw [Sym2.map_pair_eq, Sym2.map_pair_eq] at heq
+        rw [Sym2.eq_iff] at heq
+        rcases heq with ⟨h_u, h_v⟩ | ⟨h_u, h_v⟩
+        · have : u + i = u + j := h_u
+          have : i = j := add_left_cancel this
+          contradiction
+        · have h_u_mod : (i.val + i.val) % (2*n.succ+1) = (j.val + j.val) % (2*n.succ+1) := by
+            have h_sum : (u + i) + (v + i) = (v + j) + (u + j) := by rw [h_u, h_v]
+            have h_sum_cancel : i + i = j + j := by
+              calc
+                i + i = u + v + i + i - (u + v) := by abel
+                _ = (u + i) + (v + i) - (u + v) := by abel
+                _ = (v + j) + (u + j) - (u + v) := by rw [h_sum]
+                _ = j + j := by abel
+            exact congrArg Fin.val h_sum_cancel
+          have eq2 : (i.val * 2) % (2*n.succ+1) = (j.val * 2) % (2*n.succ+1) := by
+            have h_i_mul : i.val + i.val = i.val * 2 := by omega
+            have h_j_mul : j.val + j.val = j.val * 2 := by omega
+            rw [h_i_mul, h_j_mul] at h_u_mod
+            exact h_u_mod
+          have hc : Nat.gcd (2 * n.succ + 1) 2 = 1 := by
+            have h_coprime : Nat.Coprime (2 * n.succ + 1) 2 := by rw [Nat.coprime_two_right]; simp
+            exact h_coprime
+          have h_eq_mod : i.val * 2 ≡ j.val * 2 [MOD 2*n.succ+1] := eq2
+          have h_mod : i.val ≡ j.val [MOD 2*n.succ+1] := Nat.ModEq.cancel_right_of_coprime hc h_eq_mod
+          have : i = j := Fin.ext (Nat.ModEq.eq_of_lt_of_lt h_mod i.isLt j.isLt)
+          contradiction
+    exact ⟨h_pairwise, by
+      have h_sub : (⨆ i, T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet ⊆ ⊤.edgeSet := by
+        rw [edgeSet_iSup]
+        intro e ⟨i, hi⟩
+        have h_not_diag : ¬e.IsDiag := (T.map (f0.trans (Equiv.addRight i).toEmbedding)).not_isDiag_of_mem_edgeSet hi
+        rw [top_edgeSet]
+        exact h_not_diag
+      have h_card_top : (⊤ : SimpleGraph (Fin (2 * n.succ + 1))).edgeSet.ncard = n.succ * (2 * n.succ + 1) := by
+        have hc1 : (⊤ : SimpleGraph (Fin (2 * n.succ + 1))).edgeSet.ncard = (⊤ : SimpleGraph (Fin (2 * n.succ + 1))).edgeFinset.card := by
+          rw [← edgeFinset_card]; exact Set.ncard_def _
+        have hc2 : (⊤ : SimpleGraph (Fin (2 * n.succ + 1))).edgeFinset.card = Nat.choose (2 * n.succ + 1) 2 := card_edgeFinset_top_eq_card_choose_two
+        rw [hc1, hc2]
+        have : Nat.choose (2 * n.succ + 1) 2 = (2 * n.succ + 1) * (2 * n.succ) / 2 := rfl
+        rw [this]
+        omega
+      have h_card_union : (⋃ i, (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet).ncard = n.succ * (2 * n.succ + 1) := by
+        have h_card_i : ∀ i, (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet.ncard = n.succ := by
+          intro i
+          have h_inj_map : Function.Injective (Sym2.map (f0.trans (Equiv.addRight i).toEmbedding)) :=
+            Sym2.map_injective (f0.trans (Equiv.addRight i).toEmbedding).injective
+          rw [SimpleGraph.map_edgeSet, Set.ncard_image_of_injective _ h_inj_map, hn]
+        have hs : ∀ i, (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet.Finite := fun i => Set.toFinite _
+        have h_sum : (⋃ i, (T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet).ncard = ∑ᶠ i : Fin (2 * n.succ + 1), n.succ := by
+          have := ncard_iUnion_of_finite hs h_pairwise
+          rw [this]
+          exact finsum_congr h_card_i
+        rw [h_sum]
+        have h_sum2 : (∑ᶠ i : Fin (2 * n.succ + 1), n.succ) = Nat.card (Fin (2 * n.succ + 1)) * n.succ := finsum_const n.succ
+        have hcard : Nat.card (Fin (2 * n.succ + 1)) = 2 * n.succ + 1 := Nat.card_eq_fintype_card
+        rw [h_sum2, hcard]
+        omega
+      have hf : (⊤ : SimpleGraph (Fin (2 * n.succ + 1))).edgeSet.Finite := Set.toFinite _
+      have h_eq : (⨆ i, T.map (f0.trans (Equiv.addRight i).toEmbedding)).edgeSet = ⊤.edgeSet := by
+        rw [edgeSet_iSup]
+        apply Set.eq_of_subset_of_ncard_eq h_sub
+        · rw [h_card_union, h_card_top]
+        · exact hf
+      ext e
+      rw [← Set.ext_iff] at h_eq
+      exact h_eq e⟩
+
+/-- `Statement.ringel_conjecture_large` follows from the spine: combine `rainbow_copy_exists` with
+`decomp_of_rainbow_copy`. (Demonstrates the wiring; no new `sorry` beyond the two spine lemmas.) -/
+theorem ringel_conjecture_large_via_spine :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n →
+      ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
+        Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
+        ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
+  filter_upwards [rainbow_copy_exists] with n hn V _ T hT hcard
+  exact decomp_of_rainbow_copy T hT hcard (hn T hT hcard)
+
+/-- **Lemma `Lemma_case_division` (§2).** For small `δ > 0` and large `n`, every `n`-edge tree
+is in Case A, Case B, or Case C (cases need not be disjoint). -/
+theorem case_division (δ : ℝ) (hδ : 0 < δ) :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n →
+      IsCaseA δ n T ∨ IsCaseB δ n T ∨ IsCaseC δ n T := by
+  sorry
+
+/-- **Case A rainbow copy (§4, §6, M1+M2).** For small `δ > 0` and large `n`, every Case A
+tree that is not Case C has a rainbow copy in the ND-coloured `K_{2n+1}`. -/
+theorem caseA_rainbow (δ : ℝ) (hδ : 0 < δ) :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n →
+      IsCaseA δ n T → ¬IsCaseC δ n T → HasRainbowCopy n T := by
+  sorry
+
+/-- **Case B rainbow copy (§5, §6, M1+M2).** For small `δ > 0` and large `n`, every Case B
+tree that is not Case C has a rainbow copy in the ND-coloured `K_{2n+1}`. -/
+theorem caseB_rainbow (δ : ℝ) (hδ : 0 < δ) :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n →
+      IsCaseB δ n T → ¬IsCaseC δ n T → HasRainbowCopy n T := by
+  sorry
+
+/-- **Case C rainbow copy (§6–§7, M3, deterministic).** For small `δ > 0` and large `n`,
+every Case C tree has a rainbow copy in the ND-coloured `K_{2n+1}`. -/
+theorem caseC_rainbow (δ : ℝ) (hδ : 0 < δ) :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n →
+      IsCaseC δ n T → HasRainbowCopy n T := by
+  sorry
+
+end Ringel
