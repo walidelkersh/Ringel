@@ -432,11 +432,26 @@ lemma caseC_embed_core (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
   rw [hcoe]
   exact hrb
 
-/-- **Leaf extension.** Given a rainbow embedding of the core, extend it to a full
-rainbow copy of $T$ by absorbing the leaf edges via the ND-colouring's 2-factorization. -/
+/-- **Leaf extension (MPS §7).** Given a rainbow embedding of the core, extend it to a full
+rainbow copy of $T$ by absorbing the leaf edges via the ND-colouring's 2-factorization.
+
+The hypotheses `hT : T.IsTree`, `hcard : T.edgeSet.ncard = n` and `h_small` are required for
+the statement to hold: without a bound tying the number of leaf edges to the number of
+available colours the claim is false (e.g. a star with `n + 1` leaves and empty core satisfies
+the decomposition data yet has `n + 1` edges, which cannot all receive distinct colours from
+`Fin n`). All three hold at the sole call site (`caseC_embedding_exists`), where `T` is the
+tree of the problem and the core comes from `caseC_decompose`.
+
+With these hypotheses the statement is a special case of Ringel's conjecture: because the tree
+is acyclic the leaf edges and the core edges partition `T.edgeSet`, so the number of leaves
+equals exactly the number of colours not used on the (rainbow) core, and the leaves must be
+packed around their anchors so that the induced leaf-edge colours are a bijection onto that
+free-colour pool. Discharging it is the geometric leaf-packing of MPS §7. -/
 lemma caseC_extend_embedding (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
-    (T : SimpleGraph V) (T_core : SimpleGraph V) (leaves : Set V)
+    (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
+    (T_core : SimpleGraph V) (leaves : Set V)
     (h_decomp1 : T_core ≤ T) (h_decomp2 : ∀ v ∈ leaves, IsLeaf T v)
+    (h_small : T_core.edgeSet.ncard ≤ n / 100)
     (h_decomp3 : T_core.edgeSet ∪ {e ∈ T.edgeSet | ∃ v ∈ leaves, v ∈ e} = T.edgeSet)
     (f_core : V ↪ Fin (2 * n + 1))
     (h_core_inj : Set.InjOn (ndColouring n hn) (T_core.map f_core).edgeSet) :
@@ -451,7 +466,8 @@ lemma caseC_embedding_exists (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_pos : 0 < n
   obtain ⟨f_core, h_core_inj⟩ :=
     caseC_embed_core n hn_pos T hT hn T_core h_decomp1 h_small
   obtain ⟨f, hf_inj⟩ :=
-    caseC_extend_embedding n hn_pos T T_core leaves h_decomp1 h_decomp2 h_decomp3 f_core h_core_inj
+    caseC_extend_embedding n hn_pos T hT hn T_core leaves h_decomp1 h_decomp2 h_small
+      h_decomp3 f_core h_core_inj
   exact ⟨f, fun _ => hf_inj⟩
 
 /-- **Case C rainbow copy (§6–§7, M3, deterministic).** For small $\delta > 0$ and large $n$,
