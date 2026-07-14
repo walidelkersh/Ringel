@@ -65,7 +65,26 @@ existence via the probabilistic scaffold `exists_embed_core_caseB_prob`.
 
 The single remaining `sorry` is exactly the probabilistic content: that the event
 `valid_caseB_core` (a rainbow core embedding) has positive probability over the random choice of
-`f_core`. This is where the near-embedding theorem of §4 is applied. -/
+`f_core`. This is where the near-embedding theorem of §4 is applied.
+
+**Status of this `sorry` (honest assessment).** By `prob_pos_of_exists`/`exists_of_prob_gt_zero`
+(in `Ringel/ProbBounds.lean`), over the finite sample space of embeddings the goal
+`prob_event (… valid_caseB_core …) > 0` is *equivalent* to the plain existence of one rainbow
+embedding of the core forest `T'`. So the difficulty is not probabilistic: an averaging/union-bound
+argument ("expected number of colour collisions `< 1`") cannot help, and in fact the expected
+number of colliding edge-pairs for a uniformly random embedding is `Θ(n)`, not `o(1)`.
+
+Moreover this statement is at least as hard as an **open problem**. Its hypotheses admit the
+sub-case `paths = []` (valid whenever `⌊δ·n/800⌋ = 0`, e.g. `n < 800/δ`), and then
+`CaseBRemovedVertices paths = ∅`, so the "core forest" is the *entire* `n`-edge tree `T` and
+`valid_caseB_core` becomes: `T` has a rainbow embedding into the ND-coloured `K_{2n+1}`, i.e. a
+**ρ-labelling (Rosa labelling) of `T`**. Since `δ` ranges over all positive reals, a single proof of
+this lemma would yield a ρ-labelling for every tree — the cyclic-decomposition/graceful-type
+labelling problem, which is open in general and absent from Mathlib. Discharging this `sorry`
+soundly therefore requires either the paper's full §4 near-embedding + §5 absorption construction
+(a large development, not a wiring fix) or a proof of an open conjecture; it is left in place
+rather than closed by an unsound proof. (Compare the honest treatment of the analogous Case A gap
+in `bound_vertex_collisions`.) -/
 lemma caseB_embed_core (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
     (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
     (paths : List (List V))

@@ -24,6 +24,19 @@ lemma exists_of_prob_gt_zero {Ω : Type*} [Fintype Ω] (p : Ω → Prop) [Decida
   rw [h_empty] at h
   simp at h
 
+/-- Converse of `exists_of_prob_gt_zero`: over a nonempty finite sample space, an event has
+positive probability **iff** it is satisfied by some outcome. Consequently, `prob_event p > 0`
+carries no information beyond the plain existence `∃ ω, p ω`; in particular an averaging/union-bound
+argument ("the expected number of bad outcomes is `< 1`") can never establish `prob_event p > 0`
+for an event `p` whose bare existence is itself the hard content. -/
+lemma prob_pos_of_exists {Ω : Type*} [Fintype Ω] [Nonempty Ω] (p : Ω → Prop) [DecidablePred p]
+    (h : ∃ ω, p ω) : prob_event p > 0 := by
+  obtain ⟨ω, hω⟩ := h
+  unfold prob_event
+  apply div_pos
+  · exact_mod_cast Finset.card_pos.mpr ⟨ω, by simp [hω]⟩
+  · exact_mod_cast Fintype.card_pos
+
 /-- A valid color assignment to the edges of the core tree. -/
 abbrev CoreColors (n : ℕ) {V : Type*} (T : SimpleGraph V) (S : Set V) :=
   ((T.induce Sᶜ).edgeSet) ↪ Fin n
