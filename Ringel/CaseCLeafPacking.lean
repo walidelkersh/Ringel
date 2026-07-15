@@ -7,6 +7,7 @@ import Mathlib
 
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
+set_option maxHeartbeats 800000
 
 /-!
 # Generic engines for the Case C leaf-packing (MPS §7)
@@ -554,7 +555,8 @@ lemma cCiv_ge_sumV1_of_V2 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V
     ∑ u ∈ V₁, cDeg leaves anchor u ≤ cCiv leaves V₁ V₂ idx L anchor x := by
   refine' le_trans _ ( cCiv_ge_below leaves V₁ V₂ idx L anchor hanchor_big hx );
   refine' Finset.sum_le_sum_of_subset _;
-  grind (instances := 20000) (splits := 500) (gen := 500) +suggestions
+  intro u hu; simp only [Finset.mem_filter] at *;
+  exact ⟨hu, lt_of_lt_of_le (cRank_lt_card_V1 V₁ V₂ idx L hrank1 hu) (cRank_ge_card_V2 V₁ V₂ idx L _ hux)⟩
 
 /-! ## Geometry of the leaf positions -/
 

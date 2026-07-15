@@ -63,7 +63,7 @@ lemma card_edges_in_subset_lt {V : Type*} [Fintype V] [DecidableEq V]
       refine ⟨s(⟨x, hxy.1⟩, ⟨y, hxy.2⟩), ?_, ?_⟩
       · rw [Finset.mem_coe, SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet]
         exact hadj
-      · rw [Sym2.map_mk, Prod.map_apply]
+      · rfl
   have hle := Finset.card_le_card_of_surjOn _ hsurj
   omega
 
@@ -580,13 +580,13 @@ theorem one_large_vertex (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
       have hadj : T'.Adj a b := by
         rwa [SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet] at hd
       obtain ⟨_, haL, hbL⟩ := (hT'adj a b).mp hadj
-      rw [Sym2.map_mk, Sym2.map_mk, Prod.map_apply, Prod.map_apply, hfS a haL, hfS b hbL]
+      rw [Sym2.map_mk, hfS a haL, hfS b hbL]
   -- Colour of a leaf edge.
   have hleafcol : ∀ (w : V) (hw : w ∈ L),
       ndColouring n hn (Sym2.map f s(v1, w)) = ↑(eqv ⟨w, hw⟩) := by
     intro w hw
     have hfv1 : f v1 = 0 := by rw [hfS v1 hv1L]; exact hgv1
-    rw [Sym2.map_mk, Prod.map_apply, hfv1, hfL w hw]
+    rw [Sym2.map_mk, hfv1, hfL w hw]
     have hzero : s((0 : Fin (2 * n + 1)), attachPos ↑(eqv ⟨w, hw⟩))
         = s((0 : Fin (2 * n + 1)), 0 + attachPos ↑(eqv ⟨w, hw⟩)) := by rw [zero_add]
     rw [hzero]
