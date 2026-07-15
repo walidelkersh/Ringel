@@ -1,0 +1,493 @@
+
+
+
+
+\subsection{Notation}\label{sec:not}
+For a coloured graph $G$, we denote the set of vertices of $G$ by $V(G)$, the set of edges of $G$ by $E(G)$, and the set of colours of $G$ by $C(G)$.
+For a coloured graph $G$, disjoint sets of vertices $A,B\subseteq V(G)$ and a set of colours $C\subseteq C(G)$ we use $G[A,B,C]$ to denote the subgraph of $G$ consisting of colour $C$ edges from $A$ to $B$, and $G[A,C]$ to be the graph of the colour $C$ edges within $A$.
+For a single colour $c$, we denote the set of colour $c$ edges from $A$ to $B$ by $E_c(A,B)$.
+
+A coloured graph is \emph{globally $k$-bounded} if every colour is on at most $k$ edges.
+For a set of colours $C$, we say that a graph $H$ is ``$C$-rainbow''  if $H$ is rainbow and $C(H)\subseteq C$. We say that a collection of graphs $H_1, \dots, H_k$ is \emph{collectively} rainbow if their union is rainbow.
+A star is a tree consisting of a collection of leaves joined to a single vertex (which we call the \emph{centre}).
+A \emph{star forest} is a graph consisting of vertex disjoint stars.
+
+For any reals $a,b\in \R$, we say $x=a\pm b$ if $x\in [a-b,a+b]$.
+
+
+
+\subsubsectionme{Asymptotic notation}
+For any $C\geq 1$ and $x,y\in (0,1]$, we use ``$x\oldll_C y$'' to mean ``$x\leq \frac{y^C}{C}$''. We will write ``$x\LL y$'' to mean that there is some absolute constant $C$ for which the proof works with ``$x\LL{} y$'' replaced by ``$x\oldll_{C} y$''. 
+In other words the proof works if $y$ is a small but fixed power of $x$.
+This notation compares to the more common notation $x\oldll y$ which means ``there is a fixed positive continuous function $f$ on $(0,1]$ for which the remainder of the proof works with ``$x\oldll y$'' replaced by ``$x\leq f(y)$''. (Equivalently, ``$x\oldll y$'' can be interpreted as ``for all $x\in (0,1]$, there is some $y\in (0,1]$ such that the remainder of the proof works with $x$ and $y$''.) The two notations ``$x\LL{} y$'' and ``$x\oldll y$'' are largely interchangeable --- most of our proofs remain correct with all instances of ``$\LL$'' replaced by ``$\oldll$''. The advantage of using ``$\LL$'' is that it proves polynomial bounds on the parameters (rather than bounds of the form ``for all $\epsilon>0$ and  sufficiently large $n$''). This is important towards the end of this paper, where the proofs need polynomial parameter bounds.
+
+While the constants $C$ will always be implicit in each instance  of ``$x\LL{} y$'',  it is possible to work  them out explicitly. To do this one should go through the lemmas in the paper and choose the constants $C$ for a lemma after the constants have been chosen for the lemmas on which it depends. This is because an inequality $x\oldll_C y$ in a lemma  may be needed to imply an inequality $x\oldll_{C'} y$ for a lemma it depends on. Within an individual lemma we will often have several inequalities of the form $x\LL y$. There the constants $C$ need to be chosen in the reverse order of their occurrence in the text. The reason for this is the same --- as we prove a lemma we may use an inequality  $x\oldll_C y$  to imply another inequality $x\oldll_{C'} y$ (and so we should choose $C'$ before choosing $C$).
+
+Throughout the paper, there are four operations we perform with the ``$x\LL{} y$'' notation:
+\begin{enumerate}[label = (\alph{enumi})]
+\item We will use $x_1\LL x_2\LL\dots\LL x_k$ to deduce finitely many inequalities of the form ``$p(x_1, \dots, x_k)\leq q(x_1, \dots, x_k)$'' where $p$ and $q$ are {monomials} with non-negative coefficients and $\min\{i: p(0, \dots, 0, x_{i+1}, \dots, x_k)=0\}< \min\{j: q(0, \dots, 0, x_{j+1}, \dots, x_k)=0\}$  e.g.\ $1000x_1\leq x_2^5x_4^2x_5^3$ is of this form.
+\item We will use $x\LL y$ to deduce finitely many inequalities of the form ``$x\oldll_C y$'' for a fixed constant $C$.
+\item For $x\LL y$ and  fixed constants $C_1, C_2$, we can choose a variable $z$ with $x\oldll_{C_1} z\oldll_{C_2}y$.
+\item For $n^{-1}\LL 1$ and any fixed constant $C$, we can deduce $n^{-1}\oldll_C \log^{-1} n\oldll_C 1$.
+\end{enumerate}
+See \cite{montgomery2018decompositions} for a detailed explanation of why the above operations are valid.
+
+
+
+\subsubsectionme{Rounding}
+In several places, we will have, for example, constants $\eps$ and integers $n,k$ such that $1/n\ll \eps,1/k$ and require that $m=\eps n/k$ is an integer, or even divisible by some other small integer. Note that we can arrange this easily with a very small alteration in the value of $\eps$. For example, to apply Lemma~\ref{lem:finishB} we assume that $m$ is an integer, and therefore in the proof of Theorem~\ref{Theorem_Ringel_proof}, when we choose $\bar{\eps}$ we make sure that when this lemma is applied with $\eps=\bar{\eps}$ the corresponding value for $m$ is an integer.
+
+\subsection{Probabilistic tools}\label{sec:prob}
+For a finite set $V$, a $p$-random subset of $V$ is a set formed by choosing every element of $V$ independently  at random with probability $p$. If $V$ is not specified, then we will implicitly assume that $V$ is $V(K_{2n+1})$ or $C(K_{2n+1})$, where this will be clear from context. 
+If $A,B\subseteq V$ with $A$ $p$-random and $B$ $q$-random, we say that $A$ and $B$ are \emph{disjoint} if every $v\in V$ is in $A$ with probability $p$, in $B$ with probability $q$, and outside of $A\cup B$ with probability $1-p-q$ (and this happens independently for each $v\in V$). We say that a $p$-random set $A$ is independent from a $q$-random set $B$ if the choices for $A$ and $B$ are made independently, that is, if $\P(A=A'\land B=B')=\P(A=A')\P(B=B')$ for any outcomes $A'$ and $B'$ of $A$ and $B$.
+
+Often, we will have a $p$-random subset $X$ of $V$ and divide  it into two disjoint $(p/2)$-random subsets of $V$. This is possible by choosing which subset each element of $X$ is in independently at random with probability $1/2$ using the following simple lemma.
+\begin{lemma}[Random subsets of random sets]\label{Lemma_mixture_of_p_random_sets}
+Suppose that $X,Y:\Omega\to 2^V$ where $X$ is a $p$-random subset of $V$ and $Y|X$ is a $q$-random subset of $X$ (i.e. the distribution of $Y$ conditional on the event ``$X=X'$'' is that of a $q$-random subset of $X'$). Then $Y$ is a $pq$-random subset of $V$.
+\end{lemma}
+\begin{proof}
+First notice that, to show a set $X\subseteq V$ is $(pq)$-random, it is sufficient to show that  $\P(S\subseteq X)=(pq)^{|S|}$ for all $S\subseteq V$ (for example, by using inclusion-exclusion).
+Now, we prove the lemma.
+Since $X$ is $p$-random we have $\P(S\subseteq X)=p^{|S|}$. Since $Y|X$ is $q$-random, we have $\P(S\subseteq Y|S\subseteq X)=q^{|S|}$. This gives $\P(S\subseteq Y)= \P(S\subseteq Y|S\subseteq X)\P(S\subseteq X)=(pq)^{|S|}$ for every set $S\subseteq V$.
+\end{proof}
+
+We will use the following standard form of Azuma's inequality and a Chernoff Bound. For a probability space $\Omega=\prod_{i=1}^n \Omega_i$, a random variable $X:\Omega\to \R$ is \emph{$k$-Lipschitz} if changing $\omega\in \Omega$ in any one coordinate changes $X(\omega)$ by at most $k$.
+
+\begin{lemma}[Azuma's Inequality]\label{Lemma_Azuma}
+Suppose that $X$ is $k$-Lipschitz and influenced by $\leq m$ coordinates in $\{1, \dots, n\}$. Then{, for any $t>0$,}
+$$\P\left(|X-\E(X)|>t \right)\leq 2e^{\frac{-t^2}{mk^2}}$$.
+\end{lemma}
+
+Notice that the bound in the above inequality can be rewritten as $\P\left(X\neq \E(X)\pm t \right)\leq 2e^{\frac{-t^2}{mk^2}}$.
+
+
+\begin{lemma}[Chernoff Bound] \label{Lemma_Chernoff}
+Let $X$ be a binomial random variable with parameters $(n,p)$.
+Then, for each $\epsilon\in (0,1)$, we have
+$$\mathbb P\big(|X-pn|> \epsilon pn\big)\leq
+2e^{-\frac{pn\epsilon^2}{3}}.$$
+\end{lemma}
+
+
+For an event $X$ in a probability space depending on a parameter $n$, we say ``$X$ holds with high probability'' to mean ``$X$ holds with probability $1-o(1)$'' where $o(1)$ is some function $f(n)$ with $f(n)\to 0$ as $n\to \infty$.
+We will use this definition for the following operations.
+\begin{itemize}
+\item \textbf{Chernoff variant:} For $\epsilon \gg n^{-1}$, if $X$ is a $p$-random subset of $[n]$, then, with high probability, $|X|=(1\pm \epsilon)pn$.
+\item \textbf{Azuma variant:} For $\epsilon\gg n^{-1}$ and fixed $k$, if $Y$ is a  $k$-Lipschitz random variable influenced by at most $n$ coordinates, then, with high probability, $Y=\E(Y)\pm \epsilon n$.
+\item \textbf{Union bound variant:} For fixed $k$, if $X_1, \dots, X_{k}$ are events which hold with high probability then they simultaneously occur with high probability.
+\end{itemize}
+The first two of these follow directly from Lemmas~\ref{Lemma_Azuma} and~\ref{Lemma_Chernoff}, the latter from the union bound.
+
+
+
+\subsection{Structure of trees}\label{Section_structure_of_trees}
+Here, we gather lemmas about the structure of trees. Most of these lemmas say something about the leaves and bare paths of  a tree. It is easy to see that a tree with few leaves must have many bare paths. The most common version of this is the following well known lemma.
+\begin{lemma}[\cite{montgomery2018spanning}]\label{split} For any integers $n,k>2$, a tree with~$n$ vertices either has at least $n/4k$ leaves or a collection of at least $n/4k$ vertex disjoint bare paths, each with length $k$.%\hfill\qed
+\end{lemma}
+As a corollary of this lemma we show that every tree either has many bare paths, many non-neighbouring leaves, or many large stars. This lemma underpins the basic case division for this paper. The rest of the proofs focus on finding rainbow copies of the three types of trees.
+\begin{lemma}[Case division]\label{Lemma_case_division}
+Let $1\gg \delta \gg n^{-1}$. Every $n$-vertex tree satisfies one of the following:
+\begin{enumerate}[label= \Alph{enumi}]
+\item There are at least $\delta n/800$ vertex-disjoint bare paths with length at least $\delta^{-1}$.
+\item There are at least $\delta^6 n$ non-neighbouring leaves.
+\item Removing leaves next to vertices adjacent to at least $\delta^{-4}$ leaves gives a tree with at most
+$n/100$ vertices.
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+Take $T$ and remove leaves around any vertex adjacent to at least $\delta^{-4}$ leaves, and call the resulting tree $T'$. If $T'$ has at most $n/100$ vertices then we are in Case C. Assume then, that $T'$ has at least $n/100$ vertices.
+
+By Lemma~\ref{split} applied with $n'=|T'|$ and $k=\lceil \delta^{-1}\rceil$, the tree $T'$  either has at least $\delta n/600$ vertex disjoint bare paths with length at least $\delta^{-1}$ or at least $\delta n/600$ leaves. In the first case, as vertices were deleted next to at most $\delta^4 n$ vertices to get $T'$ from $T$, $T$ has at least $\delta n/600-\delta^4n\geq  \delta n/800$ vertex disjoint bare paths with length at least $\delta^{-1}$, so we are in Case B.
+
+In the second case, if there are at least $\delta n/1200$ leaves of $T'$ which are also leaves of $T$, then, as there are at most $\delta^{-4}$ of these leaves around each vertex in $T'$, $T$ has at least $(\delta n/1200)/\delta^{-4}\geq \delta^{6}n$ non-neighbouring leaves, so we are in Case A. On the other hand, if there are not such a number of leaves of $T'$ which are leaves of $T$, then $T'$ must have at least $\delta n/1200$ leaves which are not leaves of $T$, and which therefore are adjacent to a leaf in $T$. Thus, $T$ has at least $\delta n/1200\geq \delta^{6}n$ non-neighbouring leaves, and we are also in Case A.
+\end{proof}
+We say a set of subtrees $T_1,\ldots, T_\ell\subset T$ divides a tree $T$ if $E(T_1)\cup\ldots \cup E(T_\ell)$ is a partition of $E(T)$. We use the following lemma.
+
+\begin{lemma}[\cite{montgomery2018spanning}]\label{littletree} Let $n,m\in \mathbb N$ satisfy $1\leq m\leq n/3$. Given any tree~$T$ with~$n$ vertices and a vertex $t\in V(T)$, we can find two trees $T_1$ and $T_2$ which divide~$T$ so that $t\in V(T_1)$ and $m\leq |T_2|\leq 3m$.
+\end{lemma}
+Iterating this, we can divide a tree into small subtrees.
+\begin{lemma}\label{dividetree} Let $T$ be a tree with at least $m$ vertices, where $m\geq 2$. Then, for some $s$, there is a set of subtrees $T_1,\ldots, T_s$ which divide $T$ so that $m\leq |T_i|\leq 4m$ for each $i\in [s]$.
+\end{lemma}
+\begin{proof}
+We prove this by induction on $|T|$, noting that it is trivially true if $|T|\leq 4m$.
+
+Suppose then $|T|>4m$ and the statement is true for all trees with fewer than $|T|$ vertices and at least $m$ vertices. By Lemma~\ref{littletree}, we can find two trees $T_1$ and $S$ which divide $T$ so that $m\leq |T_1|\leq 3m$. As $|T|>4m$, we have $m<|S|<|T|$, so there must be a set of subtrees $T_2,\ldots,T_s$, for some $s$, which divide $S$ so that $m\leq |T_i|\leq 4m$ for each $2\leq i\leq s$.
+The subtrees $T_1,\ldots,T_s$ then divide $T$, with $m\leq |T_i|\leq 4m$ for each $i\in [s]$.
+\end{proof}
+
+For embedding trees in Cases A and B, we will need a finer understanding of the structure of trees. In fact, every tree can be built up from a small tree by successively adding leaves, bare paths, and stars, as follows.
+ \begin{lemma}[\cite{MPS}]\label{Lemma_decomp} Given integers $d$ and $n$, $\mu>0$ and a tree $T$ with at most $n$ vertices, there are integers $\ell\leq 10^4 d\mu^{-2}$ and $j\in\{2,\ldots,\ell\}$ and a sequence of subgraphs $T_0\subset T_1\subset \ldots \subset T_\ell=T$ such that
+\stepcounter{propcounter}
+\begin{enumerate}[label = {\bfseries \Alph{propcounter}\arabic{enumi}}]
+\item for each $i\in [\ell]\setminus \{1,j\}$, $T_{i}$ is formed from $T_{i-1}$ by adding non-neighbouring leaves,\label{cond1}
+\item $T_j$ is formed from $T_{j-1}$ by adding at most $\mu n$ vertex-disjoint bare paths with length $3$,\label{cond2}
+\item $T_1$ is formed from $T_0$ by adding vertex-disjoint stars with at least $d$ leaves each, and\label{cond3}
+\item $|T_0|\leq 2\mu n$.\label{cond4}
+\end{enumerate}
+\end{lemma}
+
+The following variation will be more convenient to use here. It shows that an arbitrary tree $T$ can be built out of a preselected, small subtree $T_1$ by a sequence of operations. It is important to control the starting tree as it allows us to choose which part of the tree will form our absorbing structure.
+
+For forests $T'\subseteq T$, we say that $T$ is obtained from $T'$ by \emph{adding a matching of leaves} if all the vertices in $V(T)\setminus V(T')$ are non-neighbouring leaves in $T$.
+\begin{lemma}[Tree splitting]\label{Lemma_tree_splitting}
+Let $1\geq  d^{-1} \gg n^{-1}$.
+Let $T$ be a tree with $|T|=n$ and $U\subseteq V(T)$ with $|U|\geq n/d^3$.
+Then, there are forests $T_1^{\mathrm{small}}\subseteq T_2^{\mathrm{stars}}\subseteq T_3^{\mathrm{match}}\subseteq T_4^{\mathrm{paths}}\subseteq T_5^{\mathrm{match}}=T$ satisfying the following.
+\stepcounter{propcounter}
+\begin{enumerate}[label = {\bfseries \Alph{propcounter}\arabic{enumi}}]
+\item $|T_{1}^{\mathrm{small}}|\leq  n/d$ and $|U\cap T_1^{small}|\geq n/d^6$.\label{rush1}
+\item $T_2^{\mathrm{stars}}$ is formed from $T_{1}^{\mathrm{small}}$ by adding vertex-disjoint stars of size at least $d$.\label{rush2}
+\item $T_3^{\mathrm{match}}$ is formed from $T_2^{\mathrm{stars}}$ by adding a sequence of $d^8$ matchings of leaves.\label{rush3}
+\item $T_4^{\mathrm{paths}}$ is formed from $T_3^{\mathrm{match}}$ by adding at most $n/d$ vertex-disjoint paths of length $3$.\label{rush4}
+\item $T_5^{\mathrm{match}}$ is formed from $T_4^{\mathrm{paths}}$ by adding a sequence of $d^8$ matchings of leaves.\label{rush5}
+\end{enumerate}
+\end{lemma}
+\begin{proof}
+First, we claim that there is a subtree $T_0$ of order $\leq n/2d^2$ containing at least $n/d^6$ vertices of $U$. To find this, use Lemma~\ref{dividetree} to find $s\leq 32d^2$ subtrees $T_1,\ldots, T_{s}$ which divide $T$ so that $n/16d^2\leq |T_i|\leq n/2d^2$ for each $i\in [s]$. As each vertex in $U$ must appear in some tree $T_i$,  there must be some tree $T_k$ which contains at least $|U|/32d^2\geq n/d^6$ vertices in $U$, as required.
+
+  Let  $T'$ be the $n$-vertex tree  formed from $T$ by contracting $T_k$ into a single vertex $v_0$ and adding $e(T_k)$ new leaves at $v_0$ (called ``dummy'' leaves). 
+Notice that  Lemma~\ref{Lemma_decomp} applies to  $T'$ with    $d=d, \mu= d^{-3}, n=n$ which gives a sequence of forests $T_0', \dots, T_{\ell}'$ for $\ell\leq 10^4d^7\leq d^8$.
+Notice that $v_0\in T_0'$. Indeed, by construction, every vertex which is not in $T_0'$ can have in $T_{\ell}'=T'$ at most $\ell$ leaves. Since $v_0$ has $\geq  e(T_k)>\ell$ leaves in $T'$, it must be in $T'_0$.
+For each $i=0, \dots, {\ell}$, let $T_i''$ be $T_i'$ with $T_k$ uncontracted and any dummy leaves of $v_0$ deleted.
+Let  $T_2^{\mathrm{stars}}=T_1''$, $T_3^{\mathrm{match}}=T_{j-1}''$, $T_4^{\mathrm{paths}}=T_j''$, $T_5^{\mathrm{match}}=T_{\ell}''$.
+Let $T_1^{\mathrm{small}}$ be $T_0''$ together with the $T_1''$-leaves of any $v\in T_k$ for which $|N_{T_1''}(v)\setminus N_{T_0''}(v)|<d$. We do this because when we uncontract $T_k$ the leaves which were attached to $v_0$ in $T_0'$ are now attached to vertices of $T_k$. 
+If they form a star of size less than $d$ we cannot add them when we form $T_2^{\mathrm{stars}}$ without violating \ref{rush2} so we add them already when we form $T_1^{\mathrm{small}}$.
+Since we are adding at most $d$ leaves for every vertex of $T_k$, we have $|T_1^{\mathrm{small}}|\leq d|T_k|+|T_0'|\leq  n/d$ so \ref{rush1} holds. This ensures that at least $d$ leaves are added to vertices of $T_1^{\mathrm{small}}$ to form  $T_2^{\mathrm{stars}}$ so \ref{rush2} holds. The remaining conditions \ref{rush3} -- \ref{rush5} are immediate from the application of Lemma~\ref{Lemma_decomp}.
+\end{proof}
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+\subsection{Pseudorandom properties of random sets of vertices and colours}\label{Section_pseudorandomness}
+Suppose that $K_{2n+1}$ is $2$-factorized. Choose a $p$-random set of vertices $V\subseteq V(K_{2n+1})$  and a $q$-random set of colours $C\subseteq C(K_{2n+1})$. What can be said about the subgraph $K_{2n+1}[V,C]$ consisting of edges within the set $V$ with colour in $C$? What ``pseudorandomness'' properties is this subgraph likely to have? In this section, we gather lemmas giving various such properties.
+The setting of the lemmas is quite varied, as are the properties they give. For example, sometimes the sets $V$ and $C$ are chosen independently, while sometimes they are allowed to depend on each other arbitrarily. We split these lemmas into three groups based on the three principal settings.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsectionme{Dependent vertex/colour sets}
+In this setting, our colour set $C\subseteq C(K_{2n+1})$ is $p$-random, and the vertex set is $V(K_{2n+1})$ (i.e., it is 1-random). Our pseudorandomness condition is that the number of edges between any two sizeable disjoint vertex sets is close to the expected number. Though a lemma of this kind was first proved in~\cite{alon2016random}, the precise pseudorandomness condition we will use here is in the following version from~\cite{MPS}. A colouring is \emph{locally $k$-bounded} if every vertex is adjacent to at most $k$ edges of each colour. 
+
+\begin{lemma}[\cite{MPS}]\label{MPScolour}\label{Lemma_MPS_boundrandcolour} Let $k\in\mathbb N$ be constant and let $\epsilon, p\geq n^{-1/100}$. Let $K_n$ have a {locally}  $k$-bounded colouring and suppose $G$ is a subgraph of $K_n$ chosen by including the edges of each colour independently at random with probability $p$. Then, with  probability $1-o(n^{-1})$, for any disjoint sets $A,B\subset V(G)$, with $|A|,|B|\geq n^{3/4}$,
+\[
+\big|e_G(A,B)-p|A||B|\big|\leq \epsilon p|A||B|.
+\]
+\end{lemma}
+ 
+
+If $V\subseteq V(K_{2n+1})$ is a $p$-random set of vertices, then the edges going from $V$ to $V(K_{2n+1})\setminus V$ are typically pseudorandomly coloured. The lemma below is a version of this. Here ``pseudorandomly coloured'' means that most colours have at most a little more than the expected number of colours leaving $V$.
+\begin{lemma}[\cite{MPS}]\label{MPSvertex}\label{Corollary_MPS_randsetcor}
+Let $k$ be constant and  $\epsilon,p\geq n^{-1/10^3}$. Let $K_n$ have a {locally}  $k$-bounded colouring and let $V$ be a $p$-random subset of $V(K_n)$. Then, with  probability $1-o(n^{-1})$, for each $A\subset V(K_n)\setminus V$  with $|A|\geq n^{1/4}$, for all but at most $\epsilon n$ colours there are at most $(1+\epsilon)pk|A|$ edges of that colour between $V$ and $A$.
+\end{lemma}
+ 
+
+
+ 
+
+A random vertex set $V$ likely has the property from Lemma~\ref{MPSvertex}. A random colour set $C$ likely has the property from Lemma~\ref{MPScolour}. If we combine these two properties, we can get a property involving $C$ and $V$ that is likely to hold. Importantly, this will be true even if $C$ and $V$ are not independent of each other. Doing this, we get the following lemma.
+
+\begin{lemma}[Nearly-regular subgraphs]\label{Lemma_nearly_regular_subgraph}
+Let $p, \gamma\gg n^{-1}$ and let  $K_{2n+1}$ be $2$-factorized.
+Let $V\subseteq V(K_{2n+1})$, and $C\subseteq C(K_{2n+1})$  with $V$ $p/2$-random and $C$ $p$-random (possibly depending on each other). The following holds with  probability $1-o(n^{-1})$.
+
+For every $U\subseteq V(K_{2n+1})\setminus V$  with $|U|= pn$, there are subsets $U'\subseteq U, V'\subseteq V, C'\subseteq C$ with $|U'|=|V'|= (1\pm\gamma)|U|$
+so that $G=K_{2n+1}[U',V',C']$ is globally $(1+\gamma)p^2n$-bounded, and every vertex $v\in V(G)$ has $d_{G}(v)=(1\pm\gamma)p^2n$.
+\end{lemma}
+\begin{proof}
+Choose $\alpha$ and $\epsilon$ so that $p, \gamma\gg \alpha\gg \epsilon\gg n^{-1}$. With high probability, by Lemma~\ref{MPScolour}, Lemma~\ref{MPSvertex} (with $k=2$, $n'=2n+1$, and $p'=p/2$) and Chernoff's bound, we can assume the following occur simultaneously.
+\begin{enumerate}[label = (\roman{enumi})]
+\item \label{prop1} For any disjoint $A,B\subset V(K_{2n+1})$ with $|A|,|B|\geq (2n+1)^{3/4}$, $|E_C(A,B)|=(1\pm \eps)p|A||B|$.
+\item \label{prop2} For any $A\subseteq V(K_{2n+1})\setminus V$ with $|A|\geq n^{1/4}$, for all but at most $\epsilon n$ colours there are at most $(1+\epsilon)p|A|$ edges of that colour between $A$ and $V$.
+\item \label{prop3} $|V|=(1\pm \eps)pn$.
+\end{enumerate}
+
+
+
+Let $U\subseteq V(K_{2n+1})\setminus V$ with $|U|= pn$ be arbitrary. Let $\hat C\subseteq C$ be the subset of colours $c\in C$ with $|E_c(U,V)|> (1+ \epsilon)p|U|$. Note that, from \ref{prop2}, we have $|\hat C|\leq \eps n$.
+
+
+Let $\hat U^+\subseteq U$ and $\hat V^+\subseteq V$ be subsets of vertices $v$ with $d_{K_{2n+1}[U,V,C]}(v)> (1+ \alpha)p^2 n$, and let $\hat U^-\subseteq U$ and $\hat V^-\subseteq V$ be subsets of vertices $v$ with $d_{K_{2n+1}[U,V,C]}(v)< (1- \alpha)p^2 n$.
+
+Now, $|E_C(U^+,V)|> |U^+|(1+\alpha)p^2 n\geq (1+\eps)p|U^+||V|$ by the definition of $U^+$ and \ref{prop3}. Therefore, as, by \ref{prop3}, $|V|\geq (1-\eps)pn>(2n+1)^{3/4}$, from \ref{prop1} we must have $|U^+|\leq (2n+1)^{3/4}\leq \eps n$. Similarly, we have $|U^-|,|V^+|,|V^-|\leq \eps n$.
+
+Let $\hat U=U^+\cup U^-$ and Let $\hat V=V^+\cup V^-$. We have $|U\setminus \hat U|, |V\setminus \hat V| \geq (1\pm \epsilon)pn\pm 2\epsilon n$. Therefore, we can choose subsets $U'\subseteq U\setminus \hat U$ and $V'\subseteq V\setminus \hat V$ with $|U'|=|V'|= pn-3\epsilon n=(1\pm \gamma)pn$. Note that, by \ref{prop3} and as $|U|=pn$, $|U\setminus U'|,|V\setminus V'|\leq 4\epsilon n$.
+Let  $C'=C\setminus \hat C$ and set $G=K_{2n+1}[U',V',C']$.
+For each $v\in U'\cup V'$ we have $d_G(v)= (1\pm \alpha)p^2 n \pm 2|\hat C|\pm |U\setminus U'|\pm |V\setminus V'|=(1\pm \gamma)p^2 n$. For each $c\in C'$ we have $|E_c(U,V)|\leq (1+ \epsilon)p|U|\leq (1+ \gamma)p^2n$.
+\end{proof}
+
+
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+\subsubsectionme{Deterministic colour sets and random vertex sets}
+The following lemma  bounds the number of edges each colour typically has within a random vertex set.
+\begin{lemma}[Colours inside random sets]\label{Lemma_number_of_colours_inside_random_set}
+Let $p,\gamma\gg n^{-1}$  and let  $K_{2n+1}$ be $2$-factorized.
+Let $V\subseteq V(K_{2n+1})$  be $p$-random. With high probability, every colour has $(1\pm \gamma)2p^2n$ edges inside $V$.
+\end{lemma}
+\begin{proof}
+For an edge $e\in E(K_{2n+1})$ we have $\P(e \in E(K_n[V]))=p^2$.
+By linearity of expectation, for any colour $c\in C(K_{2n+1})$, we have $\E(|E_c(V)|)=p^2(2n+1)$. Note that $|E_c(V)|$ is $2$-Lipschitz and affected by $\leq 2n+1$ coordinates.
+By Azuma's inequality, we have $\P(|E_c(V)|\neq (1\pm \gamma)2p^2n )\leq e^{-\gamma^2p^4n/100}= o(n^{-1})$.
+The result follows by a union bound over all the colours.
+\end{proof}
+
+
+
+Recall that  for any two sets $U,V\subseteq V(G)$ inside a coloured graph $G$, we say that the pair $(U,V)$ is \emph{$k$-replete} if every colour of $G$ occurs at least $k$ times between $U$ and $V$.
+We will use the following auxiliary lemma about how this property is inherited by random subsets.
+\begin{lemma}[Repletion between random sets]\label{Lemma_inheritence_of_lower_boundedness_random}
+Let $q,  p\gg n^{-1}$  and let  $K_{2n+1}$ be $2$-factorized.
+Suppose that $A,B\subseteq V(K_{2n+1})$ are disjoint randomized sets with the pair $(A,B)$   $pn$-replete with high probability.
+Let $V\subseteq V(K_{2n+1})$ be $q$-random and independent of $A,B$.
+Then with high probability the pair $(A, B\cap V)$ is $(qpn/2)$-replete.
+\end{lemma}
+\begin{proof}
+Fix some choice $A'$ of $A$ and $B'$ of $B$ for which the pair $(A',B')$ is $pn$-replete. As $V$ is independent of $A,B$, for each edge $e$ between $A$ and $B$ we have $\P(e\cap B\cap V\neq \emptyset|A=A', B=B')=q$.
+Therefore, for any colour $c$, conditional on ``$A=A', B=B'$'', we have $\E(|E_c(A,B\cap  V)|)=q|E_c(A,B)|\geq qpn$. Note that $|E_c(A,B\cap  V)|$ is $2$-Lipschitz and affected by $\leq 2n+1$ coordinates.
+By Azuma's inequality, we have $\P(|E_c(A,B\cup V)|< qpn/2| A=A', B=B')\leq e^{-q^2p^2n/100}= o(1)$. Thus, with probability $1-o(1)$, conditioned on  $A=A', B=B'$ we have that $(A,B\cap V)$ is $(qn/2)$-replete.
+
+This was all under the assumption that $A=A'$ and $B=B'$. 
+Therefore using that $(A,B)$ is $pn$-replete with high probability, we have
+\begin{align*}
+\P(\text{$(A,B\cap V)$ is $(qn/2)$-replete})&\geq \sum_{\substack{(A',B') \\ \text{ $pn$-replete}}}\P(\text{$(A,B\cap V)$ is  $(qn/2)$-replete}|A=A', B=B')\cdot\P(A=A', B=B')\\
+&\geq  \sum_{\substack{(A',B') \\ \text{ $pn$-replete}}} (1-o(1))\cdot \P(A=A', B=B')=1-o(1).\qedhere
+\end{align*}
+\end{proof}
+
+
+
+ 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+\subsubsectionme{Independent vertex/colour sets}
+The setting of the next three lemmas is the same: we independently choose a $p$-random set of vertices $V$ and a $q$-random set of colours $C$. For such a pair $V,C$ we expect all vertices of the vertices $v$ in $K_{2n+1}$ to have many $C$-edges going into $V$. Each of the following lemmas is a variation on this theme.
+\begin{lemma}[Degrees into independent vertex/colour sets]\label{Lemma_high_degree_into_random_set}
+Let $p, q\gg n^{-1}$ and let  $K_{2n+1}$ be $2$-factorized.
+Let $V\subseteq V(K_{2n+1})$ be $p$-random, and let $C\subseteq C(K_{2n+1})$ be $q$-random and independent of $V$. With  probability $1-o(n^{-1})$, every vertex $v\in V(K_{2n+1})$ has $|N_C(v)\cap V|\geq pq n$.
+\end{lemma}
+\begin{proof} Let $v\in V(K_{2n+1})$.
+For any vertex $x\neq v$, we have $\P(x\in N_C(v)\cap V)= pq$ and so $\E(|N_C(v)\cap V|)= 2pq n$.
+Also $|N_C(v)\cap V|$ is $2$-Lipschitz and affected by $3n$ coordinates.
+By Azuma's Inequality, we have that $\P(|N_C(v)\cap V|\leq pq n)\leq 2e^{-p^2q^{2}n/1000}= o(n^{-2})$. The result follows by taking a union bound over all $v\in V(K_{2n+1})$.
+\end{proof}
+
+
+\begin{lemma}\label{lem:goodpairs} Let $1/n\ll \eta \ll \mu$. Let $K_{2n+1}$ be 2-factorized. Suppose that $V_0\subset V(K_{2n+1})$ and $D_0\subset C(K_{2n+1})$ are $\mu$-random subsets which are independent. With high probability, for each distinct $u,v\in V(K_{2n+1})$, there are at least $\eta n$ colours $c\in D_0$ for which there are colour-$c$ neighbours of both $u$ and $v$ in $V_0$.
+\end{lemma}
+\begin{proof} Let $u,v\in V(K_{2n+1})$ be distinct, and let $X_{u,v}$ be the number of colours $c\in D_0$ for which there are colour-$c$ neighbours of both $u$ and $v$ in $V_0$. Note that $\E X_{u,v} \geq \mu^3 n$, $X_{u,v}$ is
+$2$-Lipschitz and affected by $3n-1$ coordinates.
+By Azuma's Inequality, we have that $\P(X_{u,v}\leq \mu^3 n/2)\leq 2e^{-\mu^6 n/1000}= o(n^{-2})$. The result follows by taking a union bound over all distinct pairs $u,v\in V(K_{2n+1})$.
+\end{proof}
+
+
+
+
+
+
+
+Lemma~\ref{Lemma_high_degree_into_random_set} says that, with high probability, every vertex $v$ has many colours $c\in C$ for which there is a $c$-edge into $V$. The following lemma is a strengthening of this. It shows that, for any set $Y$ of $100$ vertices, there are many colours $c\in C$ for which \emph{each $v\in Y$} has a $c$-edge into $V$.
+\begin{lemma}[Edges into independent vertex/colour sets]\label{Lemma_edges_into_independent_vertexcolour_sets} 
+Let $p\gg q\gg n^{-1}$ and  let  $K_{2n+1}$ be $2$-factorized.
+Let $V\subseteq V(K_{2n+1})$ and $C\subseteq C(K_{2n+1})$ be $p$-random and independent.
+Then, with high probability, for any set $Y$ of $100$ vertices, there are $qn$ colours $c\in C$ for which each $y\in Y$ has a $c$-neighbour in $V$.
+\end{lemma}
+\begin{proof} Fix $Y\subset V(K_{2n+1})$ with $|Y|=100$.
+Let $C_Y=\{c\in C: \mbox{each $y\in Y$ has a $c$-neighbour in $V$}\}$.
+For any colour $c$ without edges inside $Y$, we have $\P(c\in C_Y)\geq p^{101}$ and so $\E(|C_Y|)\geq p^{101}(n-\binom{|Y|}2)\geq 2qn$. Notice that $|C_Y|$ is $100$-Lipschitz and affected by $3n+1$ coordinates.
+By Azuma's inequality, we have that $\P(|C_Y|\leq qn)\leq e^{-q^2n/10^6}= o(n^{-100})$. The result follows by taking a union bound over all sets $Y\subset V(K_{2n+1})$ with $|Y|=100$.
+\end{proof}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Rainbow matchings}\label{Section_matchings}
+We now gather lemmas for finding large rainbow matchings in random subsets of coloured graphs, despite dependencies between the colours and the vertices that we use. Simple greedy embedding strategies are insufficient for this, and instead we will use a variant of R\"odl's Nibble proved by the authors in~\cite{montgomery2018decompositions}.
+
+\begin{lemma}[\cite{montgomery2018decompositions}]\label{Lemma_MPS_nearly_perfect_matching}
+Suppose that we have $n, \delta, \gamma, p, \ell$ with $1\geq \delta \gg  p \gg \gamma \gg n^{-1}$ and $n\gg \ell$.
+
+Let $G$ be a locally $\ell$-bounded,  globally $(1+\gamma) \delta n$-bounded,  coloured, balanced bipartite graph with $|G|=(1\pm \gamma)2n$ and $d_G(v)=(1\pm \gamma)\delta n$ for all $v\in V(G)$. Then $G$ has  a random rainbow matching $M$ which has size $\geq (1-2p)n$ where
+\begin{align}
+\P(e\in E(M))&\geq(1-  9p)\frac{1}{\delta n}\hspace{0.5cm}\text{ for each $e\in E(G)$.} \label{Eq_Near_Matching_Edge_Probability_Lower_Bound}
+\end{align}
+\end{lemma}
+We remark that in the statement of this lemma \cite{montgomery2018decompositions}, the conditions
+``$|G|=(1\pm \gamma)2n$ and $d_G(v)=(1\pm \gamma)\delta n$ for all $v\in V(G)$'' are referred to collectively as ``$G$ is $(\gamma, \delta, n)$-regular''.
+The following lemma is at the heart of the proofs in this paper. It shows there is typically a nearly-perfect rainbow matching using random vertex/colour sets. Moreover, it allows \emph{arbitrary} dependencies between the sets of vertices and colours. As mentioned before, when embedding high degree vertices such dependencies are unavoidable. Because of this, after we have embedded the high degree vertices, the remainder of the tree will be embedded using variants of this lemma.
+
+\begin{lemma}[Nearly-perfect matchings]\label{Lemma_nearly_perfect_matching}
+Let $p\in [0,1]$, $\beta \gg n^{-1}$, and let  $K_{2n+1}$ be $2$-factorized.
+Let $V\subseteq V(K_{2n+1})$ be $p/2$-random and let $C\subseteq C(K_{2n+1})$ be $p$-random (possibly depending on each other). Then, with  probability $1-o(n^{-1})$, for every $U\subseteq V(K_{2n+1})\setminus V$  with $|U|\leq pn$, $K_{2n+1}$ has a $C$-rainbow matching of size $|U|-\beta n$ from $U$ to $V$.
+\end{lemma}
+\begin{proof}
+The lemma is vacuous when $p<\beta$, so suppose $p\geq \beta$. We will first prove the lemma in the special case when $p\leq 1-\beta$.
+ Choose $p\geq \beta\gg \alpha \gg \gamma\gg n^{-1}$.
+With probability $1-o(n^{-1})$, $V$ and $C$ satisfy the conclusion of Lemma~\ref{Lemma_nearly_regular_subgraph}  with $p, \gamma, n$.
+Using Chernoff's bound and $p\leq 1-\beta$, with probability $1-o(n^{-1})$ we have $|V|\leq n$. By the union bound, both of these simultaneously occur.
+Notice that it is sufficient to prove the lemma for sets $U$ with $|U|=pn$ (since any smaller set $U$  is contained in a set of this size which is disjoint from $V$ as $|V| \leq n$).
+From Lemma~\ref{Lemma_nearly_regular_subgraph}, we have that, for $U$ of order $pn$, there are subsets $U'\subseteq U, V'\subseteq V, C'\subseteq C$ with $|U'|=|V'|= (1\pm\gamma)pn$
+so that $G=K_{2n+1}[U',V',C']$ is globally $(1+\gamma)p^2n$-bounded, and every vertex $v\in V(G)$ has $d_{G}(v)=(1\pm\gamma)p^2n$. Now $G$ satisfies the assumptions of Lemma~\ref{Lemma_MPS_nearly_perfect_matching} (with $n'=pn$, $\delta =p$, $p'= \alpha$, $\gamma'=2\gamma$ and $\ell=2$), so it has a rainbow matching of size  $(1-2\alpha)pn\geq pn-\beta n$.
+
+Now suppose that $p\geq 1-\beta$. Choose a $(1-\beta/2)p/2$-random subset $V'\subseteq V$ and a $(1-\beta/2)p$-random subset $C'\subseteq C$. Fix $p'=(1-\beta/2)p$ and $\beta'=\beta/2$ and note that $p' \leq 1-\beta'$. By the above argument again, with high probability the conclusion of the ``$p'\leq (1-\beta')$'' version of the lemma applies to $V',C',p',\beta'$. Let $U$ be a set with $|U| \leq pn$. Choose $U'\subseteq U$ with $|U'|=|U|-\beta n/2$. Then $|U'| \leq pn - \beta n/2 \leq p'n$.
+From the ``$p'\leq (1-\beta')$'' version of the lemma we get a $C'$-rainbow matching $M$ from $U'$ to $V'$ of size $|U'|-\beta n/2= |U|-\beta n$.
+\end{proof}
+
+
+The following variant of Lemma~\ref{Lemma_nearly_perfect_matching} finds a rainbow matching which completely covers the deterministic set $U$. To achieve this we introduce a small amount of independence between the vertices/colours which are used in the matching. 
+\begin{lemma}[Perfect matchings]\label{Lemma_sat_matching_random_embedding}
+Let $1\geq \gamma \gg n^{-1}$, let $p\in[0,1]$,  and let  $K_{2n+1}$ be $2$-factorized.
+Suppose that we have disjoint sets $V_{dep}, V_{ind}\subseteq V(K_{2n+1})$, and $C_{dep}, C_{ind}\subseteq C(K_{2n+1})$  with $V_{dep}$ $p/2$-random, $C_{dep}$ $p$-random, and $V_{ind}, C_{ind}$ $\gamma$-random. Suppose that $V_{ind}$ and $C_{ind}$ are independent of each other. Then, the following holds with  probability $1-o(n^{-1})$.
+
+For every $U\subseteq V(K_{2n+1})\setminus (V_{dep}\cup V_{ind})$ of order $\leq p n$, there is a perfect $(C_{dep}\cup C_{ind})$-rainbow matching from $U$ into $(V_{dep}\cup V_{ind})$.
+\end{lemma}
+\begin{proof}
+Choose $\beta$ such that $1\geq \gamma \gg \beta\gg n^{-1}$.
+With  probability $1-o(n^{-1})$, we can assume the conclusion of
+Lemma~\ref{Lemma_nearly_perfect_matching} holds for $V=V_{dep}, C=C_{dep}$ with $p=p, \beta=\beta, n=n$, and, by Lemma~\ref{Lemma_high_degree_into_random_set} applied to $V=V_{ind}, C=C_{ind}$ with $p=q=\gamma, n=n$ that the following holds. For each $v\in V(K_{2n+1})$, we have $|N_{C_{ind}}(v) \cap V_{ind}| \geq \gamma^2n>\beta n$. We will show that the property in the lemma holds. 
+
+Let then $U\subset V(K_{2n+1})\setminus (V_{dep}\cup V_{ind})$ have order $\leq p n$.
+From the conclusion of Lemma~\ref{Lemma_nearly_perfect_matching}, there is  a $C_{dep}$-rainbow matching $M_1$ of size $|U|-\beta n$ from $U$ to $V_{dep}$. 
+Since $|N_{C_{ind}}(v) \cap V_{ind}| >\beta n$ for each $v\in U\setminus V(M_1)$ we can construct a $C_{ind}$-rainbow matching $M_2$ into $V_{ind}$ covering $U\setminus V(M_1)$ (by greedily choosing this matching one edge at a time). The matching $M_1\cup M_2$ then satisfies the lemma.
+\end{proof}
+ 
+
+We will also use a lemma about matchings using an exact set of colours.
+\begin{lemma}[Matchings into random sets using specified colours]\label{Lemma_matching_into_random_set_using_specified_colours}
+Let $p\gg q\gg\beta \gg n^{-1}$ and let  $K_{2n+1}$ be $2$-factorized.
+Let  $V\subseteq V(K_{2n+1})$  be $(p/2)$-random. With high probability, for any  $U\subseteq V(K_{2n+1})\setminus V$ with $|U|\geq pn$, and any $C\subseteq C(K_{2n+1})$ with $|C|\leq q n$, there is a $C$-rainbow matching of size $|C|-\beta n$ from $U$ to $V$.
+\end{lemma}
+\begin{proof}
+Choose $\gamma$ such that $\beta\gg\gamma \gg n^{-1}$.
+By Lemma~\ref{MPSvertex} (applied with $n'=2n+1$), with high probability, we have that, for any set $A\subset V(K_{2n+1})\setminus V$ with $|A|\geq pn\geq (2n+1)^{1/4}$, for all but at most $\gamma n$ colours there are at most $(1+\gamma)p|A|$ edges of that colour between $A$ and $V$. By Chernoff's bound, with high probability $|V|=(1\pm \gamma)pn$. We will show that the property in the lemma holds.
+
+Fix then an arbitrary pair $U$, $C$ as in the lemma. Without loss of generality, $|U|=pn$. Let $M$ be a maximal $C$-rainbow matching from $U$ to $V$. We will show that $|M|\geq |C|-\beta n$, so that the matching required in the lemma must exist (by removing edges if necessary). Now, let $C'=C\setminus C(M)$. For each $c\in C'$, any edge between $U$ and $V$ with colour $c$ must have a vertex in $V(M)$, by maximality. Therefore, there are at most $2|V(M)|\leq 4qn$ edges of colour $c$ between $U$ and $V$. From the property from Lemma~\ref{MPScolour}, there  are at most $\gamma n$ colours with more than $(1+\gamma)p|U|$ edges between $U$ and $V$. Therefore, using $|V|=(1\pm \gamma)pn$, 
+\[
+|U||V|\leq 4qn|C'|+(2n+1)\gamma n+(1+\gamma)p|U|(n-|C'|)\leq (4qn-p^2n)|C'|+3\gamma n^2+ (1+\gamma)(1+2\gamma)|U||V|,
+\]
+and hence
+\[
+|C'|p^2n/2\leq |C'|(p^2-4q)n\leq ((1+\gamma)(1+2\gamma)-1)|U||V|+3\gamma n^2\leq 7\gamma n^2.
+\]
+It follows that $|C'|\leq 14\gamma n/p^2\leq \beta n$. Thus, $|M|= |C|-|C'|\geq |C|-\beta n$, as required.
+\end{proof}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+\subsection{Rainbow star forests}\label{Section_stars}
+Here we develop techniques for embedding the high degree vertices of trees, based on our previous methods in~\cite{MPS}. We will do this by proving lemmas about large star forests in coloured graphs. In later sections, when we find rainbow trees, we isolate a star forest of edges going through high degree vertices,  and embed them using the techniques from this section.
+We start from the following lemma.
+
+\begin{lemma}[\cite{MPS}]\label{Corollary_MPS_kdisjstars} Let $0<\epsilon<1/100$ and  $\ell\leq \epsilon^{2}n/2$. Let $G$ be an $n$-vertex graph with minimum degree at least $(1-\epsilon)n$  which contains an independent set on the distinct vertices $v_1,\ldots,v_\ell$.  Let $d_1,\ldots,d_\ell\geq 1$ be integers satisfying $\sum_{i\in [\ell]}d_i\leq (1-3\epsilon)n/k$,
+and suppose $G$ has a locally $k$-bounded edge-colouring.
+
+ Then, $G$ contains disjoint stars $S_1,\ldots,S_\ell$ so that, for each $i\in [\ell]$, $S_i$ is a star centered at $v_i$ with $d_i$ leaves, and $\cup_{i\in [\ell]}S_i$ is rainbow.
+\end{lemma}
+
+The following version of the above lemma will be more convenient to apply.
+\begin{lemma}[Star forest]\label{Lemma_star_forest}
+Let $1\gg \eta \gg\gamma\gg n^{-1}$ and let  $K_{2n+1}$ be $2$-factorized.
+Let $F$ be a star forest with degrees $\geq 1$ whose set of centers is $I=\{i_1, \dots, i_{\ell}\}$ with $e(F)\leq (1-\eta)n$. Suppose we have disjoint sets $J, V\subseteq V(K_{2n+1})$ and $C\subseteq C(K_{2n+1})$ with $|V|\geq (1-\gamma)2n$, $|C|\geq (1-\gamma)n$ and  $J=\{j_1, \dots, j_{\ell}\}$.
+
+Then, there is a $C$-rainbow copy of $F$ with $i_t$ copied to $j_t$, for each $t\in [\ell]$, whose vertices outside of $I$ are copied to vertices in $V$.
+\end{lemma}
+\begin{proof}
+Choose $\epsilon$ such that $\eta \gg \epsilon\gg\gamma$.
+Let $G$ be the subgraph of $K_n$ consisting of edges touching $V$ with colours in $C$. Notice that $\delta(G)\geq (1-4\gamma)2n\geq (1-\epsilon)(2n+1)$. Since $V$ and $J$ are disjoint, $J$ contains no edges in $G$. Notice that,  as $J$ and $V$ are disjoint, $\epsilon\gg \gamma$, and $|V|\geq (1-\gamma)2n$, we have $\ell=|J|\leq 2\gamma n+1\leq \epsilon^2 (2n+1)/2$. Let $k=2$ and let $d_1, \dots, d_{\ell}\geq 1$ be the degrees of $i_1,\ldots,i_\ell$ in $F$. Notice that $\eta \gg\epsilon$ implies $\sum_{i=1}^{\ell}d_i=e(F)\leq  (1-\eta)n\leq (1-3\epsilon)(2n+1)/k$.
+Applying Lemma~\ref{Corollary_MPS_kdisjstars} to $G$ with $\{v_1, \dots, v_{\ell}\}=J$, $n'=2n+1$, $k=2$,  $\ell=\ell$, $\epsilon=\epsilon$  we find the required rainbow star forest.
+\end{proof}
+
+The above lemma can be used to find a rainbow copy of any star forest $F$ in a $2$-factorization as long as there are more than enough colours for a rainbow copy of $F$. However, we  also want this rainbow copy to be suitably randomized. This is achieved by finding a star forest larger than $F$ and then randomly deleting each edge independently.
+The following lemma is how we embed rainbow star forests in this paper. It shows that we can find a rainbow copy of any star forest so that the unused vertices and colours are $p$-random sets. Crucially, and unavoidably, the sets of unused vertices/colours depend on each other. This is where the need to consider dependent sets arises.
+\begin{lemma}[Randomized star forest]\label{Lemma_randomized_star_forest}
+Let $1\geq p, \alpha\gg \gamma\gg d^{-1}, n^{-1}$ and $\log^{-1} n\gg d^{-1}$. Let  $K_{2n+1}$ be $2$-factorized.
+Let $F$ be a star forest with degrees $\geq d$   with $e(F)= (1-p)n$ whose set of centers is $I=\{i_1, \dots, i_{\ell}\}$. Suppose we have disjoint sets $V,J\subseteq V(K_{2n+1})$ and $C\subseteq C(K_{2n+1})$ with $|V|\geq (1-\gamma)2n$, $|C|\geq (1-\gamma)n$ and  $J=\{j_1, \dots, j_{\ell}\}$
+
+Then, there is a randomized subgraph $F'$  which is with high probability a $C$-rainbow copy of $F$,  with $i_t$ copied to $j_t$ for each $t$ and whose  vertices outside $I$ are copied to vertices in $V$. Additionally there are randomized sets $U\subseteq V\setminus V(F'), D\subseteq C\setminus C(F')$ such that $U$ is a $(1-\alpha)p$-random subset of $V$ and $D$ is a $(1-\alpha)p$-random subset of $C$ (with $U$ and $D$ allowed to depend on each other).
+\end{lemma}
+
+\begin{proof}
+Choose $\eta$ such that $p, \alpha \gg \eta\gg  \gamma$.
+Let $\hat F$ be a star forest obtained from $F$ by replacing every star $S$ with a star $\hat S$ of size $e(\hat S)=e(S)(1-\eta)/(1-p)$. Notice that $e(\hat F)=(1-\eta)n$, and, for each vertex $v$ at the centre of a star, $S$ say, in $F$, we have $d_{\hat F}(v)=e(\hat S)=e(S)(1-\eta)/(1-p)=d_F(v)(1-\eta)/(1-p)$. By Lemma~\ref{Lemma_star_forest}, there  is a $C$-rainbow embedding $\hat F'$ of $\hat F$   with $i_t$ copied to $j_t$ for each $t$  and   whose  vertices outside $I$ are contained in $V$.
+
+Let $U$ be a $(1-\alpha)p$-random subset of $V$. Let $F'=\hat F' \setminus U$.  By Chernoff's Bound and $\log^{-1}n, p, \gamma \gg d^{-1}$, we have $\P(d_{F'}(v)< (1-\gamma)(1-p+\alpha p)d_{\hat F'}(v))\leq e^{-(1-p+\alpha p)\gamma^2d/3}\leq e^{-\log^5 n}$ for each center $v$ in $F$. Note that, for each centre $v$, $(1-\gamma)(1-p+\alpha p)d_{\hat F'}(v)=(1-\gamma)(1-p+\alpha p) d_F(v)(1-\eta)/(1-p) \geq d_F(v)$, where this holds as $p,\alpha\gg \eta\gg \gamma$.  Taking a union bound over all the centers shows that, with high probability, $F'$ contains a copy of $F$.
+Since $\hat F'$ was rainbow, we have that $C(\hat F')\setminus C(F')$ is a $(1-\alpha)p$-random subset of $C(\hat F')$.
+Let $\hat{C}$ be a $(1-\alpha)p$-random subset of $C\setminus C(\hat F')$ and set $D=\hat{C}\cup (C(\hat F')\setminus C(F'))$. Now $D$ and $U$ are both $(1-\alpha)p$-random subsets of $C$ and $V$ respectively.
+\end{proof}
+
+\subsection{Rainbow paths}\label{Section_paths}
+Here we collect lemmas for finding rainbow paths and cycles in random subgraphs of $K_{2n+1}$. First we prove two lemmas about short paths between prescribed vertices. These lemmas are later used to incorporate larger paths into a tree.
+
+\begin{lemma}[Short paths between two vertices]\label{Lemma_short_paths_between_two_vertices}  Let $p\gg \mu \gg n^{-1}>0$ and suppose $K_{2n+1}$ is $2$-factorized. Let $V\subset V(K_{2n+1})$ and $C\subset C(K_{2n+1})$ be $p$-random and independent. Then, with high probability, for each pair of distinct vertices $u,v\in V(K_{2n+1})$ there are at least
+$\mu n$ internally vertex-disjoint  $u,v$-paths with length $3$ and internal vertices in $V$ whose union is $C$-rainbow.
+\end{lemma}
+\begin{proof}
+Choose $p\gg  \mu \gg n^{-1}>0$.
+Randomly partition $C=C_1\cup C_2\cup C_{3}$ into three $p/3$-random sets and $V=V_1\cup V_2$ into two $p/2$-random sets. With high probability the following simultaneously hold.
+
+$\bullet$ By Lemma~\ref{Lemma_MPS_boundrandcolour} applied to $C_3$ with $p=p/3, \epsilon=1/2, n=2n+1$,  for any disjoint vertex sets $U,V$ of order at least $p^2n/10\geq (2n+1)^{3/4}$, we have $e_{C_3}(U,V)\geq p|U||V|/6\geq 10^{-3}p^5n^2$.
+
+$\bullet$ By Lemma~\ref{Lemma_high_degree_into_random_set} applied to $C_i, V_j$ with $p=p/2, q=p/3, n=n$ we have $|N_{C_{i}}(v)\cap V_j| \geq p^2n/6$ for every $v\in V(K_{2n+1})$, $i\in [3]$, and $j\in [2]$.
+
+We claim the property holds. Indeed, pick an arbitrary distinct pair of vertices $u,v\in V(K_{2n+1})$. Let $M$ be a maximum $C_3$-rainbow matching between $N_{C_{1}}(v)\cap (V_1\setminus \{u\})$ and $N_{C_{2}}(u)\cap (V_2\setminus \{v\})$ (these sets have size at least $p^2n/24$). Each of the $2e(M)$ vertices in $M$ has $2n$ neighbours in $K_{2n+1}$, and each colour in $M$ is on $2n+1$ edges in $K_{2n+1}$. The number of edges of $K_{2n+1}$ sharing a vertex or colour with $M$ is thus $\leq 7ne(M)$. By maximality, and the property from Lemma~\ref{Lemma_MPS_boundrandcolour}, we have $7ne(M)\geq e_{C_3}(U,V) \geq 10^{-3}p^5n^2$, which implies that $e(M)\geq 10^{-4}p^5n \geq  4\mu n$.
+For any edge $v_1v_2$ in the matching $M$, the path $uv_1v_2v$ is a rainbow path. In the union of these paths, the only colour repetitions can happen at $u$ or $v$. Since  $K_{2n+1}$ is $2$-factorized, there is a subfamily of $\mu n$ paths which are collectively rainbow.
+\end{proof}
+
+We can use this lemma to find many disjoint length $3$ connecting paths.
+\begin{lemma}[Short connecting paths]\label{Lemma_few_connecting_paths}  Let  $p\gg q \gg n^{-1}>0$ and let $K_{2n+1}$ be $2$-factorized. Let $V$ be a $p$-random set of vertices, and $C$ a $p$-random set of colours independent from $V$.
+Then, with high probability, for any set of $\{x_1, y_1, \dots, x_{q n}, y_{q n}\}$ of vertices,
+ there is a collection $P_1, \dots, P_{q n}$ of vertex-disjoint paths with length $3$, having internal vertices in $V$, where $P_i$ is an $x_i,y_i$-path, for each $i\in [qn]$, and $P_1\cup \dots\cup P_{q n}$ is $C$-rainbow.
+\end{lemma}
+\begin{proof}
+By Lemma~\ref{Lemma_short_paths_between_two_vertices} applied to $C,V$ with $p=p, \mu=10q,  n=n$, with high probability, between any $x_i$ and $y_i$, there is a collection of $10q n$ internally vertex disjoint $x_i,y_i$-paths, which are collectively $C$-rainbow, and internally contained in $V$. By choosing such paths greedily one by one, making sure never to repeat a colour or vertex,  we can find the required collection of paths.
+\end{proof}

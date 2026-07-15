@@ -1,4 +1,3 @@
-set_option linter.unusedVariables false
 import Mathlib
 import Ringel.Primitives
 import Mathlib.Data.Set.Card.Arithmetic

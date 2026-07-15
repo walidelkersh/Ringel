@@ -1,0 +1,135 @@
+\chapter{Statement}
+\begin{definition}\label{def:ringel_conjecture}
+\lean{ringel_conjecture}
+Ringel's conjecture for all $n$. (Open problem)
+\end{definition}
+
+\begin{definition}\label{def:ringel_conjecture_large}
+\lean{ringel_conjecture_large}
+Ringel's conjecture for sufficiently large $n$.
+\end{definition}
+
+\chapter{Combinatorial Primitives (Primitives.lean)}
+\begin{definition}\label{def:ndColouring}
+\lean{ndColouring}\leanok
+Near-difference rainbow colouring of $K_{2n+1}$.
+\end{definition}
+
+\begin{theorem}\label{thm:ndColouring_isTwoFactorization}
+\lean{ndColouring_isTwoFactorization}\leanok
+ND-colouring is a 2-factorization.
+\end{theorem}
+
+\begin{lemma}\label{lem:ndColouring_step}
+\lean{ndColouring_step}\leanok
+$\pm(c+1)$ step realizes colour $c$.
+\end{lemma}
+
+\begin{definition}\label{def:case_predicates}
+\lean{IsCaseA, IsCaseB, IsCaseC}\leanok
+Case predicates.
+\end{definition}
+
+\chapter{Tree Structure (TreeStructure.lean)}
+\begin{theorem}\label{thm:split}
+\lean{split}\leanok
+A tree on $n$ vertices has $\geq n/(4k)$ leaves or $\geq n/(4k)$ vertex-disjoint bare paths of length $k$.
+\end{theorem}
+
+\begin{theorem}\label{thm:tree_split_via_split}
+\lean{tree_split_via_split}\leanok
+Connects split to case A/B/C division (MPS Lemma 2.2).
+\end{theorem}
+
+\chapter{Case Division (CaseDivision.lean)}
+\begin{theorem}\label{thm:case_division}
+\lean{case_division}\leanok
+\uses{thm:split, thm:tree_split_via_split, def:case_predicates}
+Routes a tree into Case A, B, or C.
+\end{theorem}
+
+\chapter{Case A --- Many Leaves (CaseA.lean)}
+\begin{definition}\label{def:walkSum}
+\lean{walkSum}\leanok
+Signed walk sum.
+\end{definition}
+
+\begin{lemma}\label{lem:tree_embed}
+\lean{tree_embed}\leanok
+Tree embedding via signed edge-increment.
+\end{lemma}
+
+\begin{lemma}\label{lem:bound_vertex_collisions}
+\lean{bound_vertex_collisions}
+\uses{def:walkSum, lem:tree_embed}
+Littlewood--Offord bound for vertex collisions.
+\end{lemma}
+
+\begin{lemma}\label{lem:exists_absorption_matching}
+\lean{exists_absorption_matching}
+Absorption matching probability.
+\end{lemma}
+
+\begin{theorem}\label{thm:caseA_rainbow}
+\lean{caseA_rainbow}
+\uses{lem:tree_embed, lem:bound_vertex_collisions, lem:exists_absorption_matching}
+Main Case A result.
+\end{theorem}
+
+\chapter{Case B --- Many Bare Paths (CaseB.lean)}
+\begin{lemma}\label{lem:caseB_embedding_exists}
+\lean{caseB_embedding_exists}
+Bare-path embedding.
+\end{lemma}
+
+\begin{theorem}\label{thm:caseB_rainbow}
+\lean{caseB_rainbow}
+\uses{lem:caseB_embedding_exists}
+Main Case B result.
+\end{theorem}
+
+\chapter{Case C --- Small Core (CaseC.lean)}
+\begin{lemma}\label{lem:caseC_embed_core}
+\lean{caseC_embed_core}\leanok
+Greedy core embedding.
+\end{lemma}
+
+\begin{lemma}\label{lem:caseC_extend_embedding}
+\lean{caseC_extend_embedding}
+Leaf extension.
+\end{lemma}
+
+\begin{theorem}\label{thm:caseC_rainbow}
+\lean{caseC_rainbow}
+\uses{lem:caseC_embed_core, lem:caseC_extend_embedding}
+Main Case C result.
+\end{theorem}
+
+\chapter{Probability Infrastructure (ProbBounds.lean)}
+\begin{definition}\label{def:prob_event}
+\lean{prob_event}\leanok
+Counting measure on finite types.
+\end{definition}
+
+\begin{lemma}\label{lem:exists_of_prob_gt_zero}
+\lean{exists_of_prob_gt_zero}\leanok
+Positive probability implies existence.
+\end{lemma}
+
+\chapter{Proof Assembly (Spine.lean + Proof.lean)}
+\begin{theorem}\label{thm:decomp_of_rainbow_copy}
+\lean{decomp_of_rainbow_copy}\leanok
+Kotzig cyclic-shift decomposition.
+\end{theorem}
+
+\begin{theorem}\label{thm:rainbow_copy_exists}
+\lean{rainbow_copy_exists}
+\uses{thm:case_division, thm:caseA_rainbow, thm:caseB_rainbow, thm:caseC_rainbow}
+Rainbow copy exists.
+\end{theorem}
+
+\begin{theorem}\label{thm:ringel_conjecture_large_via_spine}
+\lean{ringel_conjecture_large_via_spine}
+\uses{thm:decomp_of_rainbow_copy, thm:rainbow_copy_exists}
+Full assembly for large $n$.
+\end{theorem}

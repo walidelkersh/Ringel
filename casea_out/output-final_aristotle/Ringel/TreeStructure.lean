@@ -1,6 +1,3 @@
-set_option linter.unusedVariables false
-set_option linter.deprecated false
-set_option linter.unusedSimpArgs false
 import Mathlib
 import Ringel.Primitives
 
