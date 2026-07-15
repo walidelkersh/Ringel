@@ -3,9 +3,10 @@ Copyright (c) 2026 Walid K. Elkersh. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Walid K. Elkersh
 -/
+import Mathlib
+
 set_option linter.unusedVariables false
 set_option linter.unusedSectionVars false
-import Mathlib
 
 /-!
 # Generic engines for the Case C leaf-packing (MPS §7)

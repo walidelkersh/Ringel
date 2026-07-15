@@ -3,10 +3,11 @@ Copyright (c) 2026 Walid K. Elkersh. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Walid K. Elkersh
 -/
-set_option linter.unusedVariables false
-set_option linter.unusedSectionVars false
 import Ringel.Primitives
 import Ringel.TreeStructure
+
+set_option linter.unusedVariables false
+set_option linter.unusedSectionVars false
 
 /-!
 # Case C: trees with one vertex of very high degree
