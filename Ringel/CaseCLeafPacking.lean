@@ -212,10 +212,10 @@ lemma cRank_injOn {V : Type*} [DecidableEq V] (V₁ V₂ : Finset V) (idx : V �
     split_ifs at h;
     · exact Classical.not_not.1 fun h' => hblk1 v hv₁ w ‹_› h' <| by have := cPerm_injOn ( show idx v / L < V₁.card from hrank1 v hv₁ ) ( show idx w / L < V₁.card from hrank1 w ‹_› ) h; aesop;
     · unfold cPerm at h;
-      grind +splitImp;
+      grind (instances := 500000, splits := 50000, gen := 50000) +splitImp;
   · unfold cRank at *; simp_all +decide [ Finset.disjoint_left ] ;
     intro w hw; split_ifs at * <;> simp_all +decide [ cPerm ] ;
-    · grind;
+    · grind (instances := 500000, splits := 50000, gen := 50000);
     · exact fun h => Classical.not_not.1 fun hne => hblk2 v hv₂ w hw hne h
 
 /-
@@ -226,7 +226,7 @@ lemma cRank_image_V1 {V : Type*} [DecidableEq V] (V₁ V₂ : Finset V) (idx : V
     (hblk1 : ∀ u ∈ V₁, ∀ v ∈ V₁, u ≠ v → idx u / L ≠ idx v / L) :
     V₁.image (cRank V₁ V₂ idx L) = Finset.range V₁.card := by
   refine' Finset.eq_of_subset_of_card_le _ _;
-  · grind +locals;
+  · grind (instances := 500000, splits := 50000, gen := 50000) +locals;
   · rw [ Finset.card_image_of_injOn ];
     · simp +decide;
     · intro u hu v hv huv; simp_all +decide [ cRank ] ;
@@ -274,8 +274,8 @@ lemma card_filter_between_image {V : Type*} [DecidableEq V] (f : V → ℕ) (S :
   · rw [ Finset.card_sdiff ];
     rw [ show ( { w ∈ S | f w < c1 + 1 } ∩ { w ∈ S | f w < c2 } ) = { w ∈ S | f w < c1 + 1 } from ?_ ];
     · rw [ card_filter_lt_image_eq f S hinj himg ( by linarith : c2 ≤ S.card ), card_filter_lt_image_eq f S hinj himg ( by linarith : c1 + 1 ≤ S.card ) ] ; omega;
-    · grind;
-  · grind
+    · grind (instances := 500000, splits := 50000, gen := 50000);
+  · grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-
 **Colour-index lower bound via smaller-rank fans.** The colour index of a leaf `x`
@@ -410,8 +410,8 @@ lemma civ_gap_type1 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V₂ : 
       · rw [ cRank_type1, cRank_type1 ] <;> omega;
       · exact hcrank.mono ( Finset.subset_union_left );
       · convert cRank_image_V1 V₁ V₂ idx L hrank1 hblk1 using 1;
-      · grind +locals;
-      · grind +suggestions;
+      · grind (instances := 500000, splits := 50000, gen := 50000) +locals;
+      · grind (instances := 500000, splits := 50000, gen := 50000) +suggestions;
     exact h_card ▸ le_trans ( by simp +decide [ mul_comm ] ) ( Finset.sum_le_sum fun w hw => hdeg w <| Finset.mem_union_left _ <| Finset.mem_filter.mp hw |>.1 );
   rw [ tsub_mul ] at h_sum_bound;
   rw [ ge_iff_le, tsub_le_iff_right ] at h_sum_bound;
@@ -443,7 +443,7 @@ lemma civ_gap_type2 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V₂ : 
     suffices h_suff : (idx (anchor y) - idx (anchor x)) + 1 ≤ (∑ w ∈ V₁.filter (fun w => cRank V₁ V₂ idx L (anchor y) < cRank V₁ V₂ idx L w ∧ cRank V₁ V₂ idx L w < cRank V₁ V₂ idx L (anchor x)), cDeg leaves anchor w) by
       convert Nat.add_le_add_left h_suff ( cCiv leaves V₁ V₂ idx L anchor y ) using 1;
       refine' congr rfl ( Finset.sum_subset _ _ ) <;> simp +contextual [ Finset.subset_iff ];
-      grind +suggestions;
+      grind (instances := 500000, splits := 50000, gen := 50000) +suggestions;
     refine' le_trans _ ( Finset.sum_le_sum fun w hw => hdeg w <| Finset.mem_union_left _ <| Finset.mem_filter.mp hw |>.1 );
     simp +zetaDelta at *;
     rw [ card_filter_between_image ];
@@ -454,9 +454,9 @@ lemma civ_gap_type2 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V₂ : 
       nlinarith [ Nat.div_add_mod ( idx ( anchor y ) ) L, Nat.mod_lt ( idx ( anchor y ) ) hL, Nat.div_mul_le_self ( idx ( anchor x ) ) L, Nat.sub_add_cancel ( show idx ( anchor x ) ≤ idx ( anchor y ) from le_of_not_gt fun h => by { exact hrxy.not_ge ( Nat.div_le_div_right h.le ) } ), Nat.sub_add_cancel ( show idx ( anchor x ) / L ≤ V₁.card - 1 from Nat.le_sub_one_of_lt ( hrank1 _ hux ) ), Nat.sub_add_cancel ( show idx ( anchor y ) / L ≤ V₁.card - 1 from Nat.le_sub_one_of_lt ( hrank1 _ huy ) ) ];
     · exact hcrank.mono ( by aesop_cat );
     · convert cRank_image_V1 V₁ V₂ idx L hrank1 hblk1 using 1;
-    · grind +suggestions;
-    · grind +locals;
-  · grind +suggestions
+    · grind (instances := 500000, splits := 50000, gen := 50000) +suggestions;
+    · grind (instances := 500000, splits := 50000, gen := 50000) +locals;
+  · grind (instances := 500000, splits := 50000, gen := 50000) +suggestions
 
 /-
 **Type-1 clearance.** The colour index of a type-1 leaf is at least `100·L` times its
@@ -508,12 +508,12 @@ lemma cCiv_ge_type2 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V₂ : 
       · exact Eq.symm ( cRank_type2 V₁ V₂ idx L hux h2x );
       · exact hcrank.mono ( Finset.subset_union_left );
       · exact cRank_image_V1 V₁ V₂ idx L hrank1 hblk1;
-      · grind +locals;
+      · grind (instances := 500000, splits := 50000, gen := 50000) +locals;
     simp_all +decide [ mul_comm ];
     exact Nat.mul_le_mul_right _ ( by omega );
   refine' le_trans hsum_ge ( cCiv_ge_below leaves V₁ V₂ idx L anchor hanchor_big hx |> le_trans _ );
   refine' Finset.sum_le_sum_of_subset _;
-  grind +suggestions
+  grind (instances := 500000, splits := 50000, gen := 50000) +suggestions
 
 /-
 The colour index of a leaf with anchor in `V₁` is below the whole `V₁` colour block.
@@ -554,7 +554,7 @@ lemma cCiv_ge_sumV1_of_V2 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V
     ∑ u ∈ V₁, cDeg leaves anchor u ≤ cCiv leaves V₁ V₂ idx L anchor x := by
   refine' le_trans _ ( cCiv_ge_below leaves V₁ V₂ idx L anchor hanchor_big hx );
   refine' Finset.sum_le_sum_of_subset _;
-  grind +suggestions
+  grind (instances := 500000, splits := 50000, gen := 50000) +suggestions
 
 /-! ## Geometry of the leaf positions -/
 
@@ -609,14 +609,14 @@ lemma cPosVal_type1_ne_V1
   have h_cPosVal_lt_gAnchor : cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) x < (g (anchor x)).val := by
     apply (cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hrank1 (fun v hv => ⟨(hgV₁ v hv).left, (hgV₁ v hv).right⟩) hV₁L hV₁le hub hslack hx hux h1x).right.right;
   by_cases hL : L = 0;
-  · grind;
+  · grind (instances := 500000, splits := 50000, gen := 50000);
   · by_cases hcase : idx (anchor x) / L = 0;
     · simp_all +decide [ Nat.div_eq_zero_iff ];
       exact hblk1 ( anchor x ) hux w hw ( by aesop ) ( by rw [ Nat.div_eq_of_lt, Nat.div_eq_of_lt ] <;> linarith [ Nat.pos_of_ne_zero hL ] );
     · have h_contra : idx (anchor x) - idx w ≥ 100 * L * (idx (anchor x) / L) + 1 := by
         have h_contra : (col x).val ≥ 100 * L * (idx (anchor x) / L) := by
           exact le_trans ( cCiv_ge_type1 leaves V₁ V₂ idx L anchor hanchor_big hcrank hrank1 hblk1 hdeg hx hux h1x ) ( hlb x hx );
-        grind +locals;
+        grind (instances := 500000, splits := 50000, gen := 50000) +locals;
       have h_contra : idx (anchor x) < (idx (anchor x) / L + 1) * L := by
         linarith [ Nat.div_add_mod ( idx ( anchor x ) ) L, Nat.mod_lt ( idx ( anchor x ) ) ( Nat.pos_of_ne_zero hL ) ];
       nlinarith only [ h_contra, ‹idx ( anchor x ) - idx w ≥ 100 * L * ( idx ( anchor x ) / L ) + 1›, Nat.sub_le ( idx ( anchor x ) ) ( idx w ), Nat.pos_of_ne_zero hcase, Nat.pos_of_ne_zero hL ]
@@ -643,8 +643,8 @@ lemma cPosVal_type2
   have h_col_bound : (col x).val < n / 10 + n / 100 := by
     by_cases hV₁card : 2 ≤ V₁.card;
     · linarith [ hub x hx, hV₁small hV₁card, cCiv_lt_sumV1 leaves V₁ V₂ idx L anchor hrank1 hx hux, Nat.div_mul_le_self n 10, Nat.div_mul_le_self n 100 ];
-    · grind;
-  grind
+    · grind (instances := 500000, splits := 50000, gen := 50000);
+  grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-
 **Type-2 vs. `V₁` core.** A type-2 leaf sits strictly above every `V₁` vertex.
@@ -666,7 +666,7 @@ lemma cPosVal_type2_gt_V1
     (h2x : ¬ idx (anchor x) / L < (V₁.card + 1) / 2) {w : V} (hw : w ∈ V₁) :
     (g w).val < cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) x := by
   by_cases hL : L = 0;
-  · grind;
+  · grind (instances := 500000, splits := 50000, gen := 50000);
   · unfold cPosVal; simp +decide [ * ] ;
     have := cCiv_ge_type2 leaves V₁ V₂ idx L anchor hanchor_big hcrank hrank1 hblk1 hdeg hx hux h2x;
     nlinarith [ Nat.div_mul_le_self ( idx ( anchor x ) ) L, Nat.sub_add_cancel ( show idx ( anchor x ) / L ≤ V₁.card from le_of_lt ( hrank1 _ hux ) ), hlb x hx, Nat.pos_of_ne_zero hL, hgV₁ _ hw, hgV₁ _ hux, Nat.sub_add_cancel ( show 1 ≤ V₁.card from Finset.card_pos.mpr ⟨ _, hux ⟩ ) ]
@@ -691,10 +691,10 @@ lemma cPosVal_type3
   split_ifs;
   · exact False.elim ( Finset.disjoint_left.mp hV₁V₂ ( by tauto ) hux );
   · refine' ⟨ _, _, _ ⟩;
-    · grind;
+    · grind (instances := 500000, splits := 50000, gen := 50000);
     · have := hlb x hx;
       have := cCiv_ge_sumV1_of_V2 leaves V₁ V₂ idx L anchor hV₁V₂ hrank1 hanchor_big hx hux; omega;
-    · grind
+    · grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-
 Every leaf position value is in range `[0, 2n+1)`.
@@ -715,7 +715,7 @@ lemma cPosVal_lt
     (hslack : slack ≤ n / 100)
     {x : V} (hx : x ∈ leaves) :
     cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) x < 2 * n + 1 := by
-  by_cases h1x : idx ( anchor x ) / L < ( V₁.card + 1 ) / 2 <;> simp_all +decide only [cPosVal]; all_goals grind
+  by_cases h1x : idx ( anchor x ) / L < ( V₁.card + 1 ) / 2 <;> simp_all +decide only [cPosVal]; all_goals grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-- Injectivity of `idx` from injectivity of the block index `idx / L`. -/
 lemma idx_lt_of_div_lt {a b L : ℕ} (hL : 1 ≤ L) (h : a / L < b / L) : a < b := by
@@ -770,27 +770,27 @@ lemma cPosVal_injOn_V1V1
       · have := civ_gap_type1 leaves V₁ V₂ idx L anchor hL hanchor_big hkey hcrank hrank1 hblk1 hdeg hx hy hux huy h1x h1y ‹_›;
         have := cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hrank1 ( fun v hv => ⟨ hgV₁ v hv |>.1, hgV₁ v hv |>.2 ⟩ ) hV₁L hV₁le hub hslack hx hux h1x;
         have := cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hrank1 ( fun v hv => ⟨ hgV₁ v hv |>.1, hgV₁ v hv |>.2 ⟩ ) hV₁L hV₁le hub hslack hy huy h1y;
-        grind;
+        grind (instances := 500000, splits := 50000, gen := 50000);
       · have := civ_gap_type1 leaves V₁ V₂ idx L anchor hL hanchor_big hkey hcrank hrank1 hblk1 hdeg hy hx huy hux h1y h1x ‹_›;
         have := cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hrank1 ( fun v hv => ⟨ hgV₁ v hv |>.1, hgV₁ v hv |>.2 ⟩ ) hV₁L hV₁le hub hslack hx hux h1x;
         have := cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hrank1 ( fun v hv => ⟨ hgV₁ v hv |>.1, hgV₁ v hv |>.2 ⟩ ) hV₁L hV₁le hub hslack hy huy h1y;
-        grind +splitImp;
+        grind (instances := 500000, splits := 50000, gen := 50000) +splitImp;
   · have h_contra : (g (anchor x)).val < cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) y := by
       apply cPosVal_type2_gt_V1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hanchor_big hcrank hrank1 hblk1 hdeg hgV₁ hV₁L hV₁small hlb hub hslack hy huy h1y hux;
     unfold cPosVal at *; simp_all +decide ;
-    grind;
+    grind (instances := 500000, splits := 50000, gen := 50000);
   · have h_contra : cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) x > (g (anchor y)).val := by
       apply cPosVal_type2_gt_V1;
       all_goals try assumption;
-    grind +locals;
+    grind (instances := 500000, splits := 50000, gen := 50000) +locals;
   · by_cases h : idx ( anchor x ) / L < idx ( anchor y ) / L <;> simp_all +decide only [cPosVal];
     · have := civ_gap_type2 leaves V₁ V₂ idx L anchor hL hanchor_big hkey hcrank hrank1 hblk1 hdeg hx hy hux huy h1x h1y h;
-      grind;
+      grind (instances := 500000, splits := 50000, gen := 50000);
     · by_cases h : idx ( anchor x ) / L = idx ( anchor y ) / L;
       · have := hblk1 ( anchor x ) hux ( anchor y ) huy; simp_all +decide ;
         exact hcolinj hx hy ( Fin.ext hxy );
       · have := civ_gap_type2 leaves V₁ V₂ idx L anchor hL hanchor_big hkey hcrank hrank1 hblk1 hdeg hy hx huy hux ( by omega ) ( by omega ) ( by omega );
-        grind
+        grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-
 Same-side injectivity for two `V₂`-anchored leaves.
@@ -811,7 +811,7 @@ lemma cPosVal_injOn_V2V2
       = cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) y) : x = y := by
   by_cases hcase : idx (anchor x) / L = idx (anchor y) / L;
   · have h anchors : anchors = anchor x → anchors = anchor y := by
-      grind;
+      grind (instances := 500000, splits := 50000, gen := 50000);
     contrapose! hxy; simp_all +decide [ cPosVal ] ;
     exact fun h => hxy <| hcolinj hx hy <| Fin.ext h;
   · cases lt_or_gt_of_ne hcase <;> simp_all +decide [ cPosVal ];
@@ -819,10 +819,10 @@ lemma cPosVal_injOn_V2V2
         exact idx_lt_of_div_lt hL ‹_›;
       have h_contra : cCiv leaves V₁ V₂ idx L anchor x < cCiv leaves V₁ V₂ idx L anchor y := by
         apply cCiv_lt_of_rank2_lt leaves V₁ V₂ idx L anchor hx hux huy ‹_›;
-      grind;
+      grind (instances := 500000, splits := 50000, gen := 50000);
     · have := hgap y hy x hx ( cCiv_lt_of_rank2_lt leaves V₁ V₂ idx L anchor hy huy hux ‹_› |> le_of_lt );
       have := idx_lt_of_div_lt hL ‹_›;
-      grind
+      grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-
 A `V₁`-anchored leaf sits strictly below any `V₂`-anchored (type-3) leaf.
@@ -849,7 +849,7 @@ lemma cPosVal_lt_V1_V2
     exact Or.resolve_left ( Finset.mem_union.mp ( hanchor_big y hy ) ) huy)).right.left;
   by_cases h1x : idx (anchor x) / L < (V₁.card + 1) / 2;
   · have := cPosVal_type1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hrank1 ( fun v hv => ⟨ hgV₁ v hv |>.1, hgV₁ v hv |>.2 ⟩ ) hV₁L hV₁le hub hslack hx hux h1x;
-    grind;
+    grind (instances := 500000, splits := 50000, gen := 50000);
   · have h_cPosVal_x : cPosVal V₁ V₂ idx L g anchor (fun z => (col z).val) x < a₀.val := by
       apply (cPosVal_type2 leaves V₁ V₂ idx L anchor g col ap₁ a₀ slack hn hap₁ ha₀ hrank1 hgV₁ hV₁L hV₁small hub hslack hx hux h1x).right;
     omega
@@ -946,7 +946,7 @@ lemma g_core_lt (core : Finset V)
     (hgI₀ : ∀ v ∈ core, v ∉ V₁ → v ∉ V₂ → a₀.val ≤ (g v).val ∧ (g v).val < a₀.val + len₀)
     (hV₁L : V₁.card * L ≤ n / 100) (hV₂L : V₂.card * L ≤ n / 100)
     {v : V} (hv : v ∈ core) : (g v).val < 92 * n / 100 := by
-  by_cases hv₁ : v ∈ V₁ <;> by_cases hv₂ : v ∈ V₂ <;> simp_all +decide only; all_goals grind
+  by_cases hv₁ : v ∈ V₁ <;> by_cases hv₂ : v ∈ V₂ <;> simp_all +decide only; all_goals grind (instances := 500000, splits := 50000, gen := 50000)
 
 /-
 **Leaf positions avoid the core image (value version).**
@@ -977,14 +977,14 @@ lemma cPosVal_off_core (core : Finset V)
     · by_cases hv₁ : v ∈ V₁;
       · apply cPosVal_type1_ne_V1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hanchor_big hcrank hrank1 hblk1 hdeg hgV₁ hV₁L hV₁le hlb hub hslack hx hux h1x hv₁;
       · by_cases hv₂ : v ∈ V₂ <;> simp_all +decide only [cPosVal];
-        · grind;
-        · grind +locals;
+        · grind (instances := 500000, splits := 50000, gen := 50000);
+        · grind (instances := 500000, splits := 50000, gen := 50000) +locals;
     · have := cPosVal_type2 leaves V₁ V₂ idx L anchor g col ap₁ a₀ slack hn hap₁ ha₀ hrank1 hgV₁ hV₁L hV₁small hub hslack hx hux h1x;
       by_cases hv₁ : v ∈ V₁;
       · have := cPosVal_type2_gt_V1 leaves V₁ V₂ idx L anchor g col ap₁ slack hn hap₁ hanchor_big hcrank hrank1 hblk1 hdeg hgV₁ hV₁L hV₁small hlb hub hslack hx hux h1x ( hw := hv₁ ) ; omega;
-      · by_cases hv₂ : v ∈ V₂ <;> simp_all +decide only [cPosVal]; all_goals grind;
+      · by_cases hv₂ : v ∈ V₂ <;> simp_all +decide only [cPosVal]; all_goals grind (instances := 500000, splits := 50000, gen := 50000);
   · have := cPosVal_type3 leaves V₁ V₂ idx L anchor g col ap₂ hn hap₂ hV₁V₂ hanchor_big hrank1 hgV₂ hV₂L hV₁gt hlb hx ( by specialize hanchor_big x hx; aesop );
-    grind +splitImp
+    grind (instances := 500000, splits := 50000, gen := 50000) +splitImp
 
 /-- **Leaf positions avoid the core image.** -/
 lemma cPos_off_core (core : Finset V)
