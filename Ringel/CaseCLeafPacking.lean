@@ -555,7 +555,8 @@ lemma cCiv_ge_sumV1_of_V2 {V : Type*} [Fintype V] [DecidableEq V] (leaves V₁ V
     ∑ u ∈ V₁, cDeg leaves anchor u ≤ cCiv leaves V₁ V₂ idx L anchor x := by
   refine' le_trans _ ( cCiv_ge_below leaves V₁ V₂ idx L anchor hanchor_big hx );
   refine' Finset.sum_le_sum_of_subset _;
-  intro u hu; simp only [Finset.mem_filter] at *;`r`n  have hax : anchor x ∉ V₁ := fun h => Finset.disjoint_left.mp hV₁V₂ h hux;
+  intro u hu; simp only [Finset.mem_filter] at *;
+  have hax : anchor x ∉ V₁ := fun h => Finset.disjoint_left.mp hV₁V₂ h hux;
   exact ⟨Finset.mem_union_left V₂ hu, lt_of_lt_of_le (cRank_lt_card_V1 V₁ V₂ idx L hrank1 hu) (cRank_ge_card_V2 V₁ V₂ idx L hax)⟩
 
 /-! ## Geometry of the leaf positions -/
