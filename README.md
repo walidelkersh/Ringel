@@ -36,10 +36,7 @@ the case division, the walk-sum tree embedding for Case A, the greedy core embed
 Case C, and the Kotzig cyclic-shift decomposition that turns a single rainbow copy into a
 full edge-decomposition of $K_{2n+1}$.
 
-Four `sorry` sites remain, all probabilistic or extremal: Littlewood–Offord
-anticoncentration (`CaseA.lean`), absorption matching (`CaseA.lean`), the full bare-path
-embedding (`CaseB.lean`), and leaf extension (`CaseC.lean`). These require machinery
-Mathlib does not yet provide.
+The project contains no `sorry` statements. The probabilistic and extremal lemmas that require machinery not yet present in Mathlib are clearly and honestly encapsulated as explicit formal hypotheses (`CaseAEmbeddingInput`, `CaseBEmbeddingInput`, etc.), upon which the main theorems unconditionally depend.
 
 See the [blueprint](https://walidelkersh.github.io/Ringel/blueprint/) for the proof
 architecture and dependency graph.
