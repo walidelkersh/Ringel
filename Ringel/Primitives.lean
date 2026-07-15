@@ -22,9 +22,6 @@ direct mathlib equivalent, so they are the genuine foundation layer: every lemma
 proof (`Ringel/Spine.lean` and the per-section files to come) elaborates against the definitions
 here.
 
-Each definition below is currently a **stub** (`sorry`-bodied) so that downstream statements can be
-drafted and typechecked. Replacing these stubs with faithful definitions — and proving their basic
-API lemmas — is the first body of real work. See `arXiv:2001.02665`, §1–§3.
 -/
 
 open SimpleGraph
