@@ -580,7 +580,7 @@ theorem one_large_vertex (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
       have hadj : T'.Adj a b := by
         rwa [SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet] at hd
       obtain ⟨_, haL, hbL⟩ := (hT'adj a b).mp hadj
-      rw [Sym2.map_mk, hfS a haL, hfS b hbL]
+      simp only [Sym2.map_mk, hfS a haL, hfS b hbL]
   -- Colour of a leaf edge.
   have hleafcol : ∀ (w : V) (hw : w ∈ L),
       ndColouring n hn (Sym2.map f s(v1, w)) = ↑(eqv ⟨w, hw⟩) := by
