@@ -216,26 +216,53 @@ lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T :
     (hsmall : 3 * (Sᶜ : Set V).ncard ≤ 2 * n + 5) :
     ∃ f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1),
       Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
-  rcases Set.eq_empty_or_nonempty Sᶜ with ( hS | ⟨ x, hx ⟩ );
-  · refine' ⟨ _, _ ⟩;
-    refine' ⟨ fun _ => ⟨ 0, by linarith ⟩, fun _ _ => _ ⟩;
-    grind;
-    rintro ⟨ v, w ⟩ hvw ⟨ x, y ⟩ hxy h; simp_all +decide [ CaseACore ] ;
-  · obtain ⟨g, hg⟩ : ∃ g : V → Fin (2 * n + 1), Set.InjOn g (Sᶜ) ∧ Set.InjOn (ndColouring n hn) (Sym2.map g '' (T.edgeFinset ∩ (Set.Finite.toFinset (Set.toFinite Sᶜ)).sym2)) := by
-      have := @greedy_embed_interval n hn;
-      contrapose! this;
-      refine' ⟨ V, _, _, T, _, _, _ ⟩;
-      all_goals try exact hT.2;
-      all_goals try exact Classical.decRel _;
-      exact Fintype.ofFinite V;
-      refine' ⟨ Finset.univ, 0, Finset.mem_univ _, x, Set.Finite.toFinset ( Set.toFinite Sᶜ ), _, _, _ ⟩ <;> simp_all +decide [ Set.ncard_eq_toFinset_card' ];
-      rw [ ← Set.ncard_coe_finset ] ; congr ; aesop;
-    refine' ⟨ ⟨ fun v => g v, _ ⟩, _ ⟩;
-    exact fun a b h => Subtype.ext <| hg.1 a.2 b.2 h;
-    refine' hg.2.mono _;
-    rintro ⟨ ⟨ u, hu ⟩, ⟨ v, hv ⟩ ⟩ huv;
-    simp +zetaDelta at *;
-    rcases huv with ⟨ a, ha, b, ⟨ hb, hab ⟩, hu, hv ⟩ ; use s(a, b) ; aesop;
+        by_cases h : Set.Nonempty Sᶜ <;> simp_all +decide [ CaseACore ];
+        · by_contra h_contra;
+          obtain ⟨g, hg⟩ : ∃ g : V → Fin (2 * n + 1), Set.InjOn g (Sᶜ) ∧ Set.InjOn (ndColouring n hn) (Sym2.map g '' (T.edgeFinset ∩ (Set.toFinite Sᶜ).toFinset.sym2)) := by
+            have := @greedy_embed_interval n hn V;
+            obtain ⟨v1, hv1⟩ : ∃ v1 : V, v1 ∈ Sᶜ := h;
+            obtain ⟨inst, inst_1, inst_2⟩ : ∃ (inst : Fintype V) (inst_1 : DecidableEq V) (inst_2 : DecidableRel T.Adj), True := by
+              haveI := Fintype.ofFinite V;
+              haveI := Classical.decEq V;
+              haveI := Classical.decRel (fun x y => T.Adj x y);
+              exact ⟨ inferInstance, inferInstance, inferInstance, trivial ⟩;
+            obtain ⟨inst_2, _⟩ := inst_2;
+            specialize this T (by
+            exact hT.2) (Finset.univ : Finset (Fin (2 * n + 1))) 0 (by
+            exact Finset.mem_univ _) v1 (Set.toFinite Sᶜ).toFinset (by
+            simp +decide [ hv1 ]) (by
+            rw [ ← Set.ncard_coe_finset ] ; aesop);
+            simp +zetaDelta at *;
+            exact ⟨ this.choose, this.choose_spec.2.1, this.choose_spec.2.2 ⟩;
+          let f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1) :=
+            ⟨fun x => g x, fun x y hxy =>
+              Subtype.ext (hg.1 x.2 y.2 hxy)⟩
+          have edge_mem : ∀ e ∈ ((CaseACore T S).map f_core).edgeSet,
+              e ∈ Sym2.map g '' (T.edgeFinset ∩ (Set.toFinite Sᶜ).toFinset.sym2) := by
+            intro e he
+            induction e using Sym2.ind with
+            | _ x y =>
+                have hxy : ((CaseACore T S).map f_core).Adj x y := he
+                rw [SimpleGraph.map_adj] at hxy
+                obtain ⟨u, v, huv, rfl, rfl⟩ := hxy
+                refine ⟨s(u.1, v.1), ?_, ?_⟩
+                · constructor
+                  · rw [Finset.mem_coe, SimpleGraph.mem_edgeFinset,
+                      SimpleGraph.mem_edgeSet]
+                    exact huv
+                  · rw [Finset.mem_coe, Finset.mk_mem_sym2_iff]
+                    exact ⟨(Set.toFinite Sᶜ).mem_toFinset.mpr u.2,
+                      (Set.toFinite Sᶜ).mem_toFinset.mpr v.2⟩
+                · simpa [f_core] using (Sym2.map_mk g u.1 v.1)
+          refine h_contra ⟨f_core, ?_⟩
+          intro e₁ he₁ e₂ he₂ heq
+          exact hg.2 (edge_mem e₁ he₁) (edge_mem e₂ he₂) heq
+        · -- Since Sᶜ is empty, the core is empty, and we're done. We can use the empty set as the core.
+          use ⟨fun _ => 0, by
+            simp +decide [ Function.Injective ];
+            exact fun a ha b hb => False.elim <| h ⟨ a, ha ⟩⟩;
+          simp_all +decide [ Set.InjOn, SimpleGraph.map ];
+          simp_all +decide [ Relation.Map, Sym2.forall ]
 
 lemma core_nonempty {V : Type*} [Finite V] (S : Set V)
     (hS_size : S.ncard < Nat.card V) :
