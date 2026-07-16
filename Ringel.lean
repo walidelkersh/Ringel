@@ -7,7 +7,9 @@ import Ringel.NDInterval
 import Ringel.SmallTree
 import Ringel.CaseCAssembly
 import Ringel.CaseA
+import Ringel.NearEmbedding
 import Ringel.PaperFinishing
 import Ringel.CaseB
+import Ringel.NearEmbeddingBridge
 import Ringel.CaseBObstruction
 import Ringel.Statement
