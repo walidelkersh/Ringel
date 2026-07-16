@@ -57,20 +57,41 @@ The deterministic portion is complete and proof-backed:
   retained enough crossing edges;
 * `SmallTreeEmbeddingConclusion.exists_replete` is the finite probabilistic-method extraction.
 
-No source assumption has been added.  The exact next standalone concentration theorem is:
+No source assumption has been added.
 
-```lean
-theorem qRandomSet_lower_tail
-    {Ω α : Type*} [Fintype Ω] [Fintype α]
-    (P : FiniteProbabilityLaw Ω) (X : Ω → Set α) (A : Set α)
-    (q δ : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1) (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1)
-    (hX : IsQRandomSet P q X) :
-    1 - Real.exp (-(δ ^ 2 * q * A.ncard) / 2) ≤
-      P.prob {ω | ⌊(1 - δ) * q * A.ncard⌋₊ ≤ (A ∩ X ω).ncard}
-```
+## Bounded concentration slice
 
-Together with its upper-tail/Azuma analogue, the remaining construction obligation is to construct
-the finite product law for the disjoint reservoir split used in the paper and prove the simultaneous
+`Ringel/NearEmbeddingConcentration.lean` proves the previously displayed finite theorem
+`qRandomSet_lower_tail` exactly as stated, with the multiplicative bound
+`exp (-(δ² q |A|)/2)`.  The proof is a finite exponential-moment argument over the powerset of
+`A`; no measure-theoretic or asymptotic assumption is inserted.
+
+The definition audit found **no independence obstruction** in `IsQRandomSet`.  Its defining
+formula gives the probability of every atom `X = B` as
+`q^|B| (1-q)^(|univ \\ B|)`.  Thus it is the complete product-Bernoulli distribution and encodes
+mutual independence of all membership bits, not merely their one-point marginals.  This matches
+MPS §3's definition of a p-random subset as selecting every element independently.  The new module
+makes the consequences explicit:
+
+* `qRandomSet_intersection_atom` gives the exact product law of `A ∩ X` for every `B ⊆ A`;
+* `qRandomSet_mem_prob` gives each one-point marginal `P(a ∈ X) = q`;
+* `qRandomSet_intersection_expect` gives the exact expectation
+  `E |A ∩ X| = q |A|`;
+* `qRandomSet_intersection_card_lt_prob` identifies every cardinality lower event with its finite
+  binomial powerset sum;
+* `powerset_chernoff_lower_tail` proves the finite product-weight estimate used by
+  `qRandomSet_lower_tail`.
+
+Consequently the proposed theorem did follow from the actual definition and was not reformulated.
+Had `IsQRandomSet` specified only `qRandomSet_mem_prob`, the expectation identity would still
+follow by linearity, but the Chernoff conclusion would be false in general (perfectly correlated
+membership bits have the same marginals).  That hypothetical obstruction does not apply here.
+
+The next construction needed by §6 is not an added independence hypothesis: it is an explicit
+finite product law for the **joint disjoint reservoir split** used in the randomized embedding,
+with proofs that its projected reservoirs have the required q-random laws and the required joint
+independence/conditional laws.  Together with an upper-tail/Azuma analogue, that construction must
+prove the simultaneous
 concentration event: (i) every
 partially embedded vertex has enough available neighbours in the appropriate vertex/colour
 reservoir; (ii) every colour has at most `U.ncard / 10` edges from the designated U-reservoir into
@@ -100,15 +121,15 @@ the finishing lemmas: `lem:finishA` (`section4.tex`) and `lem:finishB` (`section
 
 ## Build audit
 
-The new small-tree module was explicitly built:
+The owned concentration module was explicitly built with the repository toolchain:
 
 ```text
-lake build Ringel.NearEmbeddingSmallTree
-Build completed successfully (8477 jobs).
+lake build Ringel.NearEmbeddingConcentration
+Build completed successfully (8478 jobs).
 ```
 
-A source scan of `Ringel/NearEmbeddingSmallTree.lean` found no `sorry`, `admit`, `axiom`,
-`sorryAx`, or `implemented_by`.
+A source scan of `Ringel/NearEmbeddingConcentration.lean` found no `sorry`, `admit`, `axiom`,
+`sorryAx`, `implemented_by`, or unproved source-level assumption.
 
 A default full-project build was also started but did not complete within the audit window.  No
 claim of a successful default build is made; the owned module and all of its imports were built by
