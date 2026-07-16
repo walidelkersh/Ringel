@@ -10,6 +10,7 @@ import Ringel.CaseA
 import Ringel.NearEmbedding
 import Ringel.NearEmbeddingSmallTree
 import Ringel.NearEmbeddingConcentration
+import Ringel.NearEmbeddingReservoir
 import Ringel.PaperFinishing
 import Ringel.CaseAColourCover
 import Ringel.CaseB

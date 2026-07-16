@@ -36,8 +36,8 @@ bounds (with ample slack, subject to the paper's integral interpretation).
 
 The project primitive `IsReplete` is a minimum vertex-neighbour condition, while the paper defines
 pair repletion colour-by-colour. To state the cited lemma faithfully without altering existing
-primitives, the focused module introduces `ColourPairReplete`, counting ordered `X × V` edges of
-each colour.
+primitives, the focused module introduces `ColourCoverPairReplete`, counting ordered `X × V`
+pairs of each colour.
 
 ## Proof decomposition
 
@@ -48,6 +48,18 @@ The checked construction consists of:
 - deletion estimates for prescribed endpoints and colours;
 - greedy completion with fresh targets and fresh allowed colours;
 - explicit assembly into the existing `PerfectRainbowMatching` structure.
+
+## Pair-repletion namespace-collision repair
+
+`NearEmbedding.lean` already defines `Ringel.ColourPairReplete` for the near-embedding layer. It
+is not the same declaration as the colour-cover predicate: the near-embedding version fixes the
+ND colouring, takes vertex `Set`s, counts a `Set` of non-diagonal `Sym2` crossing edges, and carries
+`n` and its positivity proof explicitly. The §4 colour-cover version is generic in the colouring,
+takes `Finset`s, and counts ordered pairs in `X ×ˢ V`. The latter has therefore been renamed to
+`ColourCoverPairReplete`, together with all three local uses in
+`prescribed_colour_matching`, `colourcover`, and `ndColourcover`. No bridge is appropriate because
+the two predicates have deliberately different interfaces and counting representations. The
+rename changes no proposition body, theorem hypothesis, conclusion, or numerical bound.
 
 ## Lean 4.30 compatibility repair
 
@@ -71,5 +83,12 @@ Targeted command under the repository toolchain and Mathlib v4.30.0:
 lake build Ringel.CaseAColourCover
 ```
 
-Result: successful. A source scan found no `sorry`, `admit`, `axiom`, `sorryAx`, `implemented_by`,
-or `exact?` in the module.
+Result: successful. The root target was also checked with:
+
+```text
+lake build Ringel
+```
+
+Result: successful under Lean 4.30.0; in particular, `NearEmbedding` and `CaseAColourCover` now
+coexist in the root environment without a duplicate declaration. A source scan found no `sorry`,
+`admit`, `axiom`, `sorryAx`, `implemented_by`, or `exact?` in the module.

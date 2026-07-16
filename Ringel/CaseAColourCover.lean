@@ -18,7 +18,7 @@ The two asymptotic uses in the paper are replaced by the inequalities
 
 /-- Every colour has at least `r` edges with one endpoint in `X` and the other in `V`.
 This is the paper's pair-repletion notion (as opposed to a minimum vertex degree). -/
-def ColourPairReplete {W K : Type*} [DecidableEq K]
+def ColourCoverPairReplete {W K : Type*} [DecidableEq K]
     (colour : Sym2 W → K) (X V : Finset W) (r : ℕ) : Prop :=
   ∀ col : K, r ≤ ((X ×ˢ V).filter (fun p => colour s(p.1, p.2) = col)).card
 
@@ -102,7 +102,7 @@ lemma prescribed_colour_matching
     (n : ℕ) (colour : Sym2 (Fin (2 * n + 1)) → Fin n)
     (X V : Finset (Fin (2 * n + 1))) (C' : Finset (Fin n)) (repletion : ℕ)
     (htwo : IsTwoFactorization n colour) (hXV : Disjoint X V)
-    (hreplete : ColourPairReplete colour X V repletion)
+    (hreplete : ColourCoverPairReplete colour X V repletion)
     (hprescribed : 4 * C'.card ≤ repletion) :
     ∃ edge : (c : Fin n) → c ∈ C' → (Fin (2 * n + 1) × Fin (2 * n + 1)),
       (∀ c hc, edge c hc ∈ X ×ˢ V) ∧
@@ -273,7 +273,7 @@ theorem colourcover
     (X V : Finset (Fin (2 * n + 1))) (C C' : Finset (Fin n)) (repletion : ℕ)
     (htwo : IsTwoFactorization n colour)
     (hXV : Disjoint X V)
-    (hreplete : ColourPairReplete colour X V repletion)
+    (hreplete : ColourCoverPairReplete colour X V repletion)
     (hprescribed : 4 * C'.card ≤ repletion)
     (hdense : ∀ x : Fin (2 * n + 1),
       3 * X.card ≤ allowedColourDegree colour C V x) :
@@ -290,7 +290,7 @@ theorem ndColourcover
     (n : ℕ) (hn : 0 < n)
     (X V : Finset (Fin (2 * n + 1))) (C C' : Finset (Fin n)) (repletion : ℕ)
     (hXV : Disjoint X V)
-    (hreplete : ColourPairReplete (ndColouring n hn) X V repletion)
+    (hreplete : ColourCoverPairReplete (ndColouring n hn) X V repletion)
     (hprescribed : 4 * C'.card ≤ repletion)
     (hdense : ∀ x : Fin (2 * n + 1),
       3 * X.card ≤ allowedColourDegree (ndColouring n hn) C V x) :
