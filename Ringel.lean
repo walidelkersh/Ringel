@@ -8,6 +8,7 @@ import Ringel.SmallTree
 import Ringel.CaseCAssembly
 import Ringel.CaseA
 import Ringel.NearEmbedding
+import Ringel.NearEmbeddingSmallTree
 import Ringel.PaperFinishing
 import Ringel.CaseB
 import Ringel.NearEmbeddingBridge

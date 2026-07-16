@@ -34,13 +34,49 @@ portion of both old inputs; it does not pretend to prove the finishing portions.
 No statement of `ringel_conjecture_large` was changed.  No axiom, `sorry`, `admit`, or `sorryAx` was
 added.
 
-## Exact next source lemma and unproved Lean goal
+## Small-tree construction slice
 
-The next construction lemma is **“Small trees with a replete subset”**
-(`section6.tex`, lines 106–128, label `Lemma_embedding_small_tree`).  It initializes the §6 chain
-and produces the independent `V₀,C₀` and repletion clause.  Its formalization should prove a
-constructor for `RandomizedRainbowEmbedding` and then establish the corresponding
-`NearEmbeddingConclusion` fields for the first stage.
+`Ringel/NearEmbeddingSmallTree.lean` now owns **“Small trees with a replete subset”**
+(`section6.tex`, lines 106–128, label `Lemma_embedding_small_tree`) at finite parameters.  Its
+`SmallTreeEmbeddingOutcome` keeps, in one outcome, the injective copy of `T`, the q-random
+available vertex/colour reservoirs, the two leftovers, reservoir containment, rainbow correctness,
+and avoidance of the image and used colours.  It forgets coherently to the existing
+`RandomizedRainbowEmbedding` interface.  `SmallTreeEmbeddingConclusion` gives the exact joint
+finite law: both available reservoirs are q-random, both leftovers are q/2-random, the leftovers
+are independent, and repletion has probability at least `1-failure`.
+
+The deterministic portion is complete and proof-backed:
+
+* `greedy_extend_one` proves the local greedy rainbow insertion step (fresh vertex plus fresh
+  colour preserves injectivity and colour freshness);
+* `exists_smallTreeEmbeddingOutcome_of_greedy` packages the completed greedy construction into
+  the joint outcome;
+* `colourPairReplete_compl_of_bad_bound` proves the paper's transfer from a globally replete pair
+  and a bound on bad edges into the occupied reservoirs to repletion against their complement;
+* `colourPairReplete_of_retained` proves the final random-thinning transfer once every colour has
+  retained enough crossing edges;
+* `SmallTreeEmbeddingConclusion.exists_replete` is the finite probabilistic-method extraction.
+
+No source assumption has been added.  The exact next standalone concentration theorem is:
+
+```lean
+theorem qRandomSet_lower_tail
+    {Ω α : Type*} [Fintype Ω] [Fintype α]
+    (P : FiniteProbabilityLaw Ω) (X : Ω → Set α) (A : Set α)
+    (q δ : ℝ) (hq0 : 0 ≤ q) (hq1 : q ≤ 1) (hδ0 : 0 ≤ δ) (hδ1 : δ ≤ 1)
+    (hX : IsQRandomSet P q X) :
+    1 - Real.exp (-(δ ^ 2 * q * A.ncard) / 2) ≤
+      P.prob {ω | ⌊(1 - δ) * q * A.ncard⌋₊ ≤ (A ∩ X ω).ncard}
+```
+
+Together with its upper-tail/Azuma analogue, the remaining construction obligation is to construct
+the finite product law for the disjoint reservoir split used in the paper and prove the simultaneous
+concentration event: (i) every
+partially embedded vertex has enough available neighbours in the appropriate vertex/colour
+reservoir; (ii) every colour has at most `U.ncard / 10` edges from the designated U-reservoir into
+the occupied embedding reservoirs; and (iii) independent q/2 thinning retains at least `r`
+crossing edges of every colour, with total failure probability at most `failure`.  The deterministic
+lemmas above turn those three estimates directly into the displayed conclusion.
 
 After the four §6 extension lemmas are available, the exact unproved assembly goal already present
 in Lean is:
@@ -64,13 +100,16 @@ the finishing lemmas: `lem:finishA` (`section4.tex`) and `lem:finishB` (`section
 
 ## Build audit
 
-The new modules were explicitly built together:
+The new small-tree module was explicitly built:
 
 ```text
-lake build Ringel.NearEmbedding Ringel.NearEmbeddingBridge
+lake build Ringel.NearEmbeddingSmallTree
 Build completed successfully (8477 jobs).
 ```
 
-A full default `lake build` was also run.  It reaches the new module but fails in the separately
-owned existing `Ringel/CaseA.lean` CI repair, at lines 221, 236, and 241.  This slice did not edit
-that file, per task ownership.  Thus this audit does **not** claim a successful full-project build.
+A source scan of `Ringel/NearEmbeddingSmallTree.lean` found no `sorry`, `admit`, `axiom`,
+`sorryAx`, or `implemented_by`.
+
+A default full-project build was also started but did not complete within the audit window.  No
+claim of a successful default build is made; the owned module and all of its imports were built by
+the explicit command above.

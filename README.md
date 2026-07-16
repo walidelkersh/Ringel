@@ -1,7 +1,7 @@
 # Ringel's Conjecture in Lean 4
 
 <p align="center">
-  <a href="https://github.com/Doublew08/Ringel/actions/workflows/lean_action_ci.yml"><img src="https://github.com/Doublew08/Ringel/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI"></a>
+  <a href="https://github.com/walidelkersh/Ringel/actions/workflows/lean_action_ci.yml"><img src="https://github.com/walidelkersh/Ringel/actions/workflows/lean_action_ci.yml/badge.svg" alt="CI"></a>
   <a href="https://walidelkersh.github.io/Ringel/blueprint/"><img src="https://img.shields.io/badge/Blueprint-WIP-blue" alt="Blueprint"></a>
   <a href="https://walidelkersh.github.io/Ringel/"><img src="https://img.shields.io/badge/Website-ready-green" alt="Website"></a>
   <img src="https://img.shields.io/badge/Lean-4.30.0-blue" alt="Lean Version">
@@ -29,14 +29,21 @@ is open in general and not a target of this project.
 
 ## Current state
 
-The project compiles with zero errors. The deterministic combinatorial backbone of the
-proof is fully formalized and axiom-clean: the ND-colouring and its 2-factorization,
-the split lemma with all supporting tree/forest counting infrastructure (~956 lines),
-the case division, the walk-sum tree embedding for Case A, the greedy core embedding for
-Case C, and the Kotzig cyclic-shift decomposition that turns a single rainbow copy into a
-full edge-decomposition of $K_{2n+1}$.
+Lean formalizes the deterministic combinatorial backbone: the ND-colouring and its
+2-factorization, the split lemma and its tree/forest counting infrastructure, the case division,
+the Case A walk-sum embedding, the Case C greedy core embedding, and the Kotzig cyclic-shift
+construction that extends one rainbow copy to an edge-decomposition of $K_{2n+1}$.
 
-The project contains no `sorry` statements. The probabilistic and extremal lemmas that require machinery not yet present in Mathlib are clearly and honestly encapsulated as explicit formal hypotheses (`CaseAEmbeddingInput`, `CaseBEmbeddingInput`, etc.), upon which the main theorems unconditionally depend.
+The §6 development defines a finite joint probability space for the near-embedding argument.
+`SmallTreeEmbeddingOutcome` stores the rainbow embedding, available vertex and colour reservoirs,
+independent leftovers, and their avoidance properties. Separate lemmas prove the local greedy
+extension, transfer repletion across complements and retained edges, and extract a successful
+finite outcome from a positive probability bound.
+
+Tracked Lean source contains no `sorry`, `admit`, `axiom`, or `sorryAx` declarations. The global
+theorem remains conditional on explicit inputs such as `CaseAEmbeddingInput` and
+`CaseBEmbeddingInput`, which cover the probabilistic and extremal arguments still under
+formalization. GitHub Actions provides the authoritative build check.
 
 See the [blueprint](https://walidelkersh.github.io/Ringel/blueprint/) for the proof
 architecture and dependency graph.
@@ -44,7 +51,7 @@ architecture and dependency graph.
 ## Build
 
 ```bash
-git clone https://github.com/Doublew08/Ringel.git && cd Ringel
+git clone https://github.com/walidelkersh/Ringel.git && cd Ringel
 lake exe cache get
 lake build
 ```
