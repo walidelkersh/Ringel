@@ -69,9 +69,9 @@ lemma colour_pair_conflict_card_le_four
     (hXV : Disjoint X V) (col : Fin n) (p : Fin (2 * n + 1) × Fin (2 * n + 1)) :
     (((X ×ˢ V).filter (fun q => colour s(q.1, q.2) = col)).filter
       (fun q => q.1 = p.1 ∨ q.1 = p.2 ∨ q.2 = p.1 ∨ q.2 = p.2)).card ≤ 4 := by
-  have h_card : (Finset.filter (fun q => q.1 = p.1 ∨ q.2 = p.1) (Finset.filter (fun q => colour (Sym2.mk (q.1, q.2)) = col) (X ×ˢ V))).card ≤ 2 ∧ (Finset.filter (fun q => q.1 = p.2 ∨ q.2 = p.2) (Finset.filter (fun q => colour (Sym2.mk (q.1, q.2)) = col) (X ×ˢ V))).card ≤ 2 := by
+  have h_card : (Finset.filter (fun q => q.1 = p.1 ∨ q.2 = p.1) (Finset.filter (fun q => colour (s(q.1, q.2)) = col) (X ×ˢ V))).card ≤ 2 ∧ (Finset.filter (fun q => q.1 = p.2 ∨ q.2 = p.2) (Finset.filter (fun q => colour (s(q.1, q.2)) = col) (X ×ˢ V))).card ≤ 2 := by
     constructor <;> have := htwo p.1 col <;> have := htwo p.2 col <;> simp_all +decide [ Finset.filter_or, Finset.filter_and ];
-    · convert Set.ncard_le_ncard ( show { e : Sym2 ( Fin ( 2 * n + 1 ) ) | p.1 ∈ e ∧ ¬e.IsDiag ∧ colour e = col } ⊇ ( Finset.image ( fun q : Fin ( 2 * n + 1 ) × Fin ( 2 * n + 1 ) => Sym2.mk q ) ( Finset.filter ( fun q : Fin ( 2 * n + 1 ) × Fin ( 2 * n + 1 ) => q.1 = p.1 ∨ q.2 = p.1 ) ( Finset.filter ( fun q : Fin ( 2 * n + 1 ) × Fin ( 2 * n + 1 ) => colour ( Sym2.mk q ) = col ) ( X ×ˢ V ) ) ) ) from ?_ ) using 2;
+    · convert Set.ncard_le_ncard ( show { e : Sym2 ( Fin ( 2 * n + 1 ) ) | p.1 ∈ e ∧ ¬e.IsDiag ∧ colour e = col } ⊇ ( Finset.image ( fun q : Fin ( 2 * n + 1 ) × Fin ( 2 * n + 1 ) => s(q.1, q.2) ) ( Finset.filter ( fun q : Fin ( 2 * n + 1 ) × Fin ( 2 * n + 1 ) => q.1 = p.1 ∨ q.2 = p.1 ) ( Finset.filter ( fun q : Fin ( 2 * n + 1 ) × Fin ( 2 * n + 1 ) => colour s(q.1, q.2) = col ) ( X ×ˢ V ) ) ) ) from ?_ ) using 2;
       · rw [ Set.ncard_coe_finset, Finset.card_image_of_injOn ];
         · exact congr_arg Finset.card ( by ext; aesop );
         · intro q hq q' hq' h; simp_all +decide [ Finset.disjoint_left, Sym2.eq_iff ] ;
@@ -81,7 +81,7 @@ lemma colour_pair_conflict_card_le_four
         rintro _ a b ha hb h₁ h₂ rfl; rcases h₂ with ( rfl | rfl ) <;> simp_all +decide [ Finset.disjoint_left ] ;
         · exact fun h => hXV ha ( h.symm ▸ hb );
         · grind +splitIndPred;
-    · have h_card : (Finset.image (fun q => Sym2.mk (q.1, q.2)) (Finset.filter (fun q => q.1 = p.2 ∨ q.2 = p.2) (Finset.filter (fun q => colour (Sym2.mk (q.1, q.2)) = col) (X ×ˢ V)))).card ≤ 2 := by
+    · have h_card : (Finset.image (fun q => s(q.1, q.2)) (Finset.filter (fun q => q.1 = p.2 ∨ q.2 = p.2) (Finset.filter (fun q => colour (s(q.1, q.2)) = col) (X ×ˢ V)))).card ≤ 2 := by
         rw [ ← Set.ncard_coe_finset ];
         refine' le_trans ( Set.ncard_le_ncard _ ) this.le;
         simp +contextual [ Set.subset_def, Finset.mem_image ];
@@ -109,12 +109,18 @@ lemma prescribed_colour_matching
       (∀ c hc, colour s((edge c hc).1, (edge c hc).2) = c) ∧
       (∀ c hc d hd, c ≠ d →
         (edge c hc).1 ≠ (edge d hd).1 ∧ (edge c hc).2 ≠ (edge d hd).2) := by
-  convert greedy_conflict_choice C' ( fun c => Finset.filter ( fun p => colour s(p.1, p.2) = c ) ( X ×ˢ V ) ) ( fun p q => p.1 = q.1 ∨ p.1 = q.2 ∨ p.2 = q.1 ∨ p.2 = q.2 ) 4 ( by decide ) ?_ ?_ ?_ using 1;
-  · grind +suggestions;
-  · exact fun p q h => by aesop;
+  convert greedy_conflict_choice C' ( fun c => Finset.filter ( fun p => colour s(p.1, p.2) = c ) ( X ×ˢ V ) ) ( fun p q => p.1 = q.1 ∨ p.2 = q.2 ) 4 ?_ ?_ ?_ ?_ using 1;
+  · grind;
+  · norm_num;
+  · exact fun p q h => by tauto;
   · exact fun c hc => le_trans hprescribed ( hreplete c );
-  · intro c hc p; convert colour_pair_conflict_card_le_four n colour X V htwo hXV c p using 1;
-    exact congr_arg Finset.card ( by ext; aesop )
+  · simp +zetaDelta at *;
+    intro c hc a b;
+    have := colour_pair_conflict_card_le_four n colour X V htwo hXV c ( a, b );
+    refine' le_trans _ this;
+    refine Finset.card_mono ?_;
+    simp +contextual [ Finset.subset_iff ];
+    grind +qlia
 
 /-
 A two-factorization has at most two neighbours of any fixed colour at a vertex,
@@ -198,12 +204,12 @@ lemma completion_conflict_card_le_three
     ((A.image (fun v => (x, v))).filter (fun q =>
       q.2 = p.2 ∨ colour s(q.1, q.2) = colour s(p.1, p.2))).card ≤ 3 := by
   by_cases h : p.2 ∈ A <;> simp_all +decide [ Finset.filter_image ];
-  · have h_filter : (Finset.filter (fun a => colour s(x, a) = colour (Sym2.mk p)) A).card ≤ 2 := by
-      convert vertex_colour_degree_le_two n colour X V htwo hXV x hx ( colour ( Sym2.mk p ) ) |> le_trans ( Finset.card_mono <| show Finset.filter ( fun a => colour s(x, a) = colour ( Sym2.mk p ) ) A ⊆ Finset.filter ( fun a => colour s(x, a) = colour ( Sym2.mk p ) ) V from Finset.filter_subset_filter _ hA ) using 1;
+  · have h_filter : (Finset.filter (fun a => colour s(x, a) = colour s(p.1, p.2)) A).card ≤ 2 := by
+      convert vertex_colour_degree_le_two n colour X V htwo hXV x hx ( colour s(p.1, p.2) ) |> le_trans ( Finset.card_mono <| show Finset.filter ( fun a => colour s(x, a) = colour s(p.1, p.2) ) A ⊆ Finset.filter ( fun a => colour s(x, a) = colour s(p.1, p.2) ) V from Finset.filter_subset_filter _ hA ) using 1;
     rw [ Finset.card_image_of_injective _ fun a b h => by injection h ] ; simp_all +decide [ Finset.filter_eq', Finset.filter_or ] ;
     grind +revert;
   · rw [ Finset.card_image_of_injective _ fun a b h => by injection h ];
-    have := vertex_colour_degree_le_two n colour X V htwo hXV x hx ( colour ( Sym2.mk p ) ) ; simp_all +decide [ Finset.filter_eq', Finset.filter_or ] ;
+    have := vertex_colour_degree_le_two n colour X V htwo hXV x hx ( colour s(p.1, p.2) ) ; simp_all +decide [ Finset.filter_eq', Finset.filter_or ] ;
     exact le_trans ( Finset.card_le_card ( Finset.filter_subset_filter _ hA ) ) ( by linarith )
 
 /-
