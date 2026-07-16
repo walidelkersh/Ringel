@@ -49,14 +49,27 @@ The checked construction consists of:
 - greedy completion with fresh targets and fresh allowed colours;
 - explicit assembly into the existing `PerfectRainbowMatching` structure.
 
+## Lean 4.30 compatibility repair
+
+Lean 4.30 parses applications such as `Sym2.mk p` and `Sym2.mk (p.1, p.2)` as partially applied
+constructor functions, rather than as symmetric pairs. Every such edge expression in the module
+was replaced by the project's established notation `s(p.1, p.2)`. In particular, the occurrences
+inside `completion_conflict_card_le_three` now denote exactly the same unordered edge as the
+lemma's conclusion. This is a representation-only correction: no theorem statement, hypothesis,
+cardinality bound, or mathematical argument was changed.
+
+Once those malformed terms elaborated, Lean 4.30 also exposed a brittle `grind` assembly in
+`prescribed_colour_matching`. Its bad relation was reduced to the two same-side endpoint conflicts
+actually required by the conclusion. The existing four-conflict bound still proves the needed
+bound by monotonicity, so this is proof-preserving and does not alter the theorem statement.
+
 ## Verification
 
-Targeted command:
+Targeted command under the repository toolchain and Mathlib v4.30.0:
 
 ```text
-elan run leanprover/lean4:v4.28.0 lake build Ringel.CaseAColourCover
+lake build Ringel.CaseAColourCover
 ```
 
 Result: successful. A source scan found no `sorry`, `admit`, `axiom`, `sorryAx`, `implemented_by`,
-or `exact?` in the module. Kernel axiom inspection of the two exported theorems is recorded by the
-final verification run; only standard permitted logical axioms are accepted.
+or `exact?` in the module.
