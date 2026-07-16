@@ -398,7 +398,7 @@ private lemma core_embedding_caseC (n k L : ℕ) (hn0 : 0 < n) (hk : 1 ≤ k) {V
       refine ⟨s(⟨a, Finset.mem_coe.mpr ha⟩, ⟨b, Finset.mem_coe.mpr hb⟩), ?_, ?_⟩
       · rw [Finset.mem_coe, SimpleGraph.mem_edgeFinset, SimpleGraph.mem_edgeSet]
         exact hadj
-      · rw [Sym2.map_mk, Sym2.map_mk, Prod.map_apply, Prod.map_apply, hgval a ha, hgval b hb]
+      · simp only [Sym2.map_mk, Prod.map_apply, hgval a ha, hgval b hb]
     intro e₁ he₁ e₂ he₂ hc₁ hc₂ hcol
     induction e₁ using Sym2.ind with
     | _ a b =>
