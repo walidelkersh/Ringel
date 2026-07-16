@@ -216,29 +216,26 @@ lemma bound_vertex_collisions (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T :
     (hsmall : 3 * (Sᶜ : Set V).ncard ≤ 2 * n + 5) :
     ∃ f_core : (Sᶜ : Set V) ↪ Fin (2 * n + 1),
       Set.InjOn (ndColouring n hn) ((CaseACore T S).map f_core).edgeSet := by
-  rcases Set.eq_empty_or_nonempty Sᶜ with hS | hS;
-  · exact ⟨ ⟨ fun x => 0, by
-      rintro ⟨ a, ha ⟩ ⟨ b, hb ⟩ ; aesop ⟩, by
-      rintro ⟨ x, y ⟩ hxy ⟨ u, v ⟩ huv h; simp_all +decide [ CaseACore ] ; ⟩;
-  · convert Ringel.greedy_embed_interval n hn T hT.2 Finset.univ 0 ( Finset.mem_univ 0 ) _ _ _ _ using 1;
-    rotate_left;
-    exact Fintype.ofFinite V;
-    all_goals try exact Classical.decEq V;
-    exact Classical.decRel _;
-    exact hS.some;
-    exact Set.Finite.toFinset ( Set.toFinite Sᶜ );
-    · simp +decide [ hS.some_mem ];
-    · rw [ ← Set.ncard_coe_finset ] ; aesop;
-    · constructor <;> intro h;
-      · convert Ringel.greedy_embed_interval n hn T hT.2 Finset.univ 0 ( Finset.mem_univ 0 ) _ _ _ _ using 1;
-        · simp +decide [ hS.some_mem ];
-        · rw [ ← Set.ncard_coe_finset ] ; aesop;
-      · obtain ⟨ g, hg₁, hg₂, hg₃, hg₄ ⟩ := h;
-        refine' ⟨ ⟨ fun v => g v, _ ⟩, _ ⟩;
-        intro v w h; have := hg₂ ( by simp +decide : v.val ∈ _ ) ( by simp +decide : w.val ∈ _ ) ; simp_all +decide [ Subtype.ext_iff ] ;
-        refine' hg₄.mono _;
-        rintro ⟨ u, v ⟩ huv; simp_all +decide [ SimpleGraph.map_adj, CaseACore ] ;
-        rcases huv with ⟨ a, ha, b, hab, rfl, hb, rfl ⟩ ; use s(a, b); aesop;
+  rcases Set.eq_empty_or_nonempty Sᶜ with ( hS | ⟨ x, hx ⟩ );
+  · refine' ⟨ _, _ ⟩;
+    refine' ⟨ fun _ => ⟨ 0, by linarith ⟩, fun _ _ => _ ⟩;
+    grind;
+    rintro ⟨ v, w ⟩ hvw ⟨ x, y ⟩ hxy h; simp_all +decide [ CaseACore ] ;
+  · obtain ⟨g, hg⟩ : ∃ g : V → Fin (2 * n + 1), Set.InjOn g (Sᶜ) ∧ Set.InjOn (ndColouring n hn) (Sym2.map g '' (T.edgeFinset ∩ (Set.Finite.toFinset (Set.toFinite Sᶜ)).sym2)) := by
+      have := @greedy_embed_interval n hn;
+      contrapose! this;
+      refine' ⟨ V, _, _, T, _, _, _ ⟩;
+      all_goals try exact hT.2;
+      all_goals try exact Classical.decRel _;
+      exact Fintype.ofFinite V;
+      refine' ⟨ Finset.univ, 0, Finset.mem_univ _, x, Set.Finite.toFinset ( Set.toFinite Sᶜ ), _, _, _ ⟩ <;> simp_all +decide [ Set.ncard_eq_toFinset_card' ];
+      rw [ ← Set.ncard_coe_finset ] ; congr ; aesop;
+    refine' ⟨ ⟨ fun v => g v, _ ⟩, _ ⟩;
+    exact fun a b h => Subtype.ext <| hg.1 a.2 b.2 h;
+    refine' hg.2.mono _;
+    rintro ⟨ ⟨ u, hu ⟩, ⟨ v, hv ⟩ ⟩ huv;
+    simp +zetaDelta at *;
+    rcases huv with ⟨ a, ha, b, ⟨ hb, hab ⟩, hu, hv ⟩ ; use s(a, b) ; aesop;
 
 lemma core_nonempty {V : Type*} [Finite V] (S : Set V)
     (hS_size : S.ncard < Nat.card V) :
