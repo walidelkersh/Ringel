@@ -9,7 +9,9 @@ import Ringel.CaseCAssembly
 import Ringel.CaseA
 import Ringel.NearEmbedding
 import Ringel.NearEmbeddingSmallTree
+import Ringel.NearEmbeddingConcentration
 import Ringel.PaperFinishing
+import Ringel.CaseAColourCover
 import Ringel.CaseB
 import Ringel.NearEmbeddingBridge
 import Ringel.CaseBObstruction
