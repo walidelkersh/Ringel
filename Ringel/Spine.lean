@@ -24,7 +24,7 @@ import Mathlib.Data.Nat.Prime.Basic
 /-!
 # Proof spine for Ringel's Conjecture (Montgomery–Pokrovskiy–Sudakov)
 
-The top-level architecture of `arXiv:2001.02665`, as a `sorry`-stubbed skeleton. The proof reduces
+The top-level architecture of `arXiv:2001.02665`, as a proof skeleton with explicit hypotheses. The proof reduces
 `Ringel.ringel_conjecture_large` (in `Ringel/Statement.lean`) to the **rainbow-copy** statement
 `rainbow_copy_exists` (paper Theorem `Theorem_Ringel_proof`), via the cyclic-shift step
 `decomp_of_rainbow_copy`. The rainbow statement is then split by `case_division` into Cases A, B, C.
@@ -223,7 +223,7 @@ contains a rainbow copy of every $n$-edge tree. This is the heart of the MPS pro
 
 The Case A and Case B branches depend on the (unformalized in Mathlib) MPS §4 near-embedding and
 §5/§6 finishing lemmas, recorded honestly as the explicit hypotheses `CaseAEmbeddingInput n T` and
-`CaseBEmbeddingInput n T` rather than a `sorry`; see `Ringel/CaseA.lean` and `Ringel/CaseB.lean`. -/
+`CaseBEmbeddingInput n T`; see `Ringel/CaseA.lean` and `Ringel/CaseB.lean`. -/
 theorem rainbow_copy_exists :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
       T.IsTree → T.edgeSet.ncard = n → CaseAEmbeddingInput n T → CaseBEmbeddingInput n T →

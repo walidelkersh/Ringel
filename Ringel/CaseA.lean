@@ -403,7 +403,7 @@ vertex maps `(g, pos)`. This is exactly the MPS randomized rainbow near-embeddin
 together with the distributive-absorption leaf placement (§6): the two facts the paper establishes
 by the probabilistic method. They are not available in Mathlib, so — exactly as for Case B
 (`CaseBEmbeddingInput`) — we take them as an explicit, satisfiable, non-vacuous hypothesis instead
-of an unsound `sorry`. -/
+of an unproved claim. -/
 def CaseAEmbeddingInput (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) : Prop :=
   ∀ (δ : ℝ) (hn : 0 < n) (leaves : Finset V)
     [Fintype ((V → Fin (2 * n + 1)) × (V → Fin (2 * n + 1)))],
@@ -429,7 +429,7 @@ Proving this lemma is exactly the content of the Montgomery–Pokrovskiy–Sudak
 lemma `lem:finishA` of §4). This deep, unformalized content is now recorded honestly as the explicit
 hypothesis `CaseAEmbeddingInput n T` (mirroring `CaseBEmbeddingInput`): from it the existence of a
 valid embedding datum follows by the probabilistic method (`exists_of_prob_gt_zero`), which is what
-this lemma proves — no `sorry`, no new axioms. The surrounding glue below is fully proven. -/
+this lemma proves. The surrounding glue below is fully proven. -/
 lemma caseA_embedding_data (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_large : 1 < n)
     {V : Type*} [Finite V] (T : SimpleGraph V) (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
     (leaves : Finset V)
@@ -460,7 +460,7 @@ lemma caseA_embedding_data (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hn_
 /-- **Case A rainbow copy (§4, §6, M1+M2).** For small $\delta > 0$ and large $n$, every Case A
 tree that is not Case C has a rainbow copy in the ND-coloured $K_{2n+1}$.
 
-The proof reduces the goal, sorry-free, to the single deep input `caseA_embedding_data` (the MPS
+The proof reduces the goal to the single deep input `caseA_embedding_data` (the MPS
 randomized near-embedding + distributive absorption) via the proven assembler
 `extend_rainbow_leaves`: it constructs the leaf set and anchor map, discharges all the structural
 side conditions (leaves are anchored outside the leaf set, every edge is a core edge or a

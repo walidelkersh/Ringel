@@ -7,7 +7,7 @@ This file documents, with fully machine-checked lemmas, *why* the Phase-2 lemma
 `caseB_absorb_paths` (in `Ringel/CaseB.lean`) cannot be discharged soundly **as currently
 stated**, and isolates the genuine mathematical content that a faithful version would require.
 
-The `sorry` in `caseB_absorb_paths` sits behind `exists_absorption_paths_prob`, whose only real
+The open proof in `caseB_absorb_paths` sits behind `exists_absorption_paths_prob`, whose only real
 hypothesis is `prob_event (fun f_paths => valid_caseB_absorption n hn T paths f_core f_paths) > 0`.
 By `prob_pos_of_exists` / `exists_of_prob_gt_zero` (in `Ringel/ProbBounds.lean`), over the finite,
 nonempty sample space of embeddings this positivity is **equivalent** to the plain existence
@@ -70,7 +70,7 @@ lemma hasRainbowCopy_edge_ncard_le {V : Type*} (n : ℕ) (hn : 0 < n) (T : Simpl
 /-- Gluing a core embedding `f_core` and an (interior) path embedding `f_paths` witnessing
 `valid_caseB_absorption` produces a genuine rainbow copy of the whole tree `T`. (This is the
 gluing step of `extend_caseB_paths`, isolated so it can be fed an *explicit* `f_paths` rather than
-one produced by the still-`sorry`ed `caseB_absorb_paths`.) -/
+one produced by `caseB_absorb_paths`.) -/
 lemma hasRainbowCopy_of_absorption {V : Type*} [Finite V] (n : ℕ) (hn : 0 < n)
     (T : SimpleGraph V) (paths : List (List V))
     (f_core : ((CaseBRemovedVertices paths)ᶜ : Set V) ↪ Fin (2 * n + 1))

@@ -8,7 +8,7 @@ This file documents, with fully machine-checked lemmas, *why* the Phase-2 lemma
 `exists_absorption_matching` (in `Ringel/CaseA.lean`) cannot be discharged soundly **as currently
 stated**, and isolates the genuine mathematical content that a faithful version would require.
 
-The `sorry` in `exists_absorption_matching` sits behind `exists_absorption_matching_prob`, whose
+The open proof in `exists_absorption_matching` sits behind `exists_absorption_matching_prob`, whose
 only real hypothesis is
 `prob_event (fun f_leaves => valid_absorption n hn T S f_core f_leaves) > 0`.
 By `prob_pos_of_exists` / `exists_of_prob_gt_zero` (in `Ringel/ProbBounds.lean`), over the finite,

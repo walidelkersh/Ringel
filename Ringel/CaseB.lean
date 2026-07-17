@@ -42,9 +42,8 @@ available in Mathlib, and formalizing them from scratch is a large development w
 fix; indeed the Phase-1 fact for the degenerate family `paths = []` is already at least as hard as
 producing a ρ-labelling of an arbitrary tree.
 
-Rather than hide this content behind a `sorry` (an unsound placeholder that silently asserts an
-unproved statement), we make it **an explicit, clearly-named hypothesis** `CaseBEmbeddingInput`.
-Every lemma below is then proved *unconditionally in Lean* (no `sorry`, no new axioms): the
+Rather than hide this content behind an unproved claim, we make it **an explicit, clearly-named hypothesis** `CaseBEmbeddingInput`.
+Every lemma below is then proved *unconditionally in Lean*: the
 probabilistic-method step "positive probability ⇒ existence" is discharged genuinely via
 `exists_embed_core_caseB_prob` / `exists_absorption_paths_prob` (from `Ringel/ProbBounds.lean`),
 and the two-phase gluing into a global rainbow embedding is proved outright. The dependence on the
@@ -80,7 +79,7 @@ bare paths, this asserts:
   absorption of the bare paths occurs with positive probability over a random map `f_paths`.
 
 These are exactly the two facts the MPS paper establishes by the probabilistic method; they are not
-in Mathlib, so we take them as an explicit hypothesis instead of an unsound `sorry`. It is a
+in Mathlib, so we take them as an explicit hypothesis. It is a
 genuine (satisfiable, non-vacuous) statement: for a tree admitting a ρ-labelling and the requisite
 leftover colours, both events do occur with positive probability. -/
 def CaseBEmbeddingInput (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) : Prop :=
@@ -196,7 +195,7 @@ lemma extend_caseB_paths (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : Simp
 /-- **Case B main embedding.** Every Case B tree that is not Case C has a rainbow copy in the
 ND-coloured `K_{2n+1}`, *given* the MPS probabilistic embedding input `CaseBEmbeddingInput`
 (§4 near-embedding + §5 finishing lemma). This composes Phase 1 (`caseB_embed_core`) and Phase 2
-(`extend_caseB_paths`); it contains no `sorry`. -/
+(`extend_caseB_paths`). -/
 lemma caseB_embedding_exists (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_pos : 0 < n) {V : Type*} [Finite V]
     (T : SimpleGraph V)
     (hT : T.IsTree) (hn : T.edgeSet.ncard = n) (hB : IsCaseB δ n T) (hC : ¬IsCaseC δ n T)

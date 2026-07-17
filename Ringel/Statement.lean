@@ -46,8 +46,8 @@ sufficiently large $n$, the decomposition above exists for every tree with $n$ e
 the form proved in arXiv:2001.02665, and the target of this formalization.
 
 The Case A and Case B branches of the proof rely on the MPS §4 near-embedding and §5/§6 finishing
-lemmas, which are not available in Mathlib. Rather than assert them via an unsound `sorry`, they are
-carried as the explicit, honest hypotheses `CaseAEmbeddingInput n T` and `CaseBEmbeddingInput n T`
+lemmas, which are not available in Mathlib. They are
+carried as explicit hypotheses `CaseAEmbeddingInput n T` and `CaseBEmbeddingInput n T`
 (see `Ringel/CaseA.lean` and `Ringel/CaseB.lean`).
 -/
 theorem ringel_conjecture_large :

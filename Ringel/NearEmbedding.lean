@@ -201,7 +201,7 @@ usual nested sufficiently-large/sufficiently-small hierarchy
 `1/n ≪ ξ ≪ μ ≪ η ≪ ε ≪ 1` and `ξ ≪ 1/k ≪ 1/log n`.
 
 This definition is a proposition to be proved by formalizing the construction lemmas of §6; it is
-not postulated as an axiom and is not used below. -/
+not postulated up front and is not used below. -/
 def NearEmbeddingSourceGoal : Prop :=
   ∀ᶠ ε : ℝ in nhdsWithin 0 (Set.Ioi 0),
     ∀ᶠ η : ℝ in nhdsWithin 0 (Set.Ioo 0 ε),

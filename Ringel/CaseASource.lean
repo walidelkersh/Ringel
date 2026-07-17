@@ -74,13 +74,6 @@ theorem exists_admissibleCaseALeafSet_of_isCaseASource
   obtain ⟨ L'', hL'' ⟩ := Finset.exists_subset_card_eq ( show ⌊δ ^ 6 * ( n : ℝ ) ⌋₊ ≤ L'.card from by simpa [ ← hL', Set.ncard_eq_toFinset_card' ] using hL₄ ) ; use L''; simp_all +decide [ AdmissibleCaseALeafSet ] ;
   exact ⟨ fun x hx => hL₁ x ( hL'.subset ( hL''.1 hx ) ), fun x hx => fun hx' => hL₂ x ( hL'.subset ( hL''.1 hx ) ) ( hL'.subset ( hL''.1 hx' ) ), hL₃.mono ( by aesop_cat ) ⟩
 
-def CaseASourceJointGoal : Prop :=
-  ∀ (δ : ℝ), 0 < δ →
-    ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n → IsCaseASource δ n T →
-      ∃ (L : Finset V) (hn : 0 < n),
-        AdmissibleCaseALeafSet δ n T L ∧ Nonempty (CaseAJointOutput n hn T L)
-
 set_option maxHeartbeats 800000 in
 theorem caseAJointOutput_of_hasRainbowCopy
     (δ : ℝ) (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V)
@@ -150,7 +143,11 @@ theorem nonempty_caseAJointOutput_iff_hasRainbowCopy
 universe u
 
 theorem caseASourceJointGoal_iff_eventual_rainbow :
-    CaseASourceJointGoal.{u} ↔
+    (∀ (δ : ℝ), 0 < δ →
+      ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+        T.IsTree → T.edgeSet.ncard = n → IsCaseASource δ n T →
+        ∃ (L : Finset V) (hn : 0 < n),
+          AdmissibleCaseALeafSet δ n T L ∧ Nonempty (CaseAJointOutput n hn T L)) ↔
       ∀ (δ : ℝ), 0 < δ →
         ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
           T.IsTree → T.edgeSet.ncard = n → IsCaseASource δ n T → HasRainbowCopy n T := by
