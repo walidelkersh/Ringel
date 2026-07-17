@@ -394,7 +394,7 @@ def valid_caseA_embedding (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : Sim
   (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
     ndColouring n hn s(pos x, g (caseALeafAnchor T x)) ≠ ndColouring n hn (Sym2.map g e))
 
-/-- **The genuine probabilistic content of Case A, as an explicit hypothesis (MPS §4 + §6).**
+/-- **The genuine probabilistic content of Case A, as a conditional hypothesis (MPS §4 + §6).**
 
 For a tree `T` with `n` available colours, and for *every* admissible leaf set `leaves` (the
 independent leaves whose anchors lie outside the set, in number `≥ ⌊δ⁶ n⌋`), this asserts that a

@@ -24,7 +24,7 @@ import Mathlib.Data.Nat.Prime.Basic
 /-!
 # Proof spine for Ringel's Conjecture (Montgomery–Pokrovskiy–Sudakov)
 
-The top-level architecture of `arXiv:2001.02665`, as a proof skeleton with explicit hypotheses. The proof reduces
+The top-level architecture of `arXiv:2001.02665`, as a proof skeleton with conditional hypotheses. The proof reduces
 `Ringel.ringel_conjecture_large` (in `Ringel/Statement.lean`) to the **rainbow-copy** statement
 `rainbow_copy_exists` (paper Theorem `Theorem_Ringel_proof`), via the cyclic-shift step
 `decomp_of_rainbow_copy`. The rainbow statement is then split by `case_division` into Cases A, B, C.
@@ -222,7 +222,7 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
 contains a rainbow copy of every $n$-edge tree. This is the heart of the MPS proof.
 
 The Case A and Case B branches depend on the (unformalized in Mathlib) MPS §4 near-embedding and
-§5/§6 finishing lemmas, recorded honestly as the explicit hypotheses `CaseAEmbeddingInput n T` and
+§5/§6 finishing lemmas, recorded honestly as the conditional hypotheses `CaseAEmbeddingInput n T` and
 `CaseBEmbeddingInput n T`; see `Ringel/CaseA.lean` and `Ringel/CaseB.lean`. -/
 theorem rainbow_copy_exists :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
@@ -248,7 +248,7 @@ theorem rainbow_copy_exists :
 
 /-- `Statement.ringel_conjecture_large` follows from the spine: combine `rainbow_copy_exists` with
 `decomp_of_rainbow_copy`. The Case B dependence on the MPS §4/§5 ingredients is carried through as
-the explicit hypotheses `CaseAEmbeddingInput n T` and `CaseBEmbeddingInput n T` (see
+the conditional hypotheses `CaseAEmbeddingInput n T` and `CaseBEmbeddingInput n T` (see
 `Ringel/CaseA.lean` and `Ringel/CaseB.lean`). -/
 theorem ringel_conjecture_large_via_spine :
     ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),

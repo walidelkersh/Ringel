@@ -42,7 +42,7 @@ available in Mathlib, and formalizing them from scratch is a large development w
 fix; indeed the Phase-1 fact for the degenerate family `paths = []` is already at least as hard as
 producing a ρ-labelling of an arbitrary tree.
 
-Rather than hide this content behind an unproved claim, we make it **an explicit, clearly-named hypothesis** `CaseBEmbeddingInput`.
+Rather than hide this content behind an unproved claim, we make it **a conditional hypothesis** `CaseBEmbeddingInput`.
 Every lemma below is then proved *unconditionally in Lean*: the
 probabilistic-method step "positive probability ⇒ existence" is discharged genuinely via
 `exists_embed_core_caseB_prob` / `exists_absorption_paths_prob` (from `Ringel/ProbBounds.lean`),
@@ -68,7 +68,7 @@ lemma caseB_core_isAcyclic {V : Type*} (T : SimpleGraph V) (hT : T.IsTree)
     (paths : List (List V)) : (CaseBCore T paths).IsAcyclic :=
   hT.IsAcyclic.induce ((CaseBRemovedVertices paths)ᶜ)
 
-/-- **The genuine probabilistic content of Case B, as an explicit hypothesis (MPS §4 + §5).**
+/-- **The genuine probabilistic content of Case B, as a conditional hypothesis (MPS §4 + §5).**
 
 For a tree `T` with `n` available colours, and for *every* admissible family of vertex-disjoint
 bare paths, this asserts:
@@ -79,7 +79,7 @@ bare paths, this asserts:
   absorption of the bare paths occurs with positive probability over a random map `f_paths`.
 
 These are exactly the two facts the MPS paper establishes by the probabilistic method; they are not
-in Mathlib, so we take them as an explicit hypothesis. It is a
+in Mathlib, so we take them as a conditional hypothesis. It is a
 genuine (satisfiable, non-vacuous) statement: for a tree admitting a ρ-labelling and the requisite
 leftover colours, both events do occur with positive probability. -/
 def CaseBEmbeddingInput (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) : Prop :=
