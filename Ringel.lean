@@ -7,6 +7,7 @@ import Ringel.NDInterval
 import Ringel.SmallTree
 import Ringel.CaseCAssembly
 import Ringel.CaseA
+import Ringel.CaseANearEmbedding
 import Ringel.NearEmbedding
 import Ringel.NearEmbeddingSmallTree
 import Ringel.NearEmbeddingConcentration
@@ -14,6 +15,7 @@ import Ringel.NearEmbeddingReservoir
 import Ringel.PaperFinishing
 import Ringel.CaseAColourCover
 import Ringel.CaseB
+import Ringel.CaseBSwitcherLarge
 import Ringel.NearEmbeddingBridge
 import Ringel.CaseBObstruction
 import Ringel.Statement

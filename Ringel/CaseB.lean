@@ -5,6 +5,7 @@ import Mathlib.Data.Set.Card.Arithmetic
 import Mathlib.Order.Filter.Basic
 import Ringel.LittlewoodOfford
 import Ringel.ProbabilisticMatching
+import Ringel.CaseBSwitcherLarge
 
 namespace Ringel
 
