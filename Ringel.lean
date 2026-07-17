@@ -7,7 +7,7 @@ import Ringel.NDInterval
 import Ringel.SmallTree
 import Ringel.CaseCAssembly
 import Ringel.CaseA
-import Ringel.CaseANearEmbedding
+import Ringel.CaseASource
 import Ringel.NearEmbedding
 import Ringel.NearEmbeddingSmallTree
 import Ringel.NearEmbeddingConcentration
