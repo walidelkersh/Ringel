@@ -27,12 +27,18 @@ theorem ringel_conjecture_large :
 The statements live in [`Ringel/Statement.lean`](Ringel/Statement.lean). The all-$n$ form
 is open in general and not a target of this project.
 
+The current top-level theorem surface routes through the source package
+`CaseABSourceStatement` in [`Ringel/CaseSource.lean`](Ringel/CaseSource.lean), which packages
+the Case A and Case B source statements used by the main theorem. The older explicit-input
+wrappers remain only in legacy helper files.
+
 ## Current state
 
 Lean formalizes the deterministic combinatorial backbone: the ND-colouring and its
 2-factorization, the split lemma and its tree/forest counting infrastructure, the case division,
-the Case A walk-sum embedding, the Case C greedy core embedding, and the Kotzig cyclic-shift
-construction that extends one rainbow copy to an edge-decomposition of $K_{2n+1}$.
+the Case A walk-sum embedding, the Case C greedy core embedding, the Case AB source package,
+and the Kotzig cyclic-shift construction that extends one rainbow copy to an edge-decomposition
+of $K_{2n+1}$.
 
 The §6 development defines a finite joint probability space for the near-embedding argument.
 `SmallTreeEmbeddingOutcome` stores the rainbow embedding, available vertex and colour reservoirs,
@@ -41,9 +47,10 @@ extension, transfer repletion across complements and retained edges, and extract
 finite outcome from a positive probability bound.
 
 Tracked Lean source contains no `sorry`, `admit`, `axiom`, or `sorryAx` declarations. The global
-theorem remains conditional on explicit inputs such as `CaseAEmbeddingInput` and
-`CaseBEmbeddingInput`, which cover the probabilistic and extremal arguments still under
-formalization. GitHub Actions provides the authoritative build check.
+theorem now depends on the source package rather than the older explicit inputs
+`CaseAEmbeddingInput` and `CaseBEmbeddingInput`. Those names still appear in legacy helper files,
+but they no longer sit on the main theorem path. GitHub Actions provides the authoritative build
+check.
 
 See the [blueprint](https://walidelkersh.github.io/Ringel/blueprint/) for the proof
 architecture and dependency graph.
