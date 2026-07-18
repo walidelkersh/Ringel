@@ -3,7 +3,11 @@ Copyright (c) 2026 Walid Elkersh. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Walid Elkersh
 -/
-import Ringel.Spine
+import Ringel.CaseA
+import Ringel.CaseB
+import Ringel.CaseC
+import Ringel.CaseCOneVertex
+import Ringel.CaseDivision
 
 /-!
 # Source theorem package for Ringel's conjecture
@@ -56,18 +60,5 @@ theorem rainbow_copy_exists_of_source_statement :
       (T : SimpleGraph V), T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by
   intro hsource
   exact rainbow_copy_exists_of_source hsource
-
-/-- The top theorem now follows from the source package rather than the old conditional inputs. -/
-theorem ringel_conjecture_large_via_source :
-    CaseABSourceStatement →
-      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-        T.IsTree → T.edgeSet.ncard = n →
-        ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
-          Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
-          ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
-  intro hsource
-  filter_upwards [rainbow_copy_exists_of_source hsource] with n hn
-  intro V _ T hT hcard
-  exact decomp_of_rainbow_copy T hT hcard (hn T hT hcard)
 
 end Ringel
