@@ -12,11 +12,12 @@ namespace Ringel
 
 /-- Audit target: the large-`n` form of Ringel's conjecture. -/
 theorem challenge_ringel_conjecture_large :
-    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n → CaseAEmbeddingInput n T → CaseBEmbeddingInput n T →
-      ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
-        Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
-        ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
+    CaseABSourceStatement →
+      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+        T.IsTree → T.edgeSet.ncard = n →
+        ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
+          Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
+          ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
   simpa using ringel_conjecture_large
 
 end Ringel
