@@ -1,7 +1,7 @@
 /-
-Copyright (c) 2026 Walid K. Elkersh. All rights reserved.
+Copyright (c) 2026 Walid Elkersh. All rights reserved.
 Released under Apache 2.0 license as described in the file LICENSE.
-Authors: Walid K. Elkersh
+Authors: Walid Elkersh
 -/
 import Ringel.Primitives
 import Ringel.SmallTree
