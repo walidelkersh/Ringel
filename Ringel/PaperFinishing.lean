@@ -8,7 +8,7 @@ namespace Ringel
 
 This file formalizes the deterministic matching object used by the Case A finishing lemma in
 `section2.tex` (Lemma `lem:finishA`) and the matching-union step used repeatedly in `section4.tex`.
-Unlike the former `CaseAEmbeddingInput`, these definitions expose the actual matching, target,
+These definitions expose the actual matching, target,
 and colour constraints.
 -/
 

@@ -394,40 +394,4 @@ def valid_caseA_embedding (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : Sim
   (∀ x ∈ leaves, ∀ e ∈ T.edgeSet, (∀ y ∈ leaves, y ∉ e) →
     ndColouring n hn s(pos x, g (caseALeafAnchor T x)) ≠ ndColouring n hn (Sym2.map g e))
 
-/-- **The genuine probabilistic content of Case A, as a conditional hypothesis (MPS §4 + §6).**
-
-For a tree `T` with `n` available colours, and for *every* admissible leaf set `leaves` (the
-independent leaves whose anchors lie outside the set, in number `≥ ⌊δ⁶ n⌋`), this asserts that a
-valid Case A embedding datum occurs with *positive probability* over a uniformly random pair of
-vertex maps `(g, pos)`. This is exactly the MPS randomized rainbow near-embedding of the core (§4)
-together with the distributive-absorption leaf placement (§6): the two facts the paper establishes
-by the probabilistic method. They are not available in Mathlib, so — exactly as for Case B
-(`CaseBEmbeddingInput`) — we take them as an explicit, satisfiable, non-vacuous hypothesis instead
-of an unproved claim. -/
-def CaseAEmbeddingInput (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V) : Prop :=
-  ∀ (δ : ℝ) (hn : 0 < n) (leaves : Finset V)
-    [Fintype ((V → Fin (2 * n + 1)) × (V → Fin (2 * n + 1)))],
-    0 < δ → 1 < n → T.IsTree → T.edgeSet.ncard = n →
-    (∀ x ∈ leaves, IsLeaf T x) →
-    (∀ x ∈ leaves, caseALeafAnchor T x ∉ leaves) →
-    (∀ x ∈ leaves, ∀ y ∈ leaves, x ≠ y → ¬T.Adj x y) →
-    ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ leaves.card →
-    prob_event (fun gp : (V → Fin (2 * n + 1)) × (V → Fin (2 * n + 1)) =>
-      valid_caseA_embedding n hn T leaves gp.1 gp.2) > 0
-
-/-- **Case A embedding data (the genuine MPS content of §4/§6).**
-
-This is the one deep input to Case A: the *randomized rainbow near-embedding* of the core together
-with the *distributive-absorption* leaf placement. It asserts the existence of a core vertex map `g`
-and a leaf placement `pos` such that (i) `g` is injective off the leaves and rainbow on the core
-edges, (ii) `pos` is injective on the leaves and disjoint from the core image, and (iii) the leaf
-edges receive pairwise-distinct colours, all fresh with respect to the core. Combined with the
-(already proven) assembler `extend_rainbow_leaves`, these data yield a full rainbow copy of `T`.
-
-Proving this lemma is exactly the content of the Montgomery–Pokrovskiy–Sudakov argument for Case A
-(the almost-embedding `Sketch_Near_Embedding`, imported from the earlier work, plus the finishing
-lemma `lem:finishA` of §4). This deep, unformalized content is now recorded honestly as the explicit
-hypothesis `CaseAEmbeddingInput n T` (mirroring `CaseBEmbeddingInput`): from it the existence of a
-valid embedding datum follows by the probabilistic method (`exists_of_prob_gt_zero`), which is what
-this lemma proves. The surrounding glue below is fully proven. -/
 end Ringel
