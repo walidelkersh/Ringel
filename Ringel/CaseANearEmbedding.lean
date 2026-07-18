@@ -157,41 +157,4 @@ lemma valid_caseA_embedding_of_hasRainbowCopy
       · rcases e with ⟨ u, v ⟩ ; simp_all +decide [ Sym2.eq ]
 
 
-theorem caseAEmbeddingInput_of_hasRainbowCopy
-    (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V)
-    (hcopy : HasRainbowCopy n T) : CaseAEmbeddingInput n T := by
-  intro _δ hn leaves _ _hδ _hnlarge _hT _hcard hleaf hanchor _hindep _hsize
-  obtain ⟨g, pos, hg⟩ :=
-    valid_caseA_embedding_of_hasRainbowCopy n hn T leaves hleaf hanchor hcopy
-  classical
-  exact prob_pos_of_exists _ ⟨⟨g, pos⟩, hg⟩
-
-
-theorem hasRainbowCopy_of_caseAEmbeddingInput_of_admissibleLeaves
-    (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hnlarge : 1 < n)
-    {V : Type*} [Finite V] (T : SimpleGraph V)
-    (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
-    (S : Set V) (hleaf : ∀ x ∈ S, IsLeaf T x)
-    (hindep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → ¬ T.Adj x y)
-    (hsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard)
-    (hinput : CaseAEmbeddingInput n T) : HasRainbowCopy n T := by
-  exact caseA_rainbow δ hδ n hn hnlarge T hT hcard S hleaf hsize hindep hinput
-
-end Ringel
-namespace Ringel
-
-
-theorem caseAEmbeddingInput_iff_hasRainbowCopy
-    (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn : 0 < n) (hnlarge : 1 < n)
-    {V : Type*} [Finite V] (T : SimpleGraph V)
-    (hT : T.IsTree) (hcard : T.edgeSet.ncard = n)
-    (S : Set V) (hleaf : ∀ x ∈ S, IsLeaf T x)
-    (hindep : ∀ x ∈ S, ∀ y ∈ S, x ≠ y → ¬ T.Adj x y)
-    (hsize : ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ S.ncard) :
-    CaseAEmbeddingInput n T ↔ HasRainbowCopy n T := by
-  constructor
-  · exact hasRainbowCopy_of_caseAEmbeddingInput_of_admissibleLeaves
-      δ hδ n hn hnlarge T hT hcard S hleaf hindep hsize
-  · exact caseAEmbeddingInput_of_hasRainbowCopy n T
-
 end Ringel

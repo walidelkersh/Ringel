@@ -196,38 +196,4 @@ lemma extend_caseB_paths (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : Simp
 ND-coloured `K_{2n+1}`, *given* the MPS probabilistic embedding input `CaseBEmbeddingInput`
 (§4 near-embedding + §5 finishing lemma). This composes Phase 1 (`caseB_embed_core`) and Phase 2
 (`extend_caseB_paths`). -/
-lemma caseB_embedding_exists (δ : ℝ) (hδ : 0 < δ) (n : ℕ) (hn_pos : 0 < n) {V : Type*} [Finite V]
-    (T : SimpleGraph V)
-    (hT : T.IsTree) (hn : T.edgeSet.ncard = n) (hB : IsCaseB δ n T) (hC : ¬IsCaseC δ n T)
-    (hInput : CaseBEmbeddingInput n T) :
-    HasRainbowCopy n T := by
-  obtain ⟨paths, h_bare, h_len, h_disj, h_count⟩ := hB
-  letI : Fintype (((CaseBRemovedVertices paths)ᶜ : Set V) ↪ Fin (2 * n + 1)) := Fintype.ofFinite _
-  letI : Fintype (CaseBRemovedVertices paths ↪ Fin (2 * n + 1)) := Fintype.ofFinite _
-  obtain ⟨h_core_prob, h_absorb_prob⟩ := hInput hn_pos paths h_bare h_disj
-  -- Phase 1: embed the core forest `T'`.
-  obtain ⟨f_core, _h_core⟩ :=
-    caseB_embed_core n hn_pos T hT paths h_bare h_disj h_core_prob
-  -- Phase 2: absorb the bare paths and assemble the full rainbow embedding.
-  exact extend_caseB_paths n hn_pos T hT paths h_bare h_disj f_core (h_absorb_prob f_core)
-
-lemma caseB_rainbow_large_n (δ : ℝ) (hδ : 0 < δ) :
-    ∃ N : ℕ, ∀ n ≥ N, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n →
-      IsCaseB δ n T → ¬IsCaseC δ n T → CaseBEmbeddingInput n T → HasRainbowCopy n T := by
-  use 1
-  intro n hn V _ T hT hcard hB hC hInput
-  have hn_pos : 0 < n := by omega
-  exact caseB_embedding_exists δ hδ n hn_pos T hT hcard hB hC hInput
-
-/-- **Case B rainbow copy (§5, §6, M1+M2).** For small δ > 0 and large n, every Case B
-tree that is not Case C has a rainbow copy in the ND-coloured K_{2n+1}, *given* the MPS
-probabilistic embedding input `CaseBEmbeddingInput` (§4 near-embedding + §5 finishing lemma). -/
-theorem caseB_rainbow (δ : ℝ) (hδ : 0 < δ) :
-    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n →
-      IsCaseB δ n T → ¬IsCaseC δ n T → CaseBEmbeddingInput n T → HasRainbowCopy n T := by
-  obtain ⟨N, hN⟩ := caseB_rainbow_large_n δ hδ
-  exact Filter.eventually_atTop.mpr ⟨N, hN⟩
-
 end Ringel
