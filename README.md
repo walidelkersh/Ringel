@@ -9,64 +9,80 @@
 </p>
 
 A Lean 4 formalization of the Montgomery–Pokrovskiy–Sudakov proof of Ringel's conjecture
-for sufficiently large $n$ ([arXiv:2001.02665](https://arxiv.org/abs/2001.02665)).
+for sufficiently large \(n\) ([arXiv:2001.02665](https://arxiv.org/abs/2001.02665)).
 
-Ringel conjectured in 1963 that every tree $T$ with $n$ edges decomposes the complete graph
-$K_{2n+1}$ into $2n+1$ edge-disjoint copies. Montgomery, Pokrovskiy, and Sudakov proved this
-for all sufficiently large $n$. The formalized statement:
+Ringel conjectured in 1963 that every tree \(T\) with \(n\) edges decomposes the complete graph
+\(K_{2n+1}\) into \(2n+1\) edge-disjoint copies. The formalization separates the deterministic
+graph theory from the source-level Case A and Case B results.
+
+## Formal statement
+
+The public theorem is in Ringel/Statement.lean:
 
 ```lean
+universe u
+
 theorem ringel_conjecture_large :
-    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-      T.IsTree → T.edgeSet.ncard = n →
-      ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
-        Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
-        ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1)))
+    CaseABSourceStatement.{u} →
+      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
+        T.IsTree → T.edgeSet.ncard = n →
+        ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
+          Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
+          ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1)))
 ```
 
-The statements live in [`Ringel/Statement.lean`](Ringel/Statement.lean). The all-$n$ form
-is open in general and not a target of this project.
+CaseABSourceStatement in Ringel/CaseSource.lean is the single source-level package used by
+the public theorem. It records the Case A and Case B statements at the level required by the
+paper. The current repository does not claim that this package has been derived unconditionally
+from the MPS probability and absorption arguments.
 
-The current top-level theorem surface routes through the source package
-`CaseABSourceStatement` in [`Ringel/CaseSource.lean`](Ringel/CaseSource.lean), which packages
-the Case A and Case B source statements used by the main theorem. The older explicit-input
-wrappers remain only in legacy helper files.
+The all-\(n\) conjecture remains open and is not a target of this repository.
 
-## Current state
+## Current formalized scope
 
-Lean formalizes the deterministic combinatorial backbone: the ND-colouring and its
-2-factorization, the split lemma and its tree/forest counting infrastructure, the case division,
-the Case A walk-sum embedding, the Case C greedy core embedding, the Case AB source package,
-and the Kotzig cyclic-shift construction that extends one rainbow copy to an edge-decomposition
-of $K_{2n+1}$.
+The verified Lean development includes:
 
-The §6 development defines a finite joint probability space for the near-embedding argument.
-`SmallTreeEmbeddingOutcome` stores the rainbow embedding, available vertex and colour reservoirs,
-independent leftovers, and their avoidance properties. Separate lemmas prove the local greedy
-extension, transfer repletion across complements and retained edges, and extract a successful
-finite outcome from a positive probability bound.
+- the near-difference colouring of \(K_{2n+1}\) and its 2-factorization;
+- tree splitting, case division, and the associated counting lemmas;
+- the deterministic embedding and leaf-extension infrastructure for Case A;
+- the Case C core and leaf-packing constructions;
+- finite probability spaces and reservoir bookkeeping for the near-embedding layer;
+- the Kotzig cyclic-shift argument that turns one rainbow copy into a decomposition;
+- the source-package interface and its assembly into the public theorem.
 
-Tracked Lean source contains no `sorry`, `admit`, `axiom`, or `sorryAx` declarations. The global
-theorem now depends on the source package rather than the older explicit inputs
-`CaseAEmbeddingInput` and `CaseBEmbeddingInput`. Those names still appear in legacy helper files,
-but they no longer sit on the main theorem path. GitHub Actions provides the authoritative build
-check.
+The remaining research boundary lies in the unconditional Case A and Case B source results:
+the MPS random near-embedding, concentration and repletion estimates, exact-colour matching,
+path absorption, and the associated asymptotic parameter hierarchy. These results are represented
+by explicit source statements rather than hidden placeholders.
 
-See the [blueprint](https://walidelkersh.github.io/Ringel/blueprint/) for the proof
-architecture and dependency graph.
+A repository-wide Lean-source audit found no sorry, sorryAx, admit, axiom, opaque, or
+implemented_by declarations. GitHub Actions is the authoritative build check.
+
+## Documentation
+
+- [Proof blueprint](https://walidelkersh.github.io/Ringel/blueprint/)
+- [MPS source-to-Lean map](PAPER_MAPPING.md)
+- [Case A colour-cover audit](docs/CASE_A_COLOURCOVER_AUDIT.md)
+- [Near-embedding audit](docs/NEAR_EMBEDDING_AUDIT.md)
+- [Reservoir-law audit](docs/NEAR_EMBEDDING_RESERVOIR_AUDIT.md)
+- [GitHub Pages site](https://walidelkersh.github.io/Ringel/)
+
+The blueprint describes the dependency structure. The mapping and audit documents record the
+formal boundary between proved Lean infrastructure and source-level mathematics still to encode.
 
 ## Build
 
 ```bash
-git clone https://github.com/walidelkersh/Ringel.git && cd Ringel
+git clone https://github.com/walidelkersh/Ringel.git
+cd Ringel
 lake exe cache get
 lake build
 ```
 
 Requires [elan](https://leanprover.github.io/lean4/doc/setup.html). The toolchain is pinned
-by `lean-toolchain`.
+by lean-toolchain.
 
-## References
+## Reference
 
 R. Montgomery, A. Pokrovskiy, B. Sudakov.
 [*A proof of Ringel's Conjecture*](https://arxiv.org/abs/2001.02665).

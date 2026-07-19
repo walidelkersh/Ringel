@@ -1,15 +1,28 @@
+\chapter{Formal Status}
+
+The public theorem in \texttt{Ringel/Statement.lean} has the form
+\[
+\texttt{CaseABSourceStatement} \to \texttt{ringel\_conjecture\_large}.
+\]
+The source package records the Case A and Case B statements needed by the proof.
+The deterministic assembly and the Case C branch are formalized in Lean. The unconditional
+probability, repletion, exact-colour matching, and path-absorption arguments for Cases A and B
+remain the principal source-level boundary.
+
 \chapter{Statement}
+
 \begin{definition}\label{def:ringel_conjecture}
 \lean{ringel_conjecture}
-Ringel's conjecture for all $n$. (Open problem)
+Ringel's conjecture for all $n$. This remains open.
 \end{definition}
 
 \begin{definition}\label{def:ringel_conjecture_large}
 \lean{ringel_conjecture_large}
-Ringel's conjecture for sufficiently large $n$.
+The large-$n$ theorem, conditional on \lean{CaseABSourceStatement}.
 \end{definition}
 
 \chapter{Combinatorial Primitives (Primitives.lean)}
+
 \begin{definition}\label{def:ndColouring}
 \lean{ndColouring}\leanok
 Near-difference rainbow colouring of $K_{2n+1}$.
@@ -22,93 +35,89 @@ ND-colouring is a 2-factorization.
 
 \begin{lemma}\label{lem:ndColouring_step}
 \lean{ndColouring_step}\leanok
-$\pm(c+1)$ step realizes colour $c$.
+A step by $\pm(c+1)$ realizes colour $c$.
 \end{lemma}
 
 \begin{definition}\label{def:case_predicates}
 \lean{IsCaseA, IsCaseB, IsCaseC}\leanok
-Case predicates.
+The three structural case predicates.
 \end{definition}
 
-\chapter{Tree Structure (TreeStructure.lean)}
+\chapter{Tree Structure and Case Division}
+
 \begin{theorem}\label{thm:split}
 \lean{split}\leanok
-A tree on $n$ vertices has $\geq n/(4k)$ leaves or $\geq n/(4k)$ vertex-disjoint bare paths of length $k$.
+A tree splits into many leaves or many vertex-disjoint bare paths.
 \end{theorem}
 
 \begin{theorem}\label{thm:tree_split_via_split}
 \lean{tree_split_via_split}\leanok
-Connects split to case A/B/C division (MPS Lemma 2.2).
+Connects the split construction to the Case A/B/C division.
 \end{theorem}
 
-\chapter{Case Division (CaseDivision.lean)}
 \begin{theorem}\label{thm:case_division}
 \lean{case_division}\leanok
+Routes an admissible tree into Case A, Case B, or Case C.
 \uses{thm:split, thm:tree_split_via_split, def:case_predicates}
-Routes a tree into Case A, B, or C.
 \end{theorem}
 
-\chapter{Case A --- Many Leaves (CaseA.lean)}
+\chapter{Case A Source Interface (CaseA.lean and CaseASource.lean)}
+
 \begin{definition}\label{def:walkSum}
 \lean{walkSum}\leanok
-Signed walk sum.
+Signed walk sum in the cyclic vertex set.
 \end{definition}
 
 \begin{lemma}\label{lem:tree_embed}
 \lean{tree_embed}\leanok
-Tree embedding via signed edge-increment.
+Embeds a tree through signed edge increments.
 \end{lemma}
 
-\begin{lemma}\label{lem:bound_vertex_collisions}
-\lean{bound_vertex_collisions}
-\uses{def:walkSum, lem:tree_embed}
-Littlewood--Offord bound for vertex collisions.
-\end{lemma}
+\begin{definition}\label{def:valid_caseA_embedding}
+\lean{valid_caseA_embedding}\leanok
+Records the core embedding, leaf positions, injectivity, and rainbow conditions needed by the
+Case A finishing step.
+\end{definition}
 
-\begin{lemma}\label{lem:exists_absorption_matching}
-\lean{exists_absorption_matching}
-Absorption matching probability.
-\end{lemma}
+\begin{structure}\label{def:caseA_joint_output}
+\lean{CaseAJointOutput}\leanok
+Records a finite Case A output together with its core map, reservoirs, and perfect rainbow
+matching.
+\end{structure}
 
-\begin{theorem}\label{thm:caseA_rainbow}
-\lean{caseA_rainbow}
-\uses{lem:tree_embed, lem:bound_vertex_collisions, lem:exists_absorption_matching}
-Main Case A result.
+\begin{theorem}\label{thm:caseA_source}
+\lean{CaseASourceStatement}
+The eventual Case A source statement used by the public source package.
 \end{theorem}
 
-\chapter{Case B --- Many Bare Paths (CaseB.lean)}
-\begin{lemma}\label{lem:caseB_embedding_exists}
-\lean{caseB_embedding_exists}
-Bare-path embedding.
-\end{lemma}
+\chapter{Case B Source Interface (CaseB.lean and CaseSource.lean)}
 
-\begin{theorem}\label{thm:caseB_rainbow}
-\lean{caseB_rainbow}
-\uses{lem:caseB_embedding_exists}
-Main Case B result.
-\end{theorem}
+\begin{definition}\label{def:caseB_source}
+\lean{CaseBSourceStatement}
+The eventual Case B source statement used by the public source package.
+\end{definition}
+
+The fixed-endpoint path construction, its random availability estimates, and exact collective
+colour use remain to be formalized from the MPS source.
 
 \chapter{Case C --- Small Core (CaseC.lean)}
-\begin{lemma}\label{lem:caseC_embed_core}
-\lean{caseC_embed_core}\leanok
-Greedy core embedding.
-\end{lemma}
 
-\begin{lemma}\label{lem:caseC_extend_embedding}
-\lean{caseC_extend_embedding}
-Leaf extension.
+\begin{lemma}\label{lem:caseC_embedding_exists}
+\lean{caseC_embedding_exists}\leanok
+Constructs the Case C rainbow embedding for sufficiently large $n$.
 \end{lemma}
 
 \begin{theorem}\label{thm:caseC_rainbow}
-\lean{caseC_rainbow}
-\uses{lem:caseC_embed_core, lem:caseC_extend_embedding}
-Main Case C result.
+\lean{caseC_rainbow}\leanok
+Produces a rainbow copy in Case C.
+\uses{lem:caseC_embedding_exists}
 \end{theorem}
 
-\chapter{Probability Infrastructure (ProbBounds.lean)}
+\chapter{Probability and Reservoir Infrastructure}
+
 \begin{definition}\label{def:prob_event}
 \lean{prob_event}\leanok
-Counting measure on finite types.
+Finite probability space used by the formal development.
 \end{definition}
 
 \begin{lemma}\label{lem:exists_of_prob_gt_zero}
@@ -116,20 +125,25 @@ Counting measure on finite types.
 Positive probability implies existence.
 \end{lemma}
 
-\chapter{Proof Assembly (Spine.lean + Proof.lean)}
+The near-embedding and reservoir modules formalize finite sample spaces, concentration
+bookkeeping, and retained sets. They do not by themselves prove the full MPS Case A/B source
+statements.
+
+\chapter{Proof Assembly (Spine.lean)}
+
 \begin{theorem}\label{thm:decomp_of_rainbow_copy}
 \lean{decomp_of_rainbow_copy}\leanok
-Kotzig cyclic-shift decomposition.
+The Kotzig cyclic-shift construction turns one rainbow copy into an edge decomposition.
 \end{theorem}
 
 \begin{theorem}\label{thm:rainbow_copy_exists}
 \lean{rainbow_copy_exists}
-\uses{thm:case_division, thm:caseA_rainbow, thm:caseB_rainbow, thm:caseC_rainbow}
-Rainbow copy exists.
+\uses{thm:case_division, thm:caseA_source, def:caseB_source, thm:caseC_rainbow}
+The source package yields an eventual rainbow copy.
 \end{theorem}
 
 \begin{theorem}\label{thm:ringel_conjecture_large_via_spine}
 \lean{ringel_conjecture_large_via_spine}
 \uses{thm:decomp_of_rainbow_copy, thm:rainbow_copy_exists}
-Full assembly for large $n$.
+Assembles the large-$n$ theorem from the source package.
 \end{theorem}
