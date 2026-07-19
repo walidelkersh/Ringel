@@ -42,7 +42,7 @@ theorem exists_subset_injOn_of_bounded_fibres {α β : Type*}
     Finset.card_le_mul_card_image s b hfibre
   have hmimage : m ≤ (s.image f).card := by
     have : b * m ≤ b * (s.image f).card := hsize.trans hsimage
-    omega
+    exact Nat.le_of_mul_le_mul_left this hb
   have hucard : u.card = (s.image f).card := by
     rw [← Finset.card_image_of_injOn huinj, huimage]
   obtain ⟨t, htu, htcard⟩ := Finset.exists_subset_card_eq (hucard.symm ▸ hmimage)

@@ -5,6 +5,54 @@ namespace Ringel
 
 open Classical
 
+/-- A set of leaf edges is a matching exactly when the selected leaves have distinct anchors,
+and no selected anchor is itself selected. -/
+theorem isLeafMatching_iff_anchor_data {V : Type*} (T : SimpleGraph V) (S : Set V) :
+    IsLeafMatching T S ↔
+      (∀ x ∈ S, IsLeaf T x) ∧
+      (∀ x ∈ S, caseALeafAnchor T x ∉ S) ∧
+      Set.InjOn (caseALeafAnchor T) S := by
+  constructor
+  · rintro ⟨hleaf, hmatching⟩
+    refine ⟨hleaf, ?_, ?_⟩
+    · intro x hx hanchor
+      have hadj := caseALeafAnchor_adj T (hleaf x hx)
+      have hdisj := hmatching x hx (caseALeafAnchor T x) hanchor hadj.ne
+      exact Set.disjoint_left.mp hdisj
+        (show caseALeafAnchor T x ∈ {x} ∪ T.neighborSet x from Or.inr hadj)
+        (show caseALeafAnchor T x ∈
+          ({caseALeafAnchor T x} : Set V) ∪ T.neighborSet (caseALeafAnchor T x) from
+            Or.inl (by simp))
+    · intro x hx y hy hanchors
+      by_contra hxy
+      have hdisj := hmatching x hx y hy hxy
+      have hxanchor : caseALeafAnchor T x ∈ {x} ∪ T.neighborSet x :=
+        Or.inr (caseALeafAnchor_adj T (hleaf x hx))
+      have hyanchor : caseALeafAnchor T x ∈ {y} ∪ T.neighborSet y :=
+        Or.inr (by
+          rw [hanchors]
+          exact caseALeafAnchor_adj T (hleaf y hy))
+      exact Set.disjoint_left.mp hdisj hxanchor hyanchor
+  · rintro ⟨hleaf, houtside, hinjective⟩
+    refine ⟨hleaf, ?_⟩
+    intro x hx y hy hxy
+    rw [Set.disjoint_left]
+    intro z hzx hzy
+    simp only [Set.mem_union, Set.mem_singleton_iff, SimpleGraph.mem_neighborSet] at hzx hzy
+    rcases hzx with hzx | hzx
+    · rcases hzy with hzy | hzy
+      · exact hxy (hzx.symm.trans hzy)
+      · have hanchor : x = caseALeafAnchor T y :=
+          caseALeafAnchor_unique T (hleaf y hy) (hzx ▸ hzy)
+        exact houtside y hy (hanchor ▸ hx)
+    · rcases hzy with hzy | hzy
+      · have hanchor : y = caseALeafAnchor T x :=
+          caseALeafAnchor_unique T (hleaf x hx) (hzy ▸ hzx)
+        exact houtside x hx (hanchor ▸ hy)
+      · have hxanchor := caseALeafAnchor_unique T (hleaf x hx) hzx
+        have hyanchor := caseALeafAnchor_unique T (hleaf y hy) hzy
+        exact hxy (hinjective hx hy (hxanchor.symm.trans hyanchor))
+
 /-- Images of the anchors of the Case A leaves under the core map. -/
 noncomputable def caseAAnchorImages (n : ℕ) {V : Type*} (T : SimpleGraph V) (L : Finset V)
     (coreMap : V → Fin (2 * n + 1)) : Finset (Fin (2 * n + 1)) :=
@@ -57,9 +105,7 @@ theorem valid_caseA_embedding_of_nearEmbedding_finishing
 
 def IsCaseASource (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   ∃ L : Set V,
-    (∀ x ∈ L, IsLeaf T x) ∧
-    (∀ x ∈ L, caseALeafAnchor T x ∉ L) ∧
-    Set.InjOn (caseALeafAnchor T) L ∧
+    IsLeafMatching T L ∧
     ⌊δ ^ 6 * (n : ℝ)⌋₊ ≤ L.ncard
 
 structure CaseAJointOutput (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V]
@@ -120,7 +166,8 @@ theorem exists_admissibleCaseALeafSet_of_isCaseASource
     (δ : ℝ) (n : ℕ) {V : Type*} [Finite V] (T : SimpleGraph V)
     (h : IsCaseASource δ n T) :
     ∃ L : Finset V, AdmissibleCaseALeafSet δ n T L := by
-  obtain ⟨ L, hL₁, hL₂, hL₃, hL₄ ⟩ := h;
+  obtain ⟨L, hmatching, hL₄⟩ := h
+  obtain ⟨hL₁, hL₂, hL₃⟩ := (isLeafMatching_iff_anchor_data T L).mp hmatching
   obtain ⟨ L', hL' ⟩ := Set.Finite.exists_finset_coe ( Set.toFinite L );
   obtain ⟨ L'', hL'' ⟩ := Finset.exists_subset_card_eq ( show ⌊δ ^ 6 * ( n : ℝ ) ⌋₊ ≤ L'.card from by simpa [ ← hL', Set.ncard_eq_toFinset_card' ] using hL₄ ) ; use L''; simp_all +decide [ AdmissibleCaseALeafSet ] ;
   exact ⟨ fun x hx => hL₁ x ( hL'.subset ( hL''.1 hx ) ), fun x hx => fun hx' => hL₂ x ( hL'.subset ( hL''.1 hx ) ) ( hL'.subset ( hL''.1 hx' ) ), hL₃.mono ( by aesop_cat ) ⟩
