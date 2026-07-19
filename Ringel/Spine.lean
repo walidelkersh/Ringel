@@ -214,10 +214,12 @@ theorem decomp_of_rainbow_copy {n : ℕ} {V : Type*} [Finite V]
 
 
 
+universe u
+
 /-- The source package yields the cyclic decomposition supplied by the proof spine. -/
 theorem ringel_conjecture_large_via_source :
-    CaseABSourceStatement →
-      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+    CaseABSourceStatement.{u} →
+      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
         T.IsTree → T.edgeSet.ncard = n →
         ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
           Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
@@ -233,15 +235,15 @@ contains a rainbow copy of every $n$-edge tree. This is the heart of the MPS pro
 The spine now runs through the source package `CaseABSourceStatement`; see
 `Ringel/CaseSource.lean`. -/
 theorem rainbow_copy_exists :
-    CaseABSourceStatement →
-      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+    CaseABSourceStatement.{u} →
+      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
         T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by
   exact rainbow_copy_exists_of_source
 
 /-- `Statement.ringel_conjecture_large` follows from the spine via the source package. -/
 theorem ringel_conjecture_large_via_spine :
-    CaseABSourceStatement →
-      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+    CaseABSourceStatement.{u} →
+      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
         T.IsTree → T.edgeSet.ncard = n →
         ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
           Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧

@@ -20,27 +20,30 @@ open SimpleGraph
 
 namespace Ringel
 
+universe u
+
 /-- Source-level Case A statement: for sufficiently large `n`, Case A trees have rainbow copies. -/
 def CaseASourceStatement (δ : ℝ) : Prop :=
-  ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+  ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
     T.IsTree → T.edgeSet.ncard = n → IsCaseA δ n T → HasRainbowCopy n T
 
 /-- Source-level Case B statement: for sufficiently large `n`, Case B trees have rainbow copies. -/
 def CaseBSourceStatement (δ : ℝ) : Prop :=
-  ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+  ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
     T.IsTree → T.edgeSet.ncard = n → IsCaseB δ n T → ¬ IsCaseC δ n T → HasRainbowCopy n T
 
 /-- Exact source package matching the paper's small-`δ` parameter choice. -/
-def CaseABSourceStatement : Prop :=
-  ∃ δ : ℝ, 0 < δ ∧ δ ≤ 1 / 4 ∧ CaseASourceStatement δ ∧ CaseBSourceStatement δ
+def CaseABSourceStatement.{v} : Prop :=
+  ∃ δ : ℝ, 0 < δ ∧ δ ≤ 1 / 4 ∧
+    CaseASourceStatement.{v} δ ∧ CaseBSourceStatement.{v} δ
 
 /-- The source package implies eventual rainbow copies. -/
 theorem rainbow_copy_exists_of_source
-    (hsource : CaseABSourceStatement) :
-    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+    (hsource : CaseABSourceStatement.{u}) :
+    ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
       T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by
   rcases hsource with ⟨δ, hδ, hδle, hA, hB⟩
-  have hC : ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+  have hC : ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
       T.IsTree → T.edgeSet.ncard = n → IsCaseC δ n T → HasRainbowCopy n T :=
     caseC_rainbow δ
   filter_upwards [case_division δ hδ hδle, hA, hB, hC] with n hn_div hn_A hn_B hn_C
@@ -56,7 +59,7 @@ theorem rainbow_copy_exists_of_source
 
 /-- Wrapper form of the source package theorem. -/
 theorem rainbow_copy_exists_of_source_statement :
-    CaseABSourceStatement → ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V]
+    CaseABSourceStatement.{u} → ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V]
       (T : SimpleGraph V), T.IsTree → T.edgeSet.ncard = n → HasRainbowCopy n T := by
   intro hsource
   exact rainbow_copy_exists_of_source hsource

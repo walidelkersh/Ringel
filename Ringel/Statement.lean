@@ -4,7 +4,7 @@ Released under Apache 2.0 license as described in the file LICENSE.
 Authors: Walid Elkersh
 -/
 import Mathlib
-import Ringel.CaseSource
+import Ringel.Spine
 
 /-!
 # Ringel's Conjecture
@@ -22,7 +22,7 @@ namespace Ringel
 **Ringel's Conjecture.** For any tree $T$ with $n$ edges, the complete graph
 on $2n+1$ vertices decomposes into $2n+1$ edge-disjoint copies of $T$.
 
-A "copy" of $T$ is the image `T.map (f i)` of `T` under a vertex embedding
+A "copy" of $T$ is the image `T.map (f i)` of $T$ under a vertex embedding
 `f i : V ↪ Fin (2 * n + 1)`; each such image is isomorphic to $T$.
 The decomposition conditions are:
 * `Pairwise ... Disjoint`  — the copies are pairwise edge-disjoint;
@@ -40,21 +40,23 @@ def RingelConjecture {V : Type*} [Finite V]
       Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
       ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1)))
 
+universe u
+
 /--
 **Ringel's Conjecture for large $n$ (Montgomery–Pokrovskiy–Sudakov, 2020).** For all
 sufficiently large $n$, the decomposition above exists for every tree with $n$ edges. This is
 the form proved in arXiv:2001.02665, and the target of this formalization.
 
-The Case A and Case B branches of the proof rely on the MPS source statements packaged in
-`CaseABSourceStatement` (see `Ringel/CaseSource.lean`).
+The remaining Case A and Case B source-level content is exposed by the single explicit
+`CaseABSourceStatement` hypothesis.
 -/
 theorem ringel_conjecture_large :
-    CaseABSourceStatement →
-      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
-        T.IsTree → T.edgeSet.ncard = n →
-        ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
-          Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
-          ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
-  exact ringel_conjecture_large_via_source
+    CaseABSourceStatement.{u} →
+      ∀ᶠ (n : ℕ) in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
+      T.IsTree → T.edgeSet.ncard = n →
+      ∃ f : Fin (2 * n + 1) → (V ↪ Fin (2 * n + 1)),
+        Pairwise (fun i j => Disjoint (T.map (f i)).edgeSet (T.map (f j)).edgeSet) ∧
+        ⨆ i, T.map (f i) = (⊤ : SimpleGraph (Fin (2 * n + 1))) := by
+  exact ringel_conjecture_large_via_spine
 
 end Ringel

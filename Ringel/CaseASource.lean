@@ -1,8 +1,59 @@
-import Ringel.CaseANearEmbedding
+import Ringel.CaseA
+import Ringel.PaperFinishing
 
 namespace Ringel
 
 open Classical
+
+/-- Images of the anchors of the Case A leaves under the core map. -/
+noncomputable def caseAAnchorImages (n : ℕ) {V : Type*} (T : SimpleGraph V) (L : Finset V)
+    (coreMap : V → Fin (2 * n + 1)) : Finset (Fin (2 * n + 1)) :=
+  L.image (fun x => coreMap (caseALeafAnchor T x))
+
+/-- A perfect matching from the embedded anchors gives the leaf-placement part of a valid
+Case A embedding. -/
+theorem valid_caseA_embedding_of_nearEmbedding_finishing
+    (n : ℕ) (hn : 0 < n) {V : Type*} [Finite V] (T : SimpleGraph V) (L : Finset V)
+    (hanchor : ∀ x ∈ L, caseALeafAnchor T x ∉ L)
+    (hanchor_inj : ∀ x ∈ L, ∀ y ∈ L,
+      caseALeafAnchor T x = caseALeafAnchor T y → x = y)
+    (coreMap : V → Fin (2 * n + 1))
+    (hcore_inj : Set.InjOn coreMap {v | v ∉ L})
+    (hcore_rainbow : ∀ e₁ ∈ T.edgeSet, ∀ e₂ ∈ T.edgeSet,
+      (∀ x ∈ L, x ∉ e₁) → (∀ x ∈ L, x ∉ e₂) →
+      ndColouring n hn (Sym2.map coreMap e₁) = ndColouring n hn (Sym2.map coreMap e₂) →
+      Sym2.map coreMap e₁ = Sym2.map coreMap e₂)
+    (targets : Finset (Fin (2 * n + 1))) (colours : Finset (Fin n))
+    (matching : PerfectRainbowMatching (ndColouring n hn)
+      (caseAAnchorImages n T L coreMap) targets colours)
+    (targets_fresh : Disjoint (targets : Set (Fin (2 * n + 1)))
+      (coreMap '' {v : V | v ∉ L}))
+    (colours_fresh : Disjoint colours
+      (T.edgeFinset.filter (fun e => ∀ x ∈ L, x ∉ e) |>.image
+        (fun e => ndColouring n hn (Sym2.map coreMap e)))) :
+    ∃ pos : V → Fin (2 * n + 1),
+      valid_caseA_embedding n hn T L coreMap pos := by
+  unfold caseAAnchorImages at *;
+  refine' ⟨ fun x => if hx : x ∈ L then matching.target ( coreMap ( caseALeafAnchor T x ) ) ( Finset.mem_image_of_mem _ hx ) else coreMap x, _, _, _, _, _ ⟩;
+  · exact hcore_inj;
+  · have := matching.target_injective; simp_all +decide [ Set.InjOn ] ;
+    grind;
+  · intro x hx v hv;
+    simp +decide [ hx, hv ];
+    exact fun h => targets_fresh.le_bot ⟨ h ▸ matching.target_mem _ _, Set.mem_image_of_mem _ hv ⟩;
+  · grind;
+  · constructor;
+    · intro x₁ hx₁ x₂ hx₂ h_eq
+      have h_target_eq : matching.target (coreMap (caseALeafAnchor T x₁)) (Finset.mem_image_of_mem _ hx₁) = matching.target (coreMap (caseALeafAnchor T x₂)) (Finset.mem_image_of_mem _ hx₂) := by
+        have := matching.rainbow ( coreMap ( caseALeafAnchor T x₁ ) ) ( Finset.mem_image_of_mem _ hx₁ ) ( coreMap ( caseALeafAnchor T x₂ ) ) ( Finset.mem_image_of_mem _ hx₂ ) ; simp_all +decide [ Sym2.eq_swap ] ;
+      have := matching.target_injective ( coreMap ( caseALeafAnchor T x₁ ) ) ( Finset.mem_image_of_mem _ hx₁ ) ( coreMap ( caseALeafAnchor T x₂ ) ) ( Finset.mem_image_of_mem _ hx₂ ) h_target_eq;
+      exact hanchor_inj x₁ hx₁ x₂ hx₂ ( hcore_inj ( show caseALeafAnchor T x₁ ∉ L from hanchor x₁ hx₁ ) ( show caseALeafAnchor T x₂ ∉ L from hanchor x₂ hx₂ ) this );
+    · intro x hx e he hne;
+      have := matching.colours_eq;
+      contrapose! colours_fresh;
+      rw [ Finset.disjoint_left ];
+      simp +decide [ ← this, colours_fresh ];
+      grind
 
 def IsCaseASource (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   ∃ L : Set V,
@@ -144,7 +195,7 @@ universe u
 
 theorem caseASourceJointGoal_iff_eventual_rainbow :
     (∀ (δ : ℝ), 0 < δ →
-      ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type*} [Finite V] (T : SimpleGraph V),
+      ∀ᶠ n : ℕ in Filter.atTop, ∀ {V : Type u} [Finite V] (T : SimpleGraph V),
         T.IsTree → T.edgeSet.ncard = n → IsCaseASource δ n T →
         ∃ (L : Finset V) (hn : 0 < n),
           AdmissibleCaseALeafSet δ n T L ∧ Nonempty (CaseAJointOutput n hn T L)) ↔
@@ -155,7 +206,7 @@ theorem caseASourceJointGoal_iff_eventual_rainbow :
   · intro h δ hδ
     filter_upwards [h δ hδ] with n hn
     intro V _ T hT hcard hsource
-    obtain ⟨L, hnpos, hL, ⟨o⟩⟩ := @hn V _ T hT hcard hsource
+    obtain ⟨L, hnpos, hL, ⟨o⟩⟩ := hn T hT hcard hsource
     exact rainbowCopy_of_caseAJointOutput n hnpos T L hL.1 o
   · intro h δ hδ
     have hpos : ∀ᶠ n : ℕ in Filter.atTop, 0 < n :=
@@ -164,6 +215,6 @@ theorem caseASourceJointGoal_iff_eventual_rainbow :
     intro V _ T hT hcard hsource
     obtain ⟨L, hL⟩ := exists_admissibleCaseALeafSet_of_isCaseASource δ n T hsource
     exact ⟨L, hnpos, hL, caseAJointOutput_of_hasRainbowCopy δ n hnpos T L hL
-      (@hcopy V _ T hT hcard hsource)⟩
+      (hcopy T hT hcard hsource)⟩
 
 end Ringel
