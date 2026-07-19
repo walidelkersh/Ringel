@@ -272,10 +272,6 @@ def HasRainbowCopy (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   ∃ f : V ↪ Fin (2 * n + 1),
     ∀ (hn : 0 < n), Set.InjOn (ndColouring n hn) (T.map f).edgeSet
 
-/-- A subset $S$ of vertices (or colours) is **$q$-random** if each element is included
-independently with probability $q$. Requires measure-theoretic probability infrastructure. (§3.) -/
-def IsRandomSubset {α : Type*} (_q : ℝ) (_S : Set α) : Prop := True
-
 /-- $(X, A)$ is **$r$-replete** when every $x \in X$ has at least $r$ neighbours in $A$ inside
 $K_{2n+1}$. Used in the absorption arguments. (§4.) -/
 def IsReplete (n : ℕ) (X A : Set (Fin (2 * n + 1))) (r : ℕ) : Prop :=
@@ -289,6 +285,13 @@ def IsBarePath {V : Type*} (T : SimpleGraph V) (P : List V) : Prop :=
 /-- Vertex $v$ is a **leaf** of $T$: it has a unique neighbour. -/
 def IsLeaf {V : Type*} (T : SimpleGraph V) (v : V) : Prop :=
   ∃! w : V, T.Adj v w
+
+/-- The pendant edges at `S` form a matching. This is the paper's meaning of a set of
+non-neighbouring leaves: distinct selected leaves have disjoint leaf edges. -/
+def IsLeafMatching {V : Type*} (T : SimpleGraph V) (S : Set V) : Prop :=
+  (∀ x ∈ S, IsLeaf T x) ∧
+  ∀ x ∈ S, ∀ y ∈ S, x ≠ y →
+    Disjoint ({x} ∪ T.neighborSet x) ({y} ∪ T.neighborSet y)
 
 /-- **Case A** (§2): $T$ with $n$ edges has $\geq \lfloor \delta^6 n \rfloor$ pairwise non-adjacent leaves. -/
 def IsCaseA (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=

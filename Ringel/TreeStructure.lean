@@ -20,6 +20,36 @@ open SimpleGraph Finset
 
 namespace Ringel.TreeStructure
 
+/-- Choose one representative from every nonempty fibre of `f` on `s`. -/
+theorem exists_injOn_selector {α β : Type*} [DecidableEq α] [DecidableEq β]
+    (s : Finset α) (f : α → β) :
+    ∃ t : Finset α, t ⊆ s ∧ Set.InjOn f t ∧ t.image f = s.image f := by
+  apply Finset.exists_subset_injOn_image_eq_of_surjOn (s := (s : Set α)) (t := s.image f)
+  intro y hy
+  obtain ⟨x, hx, rfl⟩ := Finset.mem_image.mp hy
+  exact ⟨x, hx, rfl⟩
+
+/-- A finite set whose fibres under `f` have size at most `b` contains an `m`-element
+subset on which `f` is injective whenever `b * m ≤ s.card`. -/
+theorem exists_subset_injOn_of_bounded_fibres {α β : Type*}
+    [DecidableEq α] [DecidableEq β] (s : Finset α) (f : α → β) (b m : ℕ)
+    (hb : 0 < b)
+    (hfibre : ∀ y ∈ s.image f, (s.filter fun x => f x = y).card ≤ b)
+    (hsize : b * m ≤ s.card) :
+    ∃ t : Finset α, t ⊆ s ∧ Set.InjOn f t ∧ t.card = m := by
+  obtain ⟨u, hus, huinj, huimage⟩ := exists_injOn_selector s f
+  have hsimage : s.card ≤ b * (s.image f).card :=
+    Finset.card_le_mul_card_image s b hfibre
+  have hmimage : m ≤ (s.image f).card := by
+    have : b * m ≤ b * (s.image f).card := hsize.trans hsimage
+    omega
+  have hucard : u.card = (s.image f).card := by
+    rw [← Finset.card_image_of_injOn huinj, huimage]
+  obtain ⟨t, htu, htcard⟩ := Finset.exists_subset_card_eq (hucard.symm ▸ hmimage)
+  exact ⟨t, htu.trans hus, huinj.mono (by
+    intro x hx
+    exact htu hx), htcard⟩
+
 /-- **Leaves dominate branch vertices.** In a finite tree with at least two vertices, the number
 of branch vertices (degree `≥ 3`) is at least two less than the number of leaves (degree `1`).
 
