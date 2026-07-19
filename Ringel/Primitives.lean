@@ -293,6 +293,18 @@ def IsLeafMatching {V : Type*} (T : SimpleGraph V) (S : Set V) : Prop :=
   ∀ x ∈ S, ∀ y ∈ S, x ≠ y →
     Disjoint ({x} ∪ T.neighborSet x) ({y} ∪ T.neighborSet y)
 
+/-- Pendant-leaf neighbours of a vertex. -/
+def leafNeighbours {V : Type*} (T : SimpleGraph V) (v : V) : Set V :=
+  {w | T.Adj v w ∧ IsLeaf T w}
+
+/-- Vertices incident with at least `threshold` pendant leaves. -/
+def highLeafDegreeVertices {V : Type*} (T : SimpleGraph V) (threshold : ℕ) : Set V :=
+  {v | threshold ≤ (leafNeighbours T v).ncard}
+
+/-- Pendant leaves attached to a vertex of leaf degree at least `threshold`. -/
+def leavesAtHighDegreeVertices {V : Type*} (T : SimpleGraph V) (threshold : ℕ) : Set V :=
+  {w | IsLeaf T w ∧ ∃ v, T.Adj w v ∧ v ∈ highLeafDegreeVertices T threshold}
+
 /-- **Case A** (§2): $T$ with $n$ edges has $\geq \lfloor \delta^6 n \rfloor$ pairwise non-adjacent leaves. -/
 def IsCaseA (δ : ℝ) (n : ℕ) {V : Type*} (T : SimpleGraph V) : Prop :=
   ∃ S : Set V,
