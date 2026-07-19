@@ -12,8 +12,8 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Proof Assembly (Spine.lean + Proof.lean)</title>
-<link rel="prev" href="sect0008.html" title="Probability Infrastructure (ProbBounds.lean)" />
+<title>Proof Assembly (Spine.lean)</title>
+<link rel="prev" href="sect0008.html" title="Probability and Reservoir Infrastructure" />
 <link rel="up" href="index.html" title="Ringel’s Conjecture" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
@@ -32,31 +32,31 @@
 <nav class="toc">
 <ul class="sub-toc-0">
 <li class="">
-  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Statement</span></a>
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Formal Status</span></a>
  </li>
 <li class="">
-  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Combinatorial Primitives (Primitives.lean)</span></a>
+  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Statement</span></a>
  </li>
 <li class="">
-  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Tree Structure (TreeStructure.lean)</span></a>
+  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Combinatorial Primitives (Primitives.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0004.html"><span class="toc_ref">4</span> <span class="toc_entry">Case Division (CaseDivision.lean)</span></a>
+  <a href="sect0004.html"><span class="toc_ref">4</span> <span class="toc_entry">Tree Structure and Case Division</span></a>
  </li>
 <li class="">
-  <a href="sect0005.html"><span class="toc_ref">5</span> <span class="toc_entry">Case A — Many Leaves (CaseA.lean)</span></a>
+  <a href="sect0005.html"><span class="toc_ref">5</span> <span class="toc_entry">Case A Source Interface (CaseA.lean and CaseASource.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0006.html"><span class="toc_ref">6</span> <span class="toc_entry">Case B — Many Bare Paths (CaseB.lean)</span></a>
+  <a href="sect0006.html"><span class="toc_ref">6</span> <span class="toc_entry">Case B Source Interface (CaseB.lean and CaseSource.lean)</span></a>
  </li>
 <li class="">
   <a href="sect0007.html"><span class="toc_ref">7</span> <span class="toc_entry">Case C — Small Core (CaseC.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0008.html"><span class="toc_ref">8</span> <span class="toc_entry">Probability Infrastructure (ProbBounds.lean)</span></a>
+  <a href="sect0008.html"><span class="toc_ref">8</span> <span class="toc_entry">Probability and Reservoir Infrastructure</span></a>
  </li>
 <li class=" active current">
-  <a href="sect0009.html"><span class="toc_ref">9</span> <span class="toc_entry">Proof Assembly (Spine.lean + Proof.lean)</span></a>
+  <a href="sect0009.html"><span class="toc_ref">9</span> <span class="toc_entry">Proof Assembly (Spine.lean)</span></a>
  </li>
 <li ><a href="dep_graph_document.html">Dependency graph</a></li>
 </ul>
@@ -67,7 +67,7 @@
 
 
 <div class="main-text">
-<h1 id="a0000000010">9 Proof Assembly (Spine.lean + Proof.lean)</h1>
+<h1 id="a0000000010">9 Proof Assembly (Spine.lean)</h1>
 <div class="theorem_thmwrapper theorem-style-plain" id="thm:decomp_of_rainbow_copy">
   <div class="theorem_thmheading">
     <span class="theorem_thmcaption">
@@ -107,7 +107,7 @@
         </div>
   </div>
   <div class="theorem_thmcontent">
-  <p> Kotzig cyclic-shift decomposition. </p>
+  <p> The Kotzig cyclic-shift construction turns one rainbow copy into an edge decomposition. </p>
 
   </div>
 </div>
@@ -137,13 +137,13 @@
         
         <ul class="uses">
           
-          <li><a href="sect0004.html#thm:case_division">Theorem 4.1</a></li>
+          <li><a href="sect0004.html#thm:case_division">Theorem 4.3</a></li>
           
-          <li><a href="sect0005.html#thm:caseA_rainbow">Theorem 5.5</a></li>
+          <li><a href="sect0005.html#thm:caseA_source">Theorem 5.5</a></li>
           
-          <li><a href="sect0006.html#thm:caseB_rainbow">Theorem 6.2</a></li>
+          <li><a href="sect0006.html#def:caseB_source">Definition 6.1</a></li>
           
-          <li><a href="sect0007.html#thm:caseC_rainbow">Theorem 7.3</a></li>
+          <li><a href="sect0007.html#thm:caseC_rainbow">Theorem 7.2</a></li>
           
         </ul>
     
@@ -174,7 +174,7 @@
         </div>
   </div>
   <div class="theorem_thmcontent">
-  <p>   Rainbow copy exists. </p>
+  <p>   The source package yields an eventual rainbow copy. </p>
 
   </div>
 </div>
@@ -237,7 +237,7 @@
         </div>
   </div>
   <div class="theorem_thmcontent">
-  <p>   Full assembly for large \(n\). </p>
+  <p>   Assembles the large-\(n\) theorem from the source package. </p>
 
   </div>
 </div>
@@ -252,7 +252,7 @@
 
   <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
 
-  <a href="sect0008.html" title="Probability Infrastructure (ProbBounds.lean)"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+  <a href="sect0008.html" title="Probability and Reservoir Infrastructure"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
   <a href="index.html" title="Ringel’s Conjecture"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>

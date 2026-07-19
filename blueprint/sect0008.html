@@ -12,8 +12,8 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Probability Infrastructure (ProbBounds.lean)</title>
-<link rel="next" href="sect0009.html" title="Proof Assembly (Spine.lean + Proof.lean)" />
+<title>Probability and Reservoir Infrastructure</title>
+<link rel="next" href="sect0009.html" title="Proof Assembly (Spine.lean)" />
 <link rel="prev" href="sect0007.html" title="Case C — Small Core (CaseC.lean)" />
 <link rel="up" href="index.html" title="Ringel’s Conjecture" />
 <link rel="stylesheet" href="styles/theme-white.css" />
@@ -33,31 +33,31 @@
 <nav class="toc">
 <ul class="sub-toc-0">
 <li class="">
-  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Statement</span></a>
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Formal Status</span></a>
  </li>
 <li class="">
-  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Combinatorial Primitives (Primitives.lean)</span></a>
+  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Statement</span></a>
  </li>
 <li class="">
-  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Tree Structure (TreeStructure.lean)</span></a>
+  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Combinatorial Primitives (Primitives.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0004.html"><span class="toc_ref">4</span> <span class="toc_entry">Case Division (CaseDivision.lean)</span></a>
+  <a href="sect0004.html"><span class="toc_ref">4</span> <span class="toc_entry">Tree Structure and Case Division</span></a>
  </li>
 <li class="">
-  <a href="sect0005.html"><span class="toc_ref">5</span> <span class="toc_entry">Case A — Many Leaves (CaseA.lean)</span></a>
+  <a href="sect0005.html"><span class="toc_ref">5</span> <span class="toc_entry">Case A Source Interface (CaseA.lean and CaseASource.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0006.html"><span class="toc_ref">6</span> <span class="toc_entry">Case B — Many Bare Paths (CaseB.lean)</span></a>
+  <a href="sect0006.html"><span class="toc_ref">6</span> <span class="toc_entry">Case B Source Interface (CaseB.lean and CaseSource.lean)</span></a>
  </li>
 <li class="">
   <a href="sect0007.html"><span class="toc_ref">7</span> <span class="toc_entry">Case C — Small Core (CaseC.lean)</span></a>
  </li>
 <li class=" active current">
-  <a href="sect0008.html"><span class="toc_ref">8</span> <span class="toc_entry">Probability Infrastructure (ProbBounds.lean)</span></a>
+  <a href="sect0008.html"><span class="toc_ref">8</span> <span class="toc_entry">Probability and Reservoir Infrastructure</span></a>
  </li>
 <li class="">
-  <a href="sect0009.html"><span class="toc_ref">9</span> <span class="toc_entry">Proof Assembly (Spine.lean + Proof.lean)</span></a>
+  <a href="sect0009.html"><span class="toc_ref">9</span> <span class="toc_entry">Proof Assembly (Spine.lean)</span></a>
  </li>
 <li ><a href="dep_graph_document.html">Dependency graph</a></li>
 </ul>
@@ -68,7 +68,7 @@
 
 
 <div class="main-text">
-<h1 id="a0000000009">8 Probability Infrastructure (ProbBounds.lean)</h1>
+<h1 id="a0000000009">8 Probability and Reservoir Infrastructure</h1>
 <div class="definition_thmwrapper theorem-style-definition" id="def:prob_event">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
@@ -108,7 +108,7 @@
         </div>
   </div>
   <div class="definition_thmcontent">
-  <p> Counting measure on finite types. </p>
+  <p> Finite probability space used by the formal development. </p>
 
   </div>
 </div>
@@ -155,6 +155,7 @@
 
   </div>
 </div>
+<p>The near-embedding and reservoir modules formalize finite sample spaces, concentration bookkeeping, and retained sets. They do not by themselves prove the full MPS Case A/B source statements. </p>
 
 </div> <!--main-text -->
 </div> <!-- content-wrapper -->
@@ -170,7 +171,7 @@
 </a>
   <a href="index.html" title="Ringel’s Conjecture"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>
-  <a href="sect0009.html" title="Proof Assembly (Spine.lean + Proof.lean)"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+  <a href="sect0009.html" title="Proof Assembly (Spine.lean)"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
 </a>
 </nav>
 

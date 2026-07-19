@@ -12,9 +12,9 @@
 <meta name="generator" content="plasTeX" />
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Case A — Many Leaves (CaseA.lean)</title>
-<link rel="next" href="sect0006.html" title="Case B — Many Bare Paths (CaseB.lean)" />
-<link rel="prev" href="sect0004.html" title="Case Division (CaseDivision.lean)" />
+<title>Case A Source Interface (CaseA.lean and CaseASource.lean)</title>
+<link rel="next" href="sect0006.html" title="Case B Source Interface (CaseB.lean and CaseSource.lean)" />
+<link rel="prev" href="sect0004.html" title="Tree Structure and Case Division" />
 <link rel="up" href="index.html" title="Ringel’s Conjecture" />
 <link rel="stylesheet" href="styles/theme-white.css" />
 <link rel="stylesheet" href="styles/amsthm.css" />
@@ -33,31 +33,31 @@
 <nav class="toc">
 <ul class="sub-toc-0">
 <li class="">
-  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Statement</span></a>
+  <a href="sect0001.html"><span class="toc_ref">1</span> <span class="toc_entry">Formal Status</span></a>
  </li>
 <li class="">
-  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Combinatorial Primitives (Primitives.lean)</span></a>
+  <a href="sect0002.html"><span class="toc_ref">2</span> <span class="toc_entry">Statement</span></a>
  </li>
 <li class="">
-  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Tree Structure (TreeStructure.lean)</span></a>
+  <a href="sect0003.html"><span class="toc_ref">3</span> <span class="toc_entry">Combinatorial Primitives (Primitives.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0004.html"><span class="toc_ref">4</span> <span class="toc_entry">Case Division (CaseDivision.lean)</span></a>
+  <a href="sect0004.html"><span class="toc_ref">4</span> <span class="toc_entry">Tree Structure and Case Division</span></a>
  </li>
 <li class=" active current">
-  <a href="sect0005.html"><span class="toc_ref">5</span> <span class="toc_entry">Case A — Many Leaves (CaseA.lean)</span></a>
+  <a href="sect0005.html"><span class="toc_ref">5</span> <span class="toc_entry">Case A Source Interface (CaseA.lean and CaseASource.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0006.html"><span class="toc_ref">6</span> <span class="toc_entry">Case B — Many Bare Paths (CaseB.lean)</span></a>
+  <a href="sect0006.html"><span class="toc_ref">6</span> <span class="toc_entry">Case B Source Interface (CaseB.lean and CaseSource.lean)</span></a>
  </li>
 <li class="">
   <a href="sect0007.html"><span class="toc_ref">7</span> <span class="toc_entry">Case C — Small Core (CaseC.lean)</span></a>
  </li>
 <li class="">
-  <a href="sect0008.html"><span class="toc_ref">8</span> <span class="toc_entry">Probability Infrastructure (ProbBounds.lean)</span></a>
+  <a href="sect0008.html"><span class="toc_ref">8</span> <span class="toc_entry">Probability and Reservoir Infrastructure</span></a>
  </li>
 <li class="">
-  <a href="sect0009.html"><span class="toc_ref">9</span> <span class="toc_entry">Proof Assembly (Spine.lean + Proof.lean)</span></a>
+  <a href="sect0009.html"><span class="toc_ref">9</span> <span class="toc_entry">Proof Assembly (Spine.lean)</span></a>
  </li>
 <li ><a href="dep_graph_document.html">Dependency graph</a></li>
 </ul>
@@ -68,7 +68,7 @@
 
 
 <div class="main-text">
-<h1 id="a0000000006">5 Case A — Many Leaves (CaseA.lean)</h1>
+<h1 id="a0000000006">5 Case A Source Interface (CaseA.lean and CaseASource.lean)</h1>
 <div class="definition_thmwrapper theorem-style-definition" id="def:walkSum">
   <div class="definition_thmheading">
     <span class="definition_thmcaption">
@@ -108,7 +108,7 @@
         </div>
   </div>
   <div class="definition_thmcontent">
-  <p> Signed walk sum. </p>
+  <p> Signed walk sum in the cyclic vertex set. </p>
 
   </div>
 </div>
@@ -151,85 +151,24 @@
         </div>
   </div>
   <div class="lemma_thmcontent">
-  <p> Tree embedding via signed edge-increment. </p>
+  <p> Embeds a tree through signed edge increments. </p>
 
   </div>
 </div>
-<div class="lemma_thmwrapper theorem-style-plain" id="lem:bound_vertex_collisions">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
+<div class="definition_thmwrapper theorem-style-definition" id="def:valid_caseA_embedding">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
     </span>
-    <span class="lemma_thmlabel">5.3</span>
+    <span class="definition_thmlabel">5.3</span>
     <div class="thm_header_extras">
 
+    
+    ✓
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0005.html#lem:bound_vertex_collisions">#</a>
-    
-    
-    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
-</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Uses</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="sect0005.html#def:walkSum">Definition 5.1</a></li>
-          
-          <li><a href="sect0005.html#lem:tree_embed">Lemma 5.2</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
-    
-    
-    <button class="modal lean">L∃∀N</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Lean declarations</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="https://walidelkersh.github.io/Ringel/docs/find/#doc/bound_vertex_collisions" class="lean_decl">bound_vertex_collisions</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
-    
-        </div>
-  </div>
-  <div class="lemma_thmcontent">
-  <p>   Littlewood–Offord bound for vertex collisions. </p>
-
-  </div>
-</div>
-<div class="lemma_thmwrapper theorem-style-plain" id="lem:exists_absorption_matching">
-  <div class="lemma_thmheading">
-    <span class="lemma_thmcaption">
-    Lemma
-    </span>
-    <span class="lemma_thmlabel">5.4</span>
-    <div class="thm_header_extras">
-
-        </div>
-    <div class="thm_header_hidden_extras">
-
-    <a class="icon proof" href="sect0005.html#lem:exists_absorption_matching">#</a>
+    <a class="icon proof" href="sect0005.html#def:valid_caseA_embedding">#</a>
     
     
     
@@ -244,7 +183,7 @@
         
         <ul class="uses">
           
-          <li><a href="https://walidelkersh.github.io/Ringel/docs/find/#doc/exists_absorption_matching" class="lean_decl">exists_absorption_matching</a></li>
+          <li><a href="https://walidelkersh.github.io/Ringel/docs/find/#doc/valid_caseA_embedding" class="lean_decl">valid_caseA_embedding</a></li>
           
         </ul>
     
@@ -254,12 +193,55 @@
     
         </div>
   </div>
-  <div class="lemma_thmcontent">
-  <p>  Absorption matching probability. </p>
+  <div class="definition_thmcontent">
+  <p> Records the core embedding, leaf positions, injectivity, and rainbow conditions needed by the Case A finishing step. </p>
 
   </div>
 </div>
-<div class="theorem_thmwrapper theorem-style-plain" id="thm:caseA_rainbow">
+<div class="definition_thmwrapper theorem-style-definition" id="def:caseA_joint_output">
+  <div class="definition_thmheading">
+    <span class="definition_thmcaption">
+    Definition
+    </span>
+    <span class="definition_thmlabel">5.4</span>
+    <div class="thm_header_extras">
+
+    
+    ✓
+        </div>
+    <div class="thm_header_hidden_extras">
+
+    <a class="icon proof" href="sect0005.html#def:caseA_joint_output">#</a>
+    
+    
+    
+    <button class="modal lean">L∃∀N</button>
+        <div class="modal-container">
+      <div class="modal-content">
+        <header>
+          <h1>Lean declarations</h1>
+          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
+</button>
+        </header>
+        
+        <ul class="uses">
+          
+          <li><a href="https://walidelkersh.github.io/Ringel/docs/find/#doc/CaseAJointOutput" class="lean_decl">CaseAJointOutput</a></li>
+          
+        </ul>
+    
+      </div>
+    </div>
+
+    
+        </div>
+  </div>
+  <div class="definition_thmcontent">
+  <p> Records a finite Case A output together with its core map, reservoirs, and perfect rainbow matching. </p>
+
+  </div>
+</div>
+<div class="theorem_thmwrapper theorem-style-plain" id="thm:caseA_source">
   <div class="theorem_thmheading">
     <span class="theorem_thmcaption">
     Theorem
@@ -270,32 +252,8 @@
         </div>
     <div class="thm_header_hidden_extras">
 
-    <a class="icon proof" href="sect0005.html#thm:caseA_rainbow">#</a>
+    <a class="icon proof" href="sect0005.html#thm:caseA_source">#</a>
     
-    
-    <button class="modal"><svg  class="icon icon-mindmap "><use xlink:href="symbol-defs.svg#icon-mindmap"></use></svg>
-</button>
-        <div class="modal-container">
-      <div class="modal-content">
-        <header>
-          <h1>Uses</h1>
-          <button class="closebtn"><svg  class="icon icon-cross "><use xlink:href="symbol-defs.svg#icon-cross"></use></svg>
-</button>
-        </header>
-        
-        <ul class="uses">
-          
-          <li><a href="sect0005.html#lem:tree_embed">Lemma 5.2</a></li>
-          
-          <li><a href="sect0005.html#lem:bound_vertex_collisions">Lemma 5.3</a></li>
-          
-          <li><a href="sect0005.html#lem:exists_absorption_matching">Lemma 5.4</a></li>
-          
-        </ul>
-    
-      </div>
-    </div>
-
     
     
     <button class="modal lean">L∃∀N</button>
@@ -309,7 +267,7 @@
         
         <ul class="uses">
           
-          <li><a href="https://walidelkersh.github.io/Ringel/docs/find/#doc/caseA_rainbow" class="lean_decl">caseA_rainbow</a></li>
+          <li><a href="https://walidelkersh.github.io/Ringel/docs/find/#doc/CaseASourceStatement" class="lean_decl">CaseASourceStatement</a></li>
           
         </ul>
     
@@ -320,7 +278,7 @@
         </div>
   </div>
   <div class="theorem_thmcontent">
-  <p>   Main Case A result. </p>
+  <p>  The eventual Case A source statement used by the public source package. </p>
 
   </div>
 </div>
@@ -335,11 +293,11 @@
 
   <svg  id="showmore-plus" class="icon icon-eye-plus showmore"><use xlink:href="symbol-defs.svg#icon-eye-plus"></use></svg>
 
-  <a href="sect0004.html" title="Case Division (CaseDivision.lean)"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
+  <a href="sect0004.html" title="Tree Structure and Case Division"><svg  class="icon icon-arrow-left "><use xlink:href="symbol-defs.svg#icon-arrow-left"></use></svg>
 </a>
   <a href="index.html" title="Ringel’s Conjecture"><svg  class="icon icon-arrow-up "><use xlink:href="symbol-defs.svg#icon-arrow-up"></use></svg>
 </a>
-  <a href="sect0006.html" title="Case B — Many Bare Paths (CaseB.lean)"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
+  <a href="sect0006.html" title="Case B Source Interface (CaseB.lean and CaseSource.lean)"><svg  class="icon icon-arrow-right "><use xlink:href="symbol-defs.svg#icon-arrow-right"></use></svg>
 </a>
 </nav>
 
