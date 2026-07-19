@@ -1,6 +1,7 @@
 import Mathlib
 import Ringel.Primitives
 import Ringel.TreeStructure
+import Ringel.CaseA
 
 namespace Ringel
 
@@ -37,6 +38,44 @@ lemma leafNeighbours_disjoint {V : Type*} (T : SimpleGraph V) {u v : V}
   have hva : v = a := huniq v hwv.1.symm
   exact huv (hua.trans hva.symm)
 
+/-- A vertex with at least two pendant-leaf neighbours is not a leaf. -/
+lemma highLeafDegreeVertices_not_leaf {V : Type*} (T : SimpleGraph V)
+    {threshold : ℕ} (hthreshold : 2 ≤ threshold) {v : V}
+    (hv : v ∈ highLeafDegreeVertices T threshold) :
+    ¬ IsLeaf T v := by
+  intro hleaf
+  obtain ⟨w, _, huniq⟩ := hleaf
+  have hsub : leafNeighbours T v ⊆ ({w} : Set V) := by
+    intro x hx
+    exact Set.mem_singleton_iff.mpr (huniq x hx.1)
+  have hle : (leafNeighbours T v).ncard ≤ 1 := by
+    calc
+      (leafNeighbours T v).ncard ≤ ({w} : Set V).ncard :=
+        Set.ncard_le_ncard hsub (Set.finite_singleton w)
+      _ = 1 := Set.ncard_singleton w
+  change threshold ≤ (leafNeighbours T v).ncard at hv
+  omega
+
+/-- Leaves deleted at a threshold of at least two are pairwise nonadjacent. -/
+lemma leavesAtHighDegreeVertices_independent {V : Type*} (T : SimpleGraph V)
+    {threshold : ℕ} (hthreshold : 2 ≤ threshold) :
+    ∀ x ∈ leavesAtHighDegreeVertices T threshold,
+      ∀ y ∈ leavesAtHighDegreeVertices T threshold, x ≠ y → ¬ T.Adj x y := by
+  intro x hx y hy _ hxy
+  obtain ⟨w, _, huniq⟩ := hx.1
+  obtain ⟨a, hxa, hahigh⟩ := hx.2
+  have hya : y = a := (huniq y hxy).trans (huniq a hxa).symm
+  exact highLeafDegreeVertices_not_leaf T hthreshold hahigh (hya ▸ hy.1)
+
+/-- Removing pendant leaves at centers of leaf degree at least two preserves a tree. -/
+lemma residualTree_isTree {V : Type*} (T : SimpleGraph V) (hT : T.IsTree)
+    {threshold : ℕ} (hthreshold : 2 ≤ threshold) :
+    (CaseACore T (leavesAtHighDegreeVertices T threshold)).IsTree := by
+  apply isTree_core T hT
+  · intro v hv
+    exact hv.1
+  · exact leavesAtHighDegreeVertices_independent T hthreshold
+
 /-- There are at most `|V| / threshold` vertices with `threshold` pendant-leaf neighbours. -/
 lemma highLeafDegreeVertices_mul_le_card {V : Type*} [Finite V]
     (T : SimpleGraph V) (threshold : ℕ) :
@@ -59,9 +98,8 @@ lemma highLeafDegreeVertices_mul_le_card {V : Type*} [Finite V]
         intro v hv
         have hv' : v ∈ highLeafDegreeVertices T threshold := by
           simpa [H] using hv
-        change threshold ≤ (L v).card
-        rw [L, ← Set.ncard_eq_toFinset_card']
-        exact hv'))
+        change threshold ≤ (Set.toFinite (leafNeighbours T v)).toFinset.card
+        simpa only [Set.ncard_eq_toFinset_card'] using hv'))
   have hunion : (H.biUnion L).card ≤ Fintype.card V := by
     simpa using Finset.card_le_card (Finset.subset_univ (H.biUnion L))
   have hbound : threshold * H.card ≤ Fintype.card V := by
