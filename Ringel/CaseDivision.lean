@@ -48,6 +48,7 @@ lemma highLeafDegreeVertices_mul_le_card {V : Type*} [Finite V]
     (Set.toFinite (leafNeighbours T v)).toFinset
   have hpairwise : (H : Set V).PairwiseDisjoint L := by
     intro u hu v hv huv
+    change Disjoint (L u) (L v)
     rw [Finset.disjoint_left]
     intro w hwu hwv
     exact Set.disjoint_left.mp (leafNeighbours_disjoint T huv)
@@ -58,7 +59,9 @@ lemma highLeafDegreeVertices_mul_le_card {V : Type*} [Finite V]
         intro v hv
         have hv' : v ∈ highLeafDegreeVertices T threshold := by
           simpa [H] using hv
-        simpa [L, highLeafDegreeVertices] using hv'))
+        change threshold ≤ (L v).card
+        rw [L, ← Set.ncard_eq_toFinset_card']
+        exact hv'))
   have hunion : (H.biUnion L).card ≤ Fintype.card V := by
     simpa using Finset.card_le_card (Finset.subset_univ (H.biUnion L))
   have hbound : threshold * H.card ≤ Fintype.card V := by
