@@ -50,6 +50,39 @@ theorem exists_subset_injOn_of_bounded_fibres {α β : Type*}
     intro x hx
     exact htu hx), htcard⟩
 
+open Classical in
+/-- A pairwise vertex-disjoint family contains at most `A.card` lists that meet `A`. -/
+theorem card_paths_meeting_finset_le {α : Type*} [Nonempty α]
+    (paths : Finset (List α)) (A : Finset α)
+    (hdisjoint : ∀ P ∈ paths, ∀ Q ∈ paths, P ≠ Q →
+      Disjoint P.toFinset Q.toFinset) :
+    (paths.filter fun P => ∃ x ∈ P, x ∈ A).card ≤ A.card := by
+  let bad := paths.filter fun P => ∃ x ∈ P, x ∈ A
+  let pick : List α → α := fun P =>
+    if h : ∃ x ∈ P, x ∈ A then h.choose else Classical.choice inferInstance
+  have hpick : ∀ P ∈ bad, pick P ∈ P ∧ pick P ∈ A := by
+    intro P hP
+    have h : ∃ x ∈ P, x ∈ A := by
+      simpa [bad] using hP
+    rw [pick, dif_pos h]
+    exact h.choose_spec
+  have hinjective : Set.InjOn pick (bad : Set (List α)) := by
+    intro P hP Q hQ hpickeq
+    by_contra hPQ
+    have hPpaths : P ∈ paths := Finset.mem_of_mem_filter hP
+    have hQpaths : Q ∈ paths := Finset.mem_of_mem_filter hQ
+    have hdisj := hdisjoint P hPpaths Q hQpaths hPQ
+    exact Finset.disjoint_left.mp hdisj
+      (List.mem_toFinset.mpr (hpick P hP).1)
+      (List.mem_toFinset.mpr (by simpa [hpickeq] using (hpick Q hQ).1))
+  have himage : bad.image pick ⊆ A := by
+    intro x hx
+    obtain ⟨P, hP, rfl⟩ := Finset.mem_image.mp hx
+    exact (hpick P hP).2
+  change bad.card ≤ A.card
+  rw [← Finset.card_image_of_injOn hinjective]
+  exact Finset.card_le_card himage
+
 /-- **Leaves dominate branch vertices.** In a finite tree with at least two vertices, the number
 of branch vertices (degree `≥ 3`) is at least two less than the number of leaves (degree `1`).
 

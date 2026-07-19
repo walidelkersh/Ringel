@@ -98,6 +98,7 @@ lemma highLeafDegreeVertices_mul_le_card {V : Type*} [Finite V]
         intro v hv
         have hv' : v ∈ highLeafDegreeVertices T threshold := by
           simpa [H] using hv
+        change threshold ≤ (leafNeighbours T v).ncard at hv'
         change threshold ≤ (Set.toFinite (leafNeighbours T v)).toFinset.card
         simpa only [Set.ncard_eq_toFinset_card'] using hv'))
   have hunion : (H.biUnion L).card ≤ Fintype.card V := by
