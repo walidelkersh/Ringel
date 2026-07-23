@@ -14,6 +14,7 @@ jobs:
         with:
           use-mathlib-cache: true
       - name: Upload project Lean artifacts
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: ringel-lean-${{ github.sha }}
