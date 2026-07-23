@@ -1,0 +1,7 @@
+*.lean text eol=lf
+lean-toolchain text eol=lf
+lakefile.toml text eol=lf
+lake-manifest.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.ps1 text eol=lf

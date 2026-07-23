@@ -18,6 +18,6 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: ringel-lean-${{ github.sha }}
-          path: .lake/build/lib/lean/Ringel
+          path: .lake/build
           if-no-files-found: error
           retention-days: 7

@@ -74,6 +74,15 @@ lake build
 
 The project pins Lean and Mathlib versions in lean-toolchain and lakefile.toml.
 
+On Windows, the latest successful GitHub build can be reused without a local
+`lake build`:
+
+```powershell
+pwsh -File scripts/sync-lean-artifacts.ps1
+```
+
+Restart the Lean language server after syncing the `.olean` and `.ilean` files.
+
 ## Documentation
 
 - [Proof blueprint](https://walidelkersh.github.io/Ringel/blueprint/)
