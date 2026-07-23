@@ -13,3 +13,10 @@ jobs:
       - uses: leanprover/lean-action@v1
         with:
           use-mathlib-cache: true
+      - name: Upload project Lean artifacts
+        uses: actions/upload-artifact@v7
+        with:
+          name: ringel-lean-${{ github.sha }}
+          path: .lake/build/lib/lean/Ringel
+          if-no-files-found: error
+          retention-days: 7
