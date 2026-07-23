@@ -62,15 +62,18 @@ theorem card_paths_meeting_finset_le {α : Type*} [Nonempty α]
     if h : ∃ x ∈ P, x ∈ A then h.choose else Classical.choice inferInstance
   have hpick : ∀ P ∈ bad, pick P ∈ P ∧ pick P ∈ A := by
     intro P hP
-    have h : ∃ x ∈ P, x ∈ A := by
+    have hP' : P ∈ paths ∧ ∃ x ∈ P, x ∈ A := by
       simpa [bad] using hP
-    rw [pick, dif_pos h]
-    exact h.choose_spec
+    simpa only [pick, dif_pos hP'.2] using hP'.2.choose_spec
   have hinjective : Set.InjOn pick (bad : Set (List α)) := by
     intro P hP Q hQ hpickeq
     by_contra hPQ
-    have hPpaths : P ∈ paths := Finset.mem_of_mem_filter hP
-    have hQpaths : Q ∈ paths := Finset.mem_of_mem_filter hQ
+    have hP' : P ∈ paths ∧ ∃ x ∈ P, x ∈ A := by
+      simpa [bad] using hP
+    have hQ' : Q ∈ paths ∧ ∃ x ∈ Q, x ∈ A := by
+      simpa [bad] using hQ
+    have hPpaths : P ∈ paths := hP'.1
+    have hQpaths : Q ∈ paths := hQ'.1
     have hdisj := hdisjoint P hPpaths Q hQpaths hPQ
     exact Finset.disjoint_left.mp hdisj
       (List.mem_toFinset.mpr (hpick P hP).1)
